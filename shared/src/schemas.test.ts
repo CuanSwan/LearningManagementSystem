@@ -16,6 +16,7 @@ const validModule = {
       type: "text",
       schemaVersion: 1,
       source: "human",
+      wordingStyle: "official",
       order: 1,
       content: { body: "Negotiation is..." },
     },
@@ -24,6 +25,7 @@ const validModule = {
       type: "video",
       schemaVersion: 1,
       source: "ai_generated",
+      wordingStyle: "shortened",
       order: 2,
       content: { videoUrl: "https://example.com/video.mp4", duration: 340 },
     },
@@ -32,6 +34,7 @@ const validModule = {
       type: "quiz",
       schemaVersion: 1,
       source: "ai_generated",
+      wordingStyle: "shortened",
       order: 3,
       content: {
         questions: [
@@ -44,6 +47,7 @@ const validModule = {
       type: "practical",
       schemaVersion: 1,
       source: "human",
+      wordingStyle: "official",
       order: 4,
       content: {
         instructions: "Role-play a negotiation with a partner.",
@@ -63,7 +67,15 @@ describe("ModuleSchema", () => {
     const invalid = {
       ...validModule,
       lessons: [
-        { lessonId: "bad", type: "simulation", schemaVersion: 1, source: "human", order: 1, content: {} },
+        {
+          lessonId: "bad",
+          type: "simulation",
+          schemaVersion: 1,
+          source: "human",
+          wordingStyle: "official",
+          order: 1,
+          content: {},
+        },
       ],
     };
     expect(() => parseModule(invalid)).toThrow();
@@ -78,8 +90,28 @@ describe("ModuleSchema", () => {
           type: "quiz",
           schemaVersion: 1,
           source: "ai_generated",
+          wordingStyle: "shortened",
           order: 1,
           content: { questions: [{ prompt: "?", options: ["only one"], correctIndex: 0 }] },
+        },
+      ],
+    };
+    const result = ModuleSchema.safeParse(invalid);
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a lesson with an unknown wording style", () => {
+    const invalid = {
+      ...validModule,
+      lessons: [
+        {
+          lessonId: "l1",
+          type: "text",
+          schemaVersion: 1,
+          source: "human",
+          wordingStyle: "paraphrased",
+          order: 1,
+          content: { body: "Negotiation is..." },
         },
       ],
     };

@@ -15,6 +15,7 @@ const raw = {
       type: "text",
       schemaVersion: 1,
       source: "human",
+      wordingStyle: "official",
       order: 1,
       content: {
         body: "Negotiation is the process by which two or more parties reach a joint agreement.",
@@ -25,6 +26,7 @@ const raw = {
       type: "video",
       schemaVersion: 1,
       source: "ai_generated",
+      wordingStyle: "shortened",
       order: 2,
       content: {
         videoUrl: "https://example.com/videos/negotiation-basics.mp4",
@@ -37,6 +39,7 @@ const raw = {
       type: "quiz",
       schemaVersion: 1,
       source: "ai_generated",
+      wordingStyle: "shortened",
       order: 3,
       content: {
         questions: [
@@ -57,6 +60,7 @@ const raw = {
       type: "practical",
       schemaVersion: 1,
       source: "human",
+      wordingStyle: "official",
       order: 4,
       content: {
         instructions: "Role-play a negotiation scenario with a partner.",

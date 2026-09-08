@@ -3,6 +3,9 @@ import { z } from "zod";
 export const LessonSourceSchema = z.enum(["human", "ai_generated"]);
 export type LessonSource = z.infer<typeof LessonSourceSchema>;
 
+export const WordingStyleSchema = z.enum(["official", "shortened"]);
+export type WordingStyle = z.infer<typeof WordingStyleSchema>;
+
 export const ModuleStatusSchema = z.enum(["draft", "ai_generated", "published"]);
 export type ModuleStatus = z.infer<typeof ModuleStatusSchema>;
 
@@ -38,6 +41,7 @@ const LessonBaseSchema = z.object({
   lessonId: z.string(),
   schemaVersion: z.number().int().positive(),
   source: LessonSourceSchema,
+  wordingStyle: WordingStyleSchema,
   order: z.number().int().nonnegative(),
 });
 

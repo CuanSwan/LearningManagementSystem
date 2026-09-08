@@ -23,6 +23,7 @@ export function LessonRenderer({ lesson }: { lesson: Lesson }) {
       className="lms-block"
       data-block-id={lesson.lessonId}
       data-block-type={lesson.type}
+      data-wording-style={lesson.wordingStyle}
       data-order={lesson.order}
     >
       {renderContent(lesson)}
