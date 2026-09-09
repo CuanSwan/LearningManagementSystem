@@ -2,7 +2,12 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Theme, type Course, type Module } from "@lms/shared";
 import { getCourse, listModulesByCourse } from "../api.js";
+import { describeLesson, lessonTypeLabel } from "../lessonTemplates.js";
 import { themeStyle } from "../theme.js";
+
+function truncate(text: string, maxLength: number): string {
+  return text.length > maxLength ? `${text.slice(0, maxLength).trimEnd()}...` : text;
+}
 
 export function StudentCourse() {
   const { courseId } = useParams<{ courseId: string }>();
@@ -12,7 +17,13 @@ export function StudentCourse() {
   useEffect(() => {
     if (!courseId) return;
     getCourse(courseId).then(setCourse);
-    listModulesByCourse(courseId).then((list) => setModules(list.filter((m) => m.status === "published")));
+    listModulesByCourse(courseId).then((list) =>
+      setModules(
+        list
+          .filter((m) => m.status === "published")
+          .map((m) => ({ ...m, lessons: [...m.lessons].sort((a, b) => a.order - b.order) }))
+      )
+    );
   }, [courseId]);
 
   if (!course) return <p>Loading...</p>;
@@ -29,14 +40,27 @@ export function StudentCourse() {
       {modules.length === 0 ? (
         <p>No published modules yet.</p>
       ) : (
-        <ul className="student-module-list">
+        <ol className="timeline">
           {modules.map((module) => (
-            <li key={module.moduleId}>
-              <Link to={`/courses/${courseId}/modules/${module.moduleId}`}>{module.seed.title}</Link>
-              <p>{module.seed.objective}</p>
+            <li key={module.moduleId} className="timeline-module">
+              <Link to={`/courses/${courseId}/modules/${module.moduleId}`} className="timeline-module-link">
+                <h2>{module.seed.title}</h2>
+                <p>{module.seed.objective}</p>
+              </Link>
+
+              {module.lessons.length > 0 && (
+                <ol className="timeline-steps">
+                  {module.lessons.map((lesson) => (
+                    <li key={lesson.lessonId} className="timeline-step">
+                      <span className="timeline-step-type">{lessonTypeLabel(lesson.type)}</span>
+                      <span className="timeline-step-preview">{truncate(describeLesson(lesson), 70)}</span>
+                    </li>
+                  ))}
+                </ol>
+              )}
             </li>
           ))}
-        </ul>
+        </ol>
       )}
     </main>
   );
