@@ -382,3 +382,71 @@ main {
 .student-lessons .lms-block:last-child {
   border-bottom: none;
 }
+
+/* --- Auth: top bar, login/register, user management --- */
+
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid #ddd;
+  background: #fafafa;
+}
+
+.top-bar-brand {
+  font-weight: 700;
+  text-decoration: none;
+  color: inherit;
+}
+
+.top-bar-nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.9rem;
+}
+
+.top-bar-user {
+  color: #666;
+  font-size: 0.85rem;
+}
+
+.auth-page {
+  display: flex;
+  justify-content: center;
+  padding-top: 3rem;
+}
+
+.auth-form {
+  width: 100%;
+}
+
+.auth-switch {
+  font-size: 0.85rem;
+  margin-top: 0.75rem;
+}
+
+.user-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 500px;
+}
+
+.user-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+}
+
+.user-list-item select {
+  font: inherit;
+  padding: 0.25rem 0.4rem;
+}

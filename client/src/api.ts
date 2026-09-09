@@ -1,15 +1,53 @@
-import type { Course, Module } from "@lms/shared";
+import type { Course, Module, User, UserRole } from "@lms/shared";
 
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, {
     ...init,
+    credentials: "include",
     headers: { "Content-Type": "application/json", ...init?.headers },
   });
   if (!res.ok) {
     const body = await res.json().catch(() => null);
-    throw new Error(body?.error ? JSON.stringify(body.error) : `Request failed: ${res.status}`);
+    const message =
+      typeof body?.error === "string"
+        ? body.error
+        : Array.isArray(body?.error)
+          ? body.error.map((issue: { message: string }) => issue.message).join("; ")
+          : `Request failed: ${res.status}`;
+    throw new Error(message);
   }
   return res.json();
+}
+
+export async function me(): Promise<User | null> {
+  const res = await fetch("/api/auth/me", { credentials: "include" });
+  if (res.status === 401) return null;
+  if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+  return res.json();
+}
+
+export function login(email: string, password: string): Promise<User> {
+  return request("/api/auth/login", { method: "POST", body: JSON.stringify({ email, password }) });
+}
+
+export function register(email: string, name: string, password: string): Promise<User> {
+  return request("/api/auth/register", { method: "POST", body: JSON.stringify({ email, name, password }) });
+}
+
+export async function logout(): Promise<void> {
+  await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+}
+
+export function listUsers(): Promise<User[]> {
+  return request("/api/users");
+}
+
+export function createUser(input: { email: string; name: string; password: string; role: UserRole }): Promise<User> {
+  return request("/api/users", { method: "POST", body: JSON.stringify(input) });
+}
+
+export function setUserRole(userId: string, role: UserRole): Promise<User> {
+  return request(`/api/users/${userId}/role`, { method: "PATCH", body: JSON.stringify({ role }) });
 }
 
 export function listCourses(): Promise<Course[]> {
