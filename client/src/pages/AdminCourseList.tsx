@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Theme, type Course, type ThemeOverride } from "@lms/shared";
+import { Theme, suggestTheme, type Course, type ThemeOverride } from "@lms/shared";
 import { createCourse, listCourses } from "../api.js";
 import { ThemeOverrideFields } from "../components/ThemeOverrideFields.js";
 
@@ -29,7 +29,7 @@ export function AdminCourseList() {
       <div className="page-header">
         <div>
           <h1>Courses</h1>
-          <p>Create and manage courses. This admin area has no login yet - anyone with the URL can reach it.</p>
+          <p>Create and manage courses.</p>
         </div>
         <Link to="/">View student site</Link>
       </div>
@@ -58,6 +58,14 @@ export function AdminCourseList() {
           Description
           <textarea rows={2} value={description} onChange={(e) => setDescription(e.target.value)} />
         </label>
+        <button
+          type="button"
+          className="suggest-theme-btn"
+          disabled={!title}
+          onClick={() => setTheme((prev) => ({ ...prev, ...suggestTheme({ title, description }) }))}
+        >
+          Suggest theme from title &amp; description
+        </button>
         <ThemeOverrideFields value={theme} onChange={setTheme} />
         <button type="submit">Create course</button>
       </form>

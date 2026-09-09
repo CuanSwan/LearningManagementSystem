@@ -450,3 +450,19 @@ main {
   font: inherit;
   padding: 0.25rem 0.4rem;
 }
+
+.suggest-theme-btn {
+  display: block;
+  margin: 0.5rem 0 0.75rem;
+  font-size: 0.8rem;
+  background: none;
+  border: 1px dashed #999;
+  border-radius: 4px;
+  padding: 0.35rem 0.6rem;
+  cursor: pointer;
+}
+
+.suggest-theme-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
