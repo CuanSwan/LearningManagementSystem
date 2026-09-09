@@ -382,13 +382,26 @@ main {
 .tree-node-dot {
   grid-column: 2;
   justify-self: center;
-  width: 1rem;
-  height: 1rem;
-  margin-top: 0.35rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-top: 0.3rem;
   border-radius: 50%;
-  background: var(--theme-primary, #3e6259);
+  background: conic-gradient(var(--theme-primary, #3e6259) calc(var(--progress, 0) * 1%), rgba(0, 0, 0, 0.12) 0);
+  border: 1px solid var(--theme-primary, #3e6259);
   position: relative;
   z-index: 1;
+}
+
+.tree-node-dot.is-complete::after {
+  content: "\2713";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.55rem;
+  font-weight: 700;
+  color: #fff;
 }
 
 .tree-node-card {
@@ -504,6 +517,22 @@ main {
   opacity: 0.5;
 }
 
+.timeline-step.is-complete::before {
+  opacity: 1;
+}
+
+.timeline-step-check {
+  color: var(--theme-primary, #3e6259);
+  font-weight: 700;
+  margin-left: 0.4rem;
+}
+
+.module-progress-label {
+  font-size: 0.78rem;
+  color: var(--theme-primary, #3e6259);
+  margin: 0.4rem 0 0;
+}
+
 .timeline-step-type {
   font-weight: 600;
   text-transform: uppercase;
@@ -521,15 +550,58 @@ main {
 }
 
 /* Streamlined lesson blocks: no admin card chrome, just a soft divider */
-.student-lessons .lms-block {
-  border: none;
-  border-radius: 0;
+.student-lesson {
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-  padding: 0 0 2rem;
+  padding: 0 0 1.25rem;
 }
 
-.student-lessons .lms-block:last-child {
+.student-lesson:last-child {
   border-bottom: none;
+}
+
+.student-lesson .lms-block {
+  border: none;
+  border-radius: 0;
+  padding: 0 0 1rem;
+}
+
+.complete-toggle {
+  font-size: 0.82rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid var(--theme-primary, #3e6259);
+  background: transparent;
+  color: var(--theme-primary, #3e6259);
+  cursor: pointer;
+}
+
+.student-lesson.is-complete .complete-toggle {
+  background: var(--theme-primary, #3e6259);
+  color: #fff;
+}
+
+.progress-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.5rem 0;
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.progress-bar {
+  flex: 1;
+  max-width: 220px;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: var(--theme-primary, #3e6259);
+  transition: width 0.2s ease;
 }
 
 /* --- Auth: top bar, login/register, user management --- */
