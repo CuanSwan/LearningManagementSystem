@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ThemeOverrideSchema } from "./theme.js";
 
 export const LessonSourceSchema = z.enum(["human", "ai_generated"]);
 export type LessonSource = z.infer<typeof LessonSourceSchema>;
@@ -98,4 +99,18 @@ export type Module = z.infer<typeof ModuleSchema>;
 
 export function parseModule(data: unknown): Module {
   return ModuleSchema.parse(data);
+}
+
+export const CourseSchema = z.object({
+  courseId: z.string(),
+  title: z.string(),
+  description: z.string().optional(),
+  // Only the fields this course chooses to override - see Theme.withOverrides().
+  theme: ThemeOverrideSchema.default({}),
+});
+
+export type Course = z.infer<typeof CourseSchema>;
+
+export function parseCourse(data: unknown): Course {
+  return CourseSchema.parse(data);
 }

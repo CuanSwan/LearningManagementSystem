@@ -1,6 +1,15 @@
-import { parseModule, type Module } from "@lms/shared";
+import { parseCourse, parseModule } from "@lms/shared";
+import { seedCourse, seedModule } from "./store.js";
 
-const raw = {
+const salesFundamentals = parseCourse({
+  courseId: "sales-fundamentals",
+  title: "Sales Fundamentals",
+  description: "Core negotiation and sales skills.",
+  // No overrides - this course fully inherits the site-wide default theme.
+  theme: {},
+});
+
+const introToNegotiation = parseModule({
   moduleId: "intro-to-negotiation",
   courseId: "sales-fundamentals",
   status: "published",
@@ -69,6 +78,42 @@ const raw = {
       },
     },
   ],
-} satisfies unknown;
+});
 
-export const sampleModule: Module = parseModule(raw);
+const onboardingBasics = parseCourse({
+  courseId: "onboarding-basics",
+  title: "New Hire Onboarding",
+  description: "Company basics for new employees.",
+  // Overrides accent color and font; backgroundColor still inherits the default.
+  theme: { primaryColor: "#8a4b8f", fontFamily: "'Merriweather', Georgia, serif" },
+});
+
+const companyOverview = parseModule({
+  moduleId: "company-overview",
+  courseId: "onboarding-basics",
+  status: "published",
+  seed: {
+    title: "Company Overview",
+    objective: "New hires understand what the company does and how teams fit together.",
+  },
+  lessons: [
+    {
+      lessonId: "co-l1",
+      type: "text",
+      schemaVersion: 1,
+      source: "human",
+      wordingStyle: "official",
+      order: 1,
+      content: {
+        body: "Welcome! This module covers our mission, the teams you'll work with, and where to go for help.",
+      },
+    },
+  ],
+});
+
+export function seedSampleData(): void {
+  seedCourse(salesFundamentals);
+  seedModule(introToNegotiation);
+  seedCourse(onboardingBasics);
+  seedModule(companyOverview);
+}
