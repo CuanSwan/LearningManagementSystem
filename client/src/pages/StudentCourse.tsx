@@ -40,24 +40,27 @@ export function StudentCourse() {
       {modules.length === 0 ? (
         <p>No published modules yet.</p>
       ) : (
-        <ol className="timeline">
-          {modules.map((module) => (
-            <li key={module.moduleId} className="timeline-module">
-              <Link to={`/courses/${courseId}/modules/${module.moduleId}`} className="timeline-module-link">
-                <h2>{module.seed.title}</h2>
-                <p>{module.seed.objective}</p>
-              </Link>
+        <ol className="tree-path">
+          {modules.map((module, index) => (
+            <li key={module.moduleId} className={`tree-node ${index % 2 === 0 ? "side-left" : "side-right"}`}>
+              <span className="tree-node-dot" aria-hidden="true" />
+              <div className="tree-node-card">
+                <Link to={`/courses/${courseId}/modules/${module.moduleId}`} className="timeline-module-link">
+                  <h2>{module.seed.title}</h2>
+                  <p>{module.seed.objective}</p>
+                </Link>
 
-              {module.lessons.length > 0 && (
-                <ol className="timeline-steps">
-                  {module.lessons.map((lesson) => (
-                    <li key={lesson.lessonId} className="timeline-step">
-                      <span className="timeline-step-type">{lessonTypeLabel(lesson.type)}</span>
-                      <span className="timeline-step-preview">{truncate(describeLesson(lesson), 70)}</span>
-                    </li>
-                  ))}
-                </ol>
-              )}
+                {module.lessons.length > 0 && (
+                  <ol className="timeline-steps">
+                    {module.lessons.map((lesson) => (
+                      <li key={lesson.lessonId} className="timeline-step">
+                        <span className="timeline-step-type">{lessonTypeLabel(lesson.type)}</span>
+                        <span className="timeline-step-preview">{truncate(describeLesson(lesson), 70)}</span>
+                      </li>
+                    ))}
+                  </ol>
+                )}
+              </div>
             </li>
           ))}
         </ol>
