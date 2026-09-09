@@ -765,16 +765,42 @@ main {
   margin-top: 2rem;
 }
 
+.carousel-dots {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+.carousel-dot {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  background: rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+}
+
+/* Fill color signals completion; the active dot gets a ring + size bump
+   on top of that, so "current" and "complete" stay visible together. */
+.carousel-dot.is-complete {
+  background: var(--theme-primary, #3e6259);
+}
+
+.carousel-dot.active {
+  transform: scale(1.35);
+  box-shadow:
+    0 0 0 2px var(--theme-bg, #f6f5f1),
+    0 0 0 3.5px var(--theme-primary, #3e6259);
+}
+
 .carousel-nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 1.5rem;
+  margin-top: 1.25rem;
   padding-top: 1rem;
   border-top: 1px solid rgba(0, 0, 0, 0.08);
-}
-
-.carousel-position {
-  font-size: 0.85rem;
-  color: #666;
 }

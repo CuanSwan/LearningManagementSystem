@@ -40,31 +40,33 @@ export function StudentModule() {
       <h1>{foundModule.seed.title}</h1>
       <p className="course-description">{foundModule.seed.objective}</p>
 
-      <div className="progress-summary">
-        <div className="progress-bar">
-          <div
-            className="progress-bar-fill"
-            style={{ width: `${orderedLessons.length ? (completedCount / orderedLessons.length) * 100 : 0}%` }}
-          />
-        </div>
-        <span>
-          {completedCount} of {orderedLessons.length} lessons complete
-        </span>
-      </div>
-
       {mode === "carousel" ? (
         <LessonCarousel lessons={orderedLessons} completedIds={completedIds} onToggle={toggleComplete} />
       ) : (
-        <div className="student-lessons">
-          {orderedLessons.map((lesson) => (
-            <StudentLessonBlock
-              key={lesson.lessonId}
-              lesson={lesson}
-              isComplete={completedIds.has(lesson.lessonId)}
-              onToggle={() => toggleComplete(lesson.lessonId)}
-            />
-          ))}
-        </div>
+        <>
+          <div className="progress-summary">
+            <div className="progress-bar">
+              <div
+                className="progress-bar-fill"
+                style={{ width: `${orderedLessons.length ? (completedCount / orderedLessons.length) * 100 : 0}%` }}
+              />
+            </div>
+            <span>
+              {completedCount} of {orderedLessons.length} lessons complete
+            </span>
+          </div>
+
+          <div className="student-lessons">
+            {orderedLessons.map((lesson) => (
+              <StudentLessonBlock
+                key={lesson.lessonId}
+                lesson={lesson}
+                isComplete={completedIds.has(lesson.lessonId)}
+                onToggle={() => toggleComplete(lesson.lessonId)}
+              />
+            ))}
+          </div>
+        </>
       )}
     </main>
   );
