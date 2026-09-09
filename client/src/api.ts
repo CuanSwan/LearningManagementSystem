@@ -88,3 +88,11 @@ export function createModule(input: { courseId: string; title: string; objective
 export function saveModule(moduleId: string, module: Module): Promise<Module> {
   return request(`/api/modules/${moduleId}`, { method: "PUT", body: JSON.stringify(module) });
 }
+
+export function getProgress(): Promise<{ completedLessonIds: string[] }> {
+  return request("/api/progress");
+}
+
+export function setLessonProgress(lessonId: string, completed: boolean): Promise<{ completedLessonIds: string[] }> {
+  return request(`/api/progress/lessons/${lessonId}`, { method: "PUT", body: JSON.stringify({ completed }) });
+}

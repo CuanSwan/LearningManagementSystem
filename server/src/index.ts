@@ -4,6 +4,7 @@ import cors from "cors";
 import express, { type NextFunction, type Request, type Response } from "express";
 import { z } from "zod";
 import { createSession, destroySession, getSessionUserId } from "./auth.js";
+import { getCompletedLessons, setLessonCompletion } from "./progressStore.js";
 import { seedSampleData } from "./sampleData.js";
 import { seedUsers } from "./seedUsers.js";
 import {
@@ -252,6 +253,22 @@ app.put("/api/modules/:moduleId", requireRole("admin", "super_admin"), (req, res
   }
   const saved = saveModule(req.params.moduleId, parsed.data);
   res.json(saved);
+});
+
+// --- Lesson completion (per-user) ---
+
+app.get("/api/progress", requireAuth, (req, res) => {
+  res.json({ completedLessonIds: getCompletedLessons(req.user!.userId) });
+});
+
+app.put("/api/progress/lessons/:lessonId", requireAuth, (req, res) => {
+  const parsed = z.object({ completed: z.boolean() }).safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.issues });
+    return;
+  }
+  setLessonCompletion(req.user!.userId, req.params.lessonId, parsed.data.completed);
+  res.json({ completedLessonIds: getCompletedLessons(req.user!.userId) });
 });
 
 app.listen(port, () => {

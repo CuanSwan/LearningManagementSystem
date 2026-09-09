@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import type { Course, Module, ThemeOverride } from "@lms/shared";
+import { suggestTheme, type Course, type Module, type ThemeOverride } from "@lms/shared";
 import { createModule, getCourse, listModulesByCourse, patchCourse } from "../api.js";
 import { ThemeOverrideFields } from "../components/ThemeOverrideFields.js";
 
@@ -54,6 +54,13 @@ export function AdminCourseDetail() {
 
       <section>
         <h2>Theme</h2>
+        <button
+          type="button"
+          className="suggest-theme-btn"
+          onClick={() => setTheme((prev) => ({ ...prev, ...suggestTheme(course) }))}
+        >
+          Suggest theme from title &amp; description
+        </button>
         <ThemeOverrideFields value={theme} onChange={setTheme} />
         <div className="save-controls">
           <button type="button" onClick={handleSaveTheme} disabled={saveStatus === "saving"}>
