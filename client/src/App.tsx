@@ -1,8 +1,10 @@
 import { BrowserRouter, Outlet, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./auth.js";
+import { DisplayPreferenceChooser } from "./components/DisplayPreferenceChooser.js";
 import { RequireAuth } from "./components/RequireAuth.js";
 import { RequireRole } from "./components/RequireRole.js";
 import { TopBar } from "./components/TopBar.js";
+import { DisplayPreferenceProvider, useDisplayPreference } from "./displayPreference.js";
 import { AdminCourseDetail } from "./pages/AdminCourseDetail.js";
 import { AdminCourseList } from "./pages/AdminCourseList.js";
 import { AdminModuleEditor } from "./pages/AdminModuleEditor.js";
@@ -13,12 +15,25 @@ import { StudentCatalog } from "./pages/StudentCatalog.js";
 import { StudentCourse } from "./pages/StudentCourse.js";
 import { StudentModule } from "./pages/StudentModule.js";
 
-function Layout() {
+function LayoutInner() {
+  const { mode, loading, choose } = useDisplayPreference();
+
+  if (loading) return <p>Loading...</p>;
+  if (mode === null) return <DisplayPreferenceChooser onChoose={choose} />;
+
   return (
     <>
       <TopBar />
       <Outlet />
     </>
+  );
+}
+
+function Layout() {
+  return (
+    <DisplayPreferenceProvider>
+      <LayoutInner />
+    </DisplayPreferenceProvider>
   );
 }
 

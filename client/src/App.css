@@ -687,3 +687,94 @@ main {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* --- Display preference: chooser, top-bar toggle, carousel --- */
+
+.preference-chooser {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.preference-chooser-card {
+  max-width: 480px;
+  text-align: center;
+}
+
+.preference-chooser-card p {
+  color: #666;
+  margin-bottom: 1.5rem;
+}
+
+.preference-options {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.preference-option {
+  flex: 1;
+  max-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1.25rem 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  text-align: left;
+}
+
+.preference-option:hover {
+  border-color: #888;
+}
+
+.preference-option strong {
+  font-size: 1rem;
+}
+
+.preference-option span {
+  font-size: 0.82rem;
+  color: #666;
+}
+
+.display-toggle {
+  display: flex;
+  border: 1px solid #ccc;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.display-toggle button {
+  border: none;
+  background: none;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.display-toggle button.active {
+  background: #333;
+  color: #fff;
+}
+
+.lesson-carousel {
+  margin-top: 2rem;
+}
+
+.carousel-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.carousel-position {
+  font-size: 0.85rem;
+  color: #666;
+}

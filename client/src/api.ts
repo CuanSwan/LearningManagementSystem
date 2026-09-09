@@ -96,3 +96,13 @@ export function getProgress(): Promise<{ completedLessonIds: string[] }> {
 export function setLessonProgress(lessonId: string, completed: boolean): Promise<{ completedLessonIds: string[] }> {
   return request(`/api/progress/lessons/${lessonId}`, { method: "PUT", body: JSON.stringify({ completed }) });
 }
+
+export type LessonDisplayMode = "vertical" | "carousel";
+
+export function getPreferences(): Promise<{ lessonDisplayMode: LessonDisplayMode | null }> {
+  return request("/api/preferences");
+}
+
+export function setPreferences(lessonDisplayMode: LessonDisplayMode): Promise<{ lessonDisplayMode: LessonDisplayMode }> {
+  return request("/api/preferences", { method: "PUT", body: JSON.stringify({ lessonDisplayMode }) });
+}
