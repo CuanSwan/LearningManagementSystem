@@ -13,6 +13,19 @@ export function lessonTypeLabel(type: LessonType): string {
   return LESSON_TYPE_LABELS[type];
 }
 
+export function describeLesson(lesson: Lesson): string {
+  switch (lesson.type) {
+    case "text":
+      return lesson.content.body || "(empty)";
+    case "video":
+      return lesson.content.videoUrl || "(empty)";
+    case "quiz":
+      return lesson.content.questions[0]?.prompt || "(empty)";
+    case "practical":
+      return lesson.content.instructions || "(empty)";
+  }
+}
+
 export function createBlankLesson(type: LessonType, order: number): Lesson {
   const base = {
     lessonId: crypto.randomUUID(),

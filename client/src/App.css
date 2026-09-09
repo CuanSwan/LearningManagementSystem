@@ -107,3 +107,96 @@ main {
 .library-item:active {
   cursor: grabbing;
 }
+
+.library-item-saved {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.library-item-type {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #888;
+}
+
+.library-item-preview {
+  font-size: 0.82rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.library-section {
+  margin-top: 1rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid #ddd;
+}
+
+.library-section h3 {
+  font-size: 0.85rem;
+  margin: 0 0 0.5rem;
+}
+
+.import-error {
+  color: #b23b3b;
+  font-size: 0.78rem;
+  margin: 0.5rem 0 0;
+}
+
+.admin-lesson-actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.lesson-editor {
+  padding: 1rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+  margin-bottom: 0.65rem;
+}
+
+.field input,
+.field textarea,
+.field select {
+  font: inherit;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.editor-question {
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 0.75rem;
+  margin: 0 0 0.5rem;
+}
+
+.editor-option-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.35rem;
+}
+
+.editor-option-row input:not([type="radio"]) {
+  flex: 1;
+}
+
+.editor-row-actions {
+  display: flex;
+  gap: 0.5rem;
+}
