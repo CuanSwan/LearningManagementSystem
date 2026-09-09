@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Theme, type Course, type Module } from "@lms/shared";
 import { getCourse, getModule, getProgress, setLessonProgress } from "../api.js";
-import { LessonRenderer } from "../components/LessonRenderer.js";
+import { LessonCarousel } from "../components/LessonCarousel.js";
+import { StudentLessonBlock } from "../components/StudentLessonBlock.js";
+import { useDisplayPreference } from "../displayPreference.js";
 import { themeStyle } from "../theme.js";
 
 export function StudentModule() {
@@ -10,6 +12,7 @@ export function StudentModule() {
   const [course, setCourse] = useState<Course | null>(null);
   const [foundModule, setModule] = useState<Module | null>(null);
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
+  const { mode } = useDisplayPreference();
 
   useEffect(() => {
     if (!courseId || !moduleId) return;
@@ -37,31 +40,34 @@ export function StudentModule() {
       <h1>{foundModule.seed.title}</h1>
       <p className="course-description">{foundModule.seed.objective}</p>
 
-      <div className="progress-summary">
-        <div className="progress-bar">
-          <div
-            className="progress-bar-fill"
-            style={{ width: `${orderedLessons.length ? (completedCount / orderedLessons.length) * 100 : 0}%` }}
-          />
-        </div>
-        <span>
-          {completedCount} of {orderedLessons.length} lessons complete
-        </span>
-      </div>
-
-      <div className="student-lessons">
-        {orderedLessons.map((lesson) => {
-          const isComplete = completedIds.has(lesson.lessonId);
-          return (
-            <div key={lesson.lessonId} className={`student-lesson${isComplete ? " is-complete" : ""}`}>
-              <LessonRenderer lesson={lesson} />
-              <button type="button" className="complete-toggle" onClick={() => toggleComplete(lesson.lessonId)}>
-                {isComplete ? "✓ Completed" : "Mark as complete"}
-              </button>
+      {mode === "carousel" ? (
+        <LessonCarousel lessons={orderedLessons} completedIds={completedIds} onToggle={toggleComplete} />
+      ) : (
+        <>
+          <div className="progress-summary">
+            <div className="progress-bar">
+              <div
+                className="progress-bar-fill"
+                style={{ width: `${orderedLessons.length ? (completedCount / orderedLessons.length) * 100 : 0}%` }}
+              />
             </div>
-          );
-        })}
-      </div>
+            <span>
+              {completedCount} of {orderedLessons.length} lessons complete
+            </span>
+          </div>
+
+          <div className="student-lessons">
+            {orderedLessons.map((lesson) => (
+              <StudentLessonBlock
+                key={lesson.lessonId}
+                lesson={lesson}
+                isComplete={completedIds.has(lesson.lessonId)}
+                onToggle={() => toggleComplete(lesson.lessonId)}
+              />
+            ))}
+          </div>
+        </>
+      )}
     </main>
   );
 }
