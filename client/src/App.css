@@ -319,38 +319,89 @@ main {
   color: var(--theme-primary, #3e6259);
 }
 
+/* Large-print / low-vision mode: this is meant to be usable from well
+   across a room, not just "a bit bigger" - sizes here follow large-print
+   publishing guidance (28px+ body text, 1.8+ line-height, big touch
+   targets) rather than typical web type scales. */
 .accessible-mode {
   font-family: "Atkinson Hyperlegible", Verdana, Arial, sans-serif;
-  font-size: 1.2rem;
-  line-height: 1.7;
+  font-size: 2rem;
+  line-height: 1.9;
+  letter-spacing: 0.01em;
+}
+
+.accessible-mode .breadcrumb {
+  font-size: 1.5rem;
 }
 
 .accessible-mode h1 {
-  font-size: 2.2rem;
+  font-size: 4rem;
+  line-height: 1.15;
+  margin-bottom: 1rem;
 }
 
 .accessible-mode .course-description {
-  font-size: 1.15rem;
+  font-size: 1.75rem;
 }
 
 .accessible-mode .lms-block {
-  font-size: 1.2rem;
-  line-height: 1.7;
+  font-size: 2rem;
+  line-height: 1.9;
+}
+
+.accessible-mode .lms-block legend {
+  font-size: 2.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.accessible-mode .lms-block input[type="radio"],
+.accessible-mode .lms-block input[type="checkbox"] {
+  width: 1.75rem;
+  height: 1.75rem;
+  margin-right: 0.75rem;
+  vertical-align: middle;
+}
+
+.accessible-mode .lms-block fieldset {
+  margin-bottom: 1.5rem;
+}
+
+.accessible-mode .lms-block li {
+  margin-bottom: 0.75rem;
 }
 
 .accessible-mode .complete-toggle {
-  font-size: 1rem;
-  padding: 0.6rem 1.1rem;
+  font-size: 1.6rem;
+  padding: 1.1rem 2.2rem;
+  min-height: 3.75rem;
+  border-width: 2px;
+}
+
+.accessible-mode .carousel-nav {
+  margin-top: 2rem;
+  gap: 1.5rem;
 }
 
 .accessible-mode .carousel-nav button {
-  font-size: 1.05rem;
-  padding: 0.6rem 1.2rem;
+  font-size: 1.75rem;
+  padding: 1.25rem 2.5rem;
+  min-height: 4rem;
+}
+
+.accessible-mode .carousel-dots {
+  gap: 1.25rem;
+  margin-top: 2.5rem;
 }
 
 .accessible-mode .carousel-dot {
-  width: 0.9rem;
-  height: 0.9rem;
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+.accessible-mode .carousel-dot.active {
+  box-shadow:
+    0 0 0 3px var(--theme-bg, #f6f5f1),
+    0 0 0 6px var(--theme-primary, #3e6259);
 }
 
 .student-view h1,
