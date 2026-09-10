@@ -32,14 +32,85 @@ function persist() {
   }
 }
 
+// Progress and display preference stand in for what would normally be tied to a
+// logged-in student. There's no login here, so they live in sessionStorage instead
+// of localStorage - a temporary, per-tab stand-in just for this design-review prototype.
+const PROGRESS_KEY = "lms-prototype-progress-v1";
+const PREFERENCE_KEY = "lms-prototype-preference-v1";
+
+export type LessonDisplayMode = "vertical" | "carousel";
+
+function loadProgress(): Set<string> {
+  try {
+    const raw = sessionStorage.getItem(PROGRESS_KEY);
+    if (raw) return new Set(JSON.parse(raw) as string[]);
+  } catch {
+    // ignore
+  }
+  return new Set();
+}
+
+function loadPreference(): LessonDisplayMode | null {
+  try {
+    const raw = sessionStorage.getItem(PREFERENCE_KEY);
+    if (raw === "vertical" || raw === "carousel") return raw;
+  } catch {
+    // ignore
+  }
+  return null;
+}
+
+let completedLessonIds = loadProgress();
+let lessonDisplayMode = loadPreference();
+
+function persistProgress() {
+  try {
+    sessionStorage.setItem(PROGRESS_KEY, JSON.stringify([...completedLessonIds]));
+  } catch {
+    // ignore
+  }
+}
+
 function delay<T>(value: T): Promise<T> {
   return new Promise((resolve) => setTimeout(() => resolve(value), 150));
 }
 
 export function resetDemoData(): void {
   snapshot = freshSnapshot();
+  completedLessonIds = new Set();
+  lessonDisplayMode = null;
   persist();
-  location.reload();
+  try {
+    sessionStorage.removeItem(PROGRESS_KEY);
+    sessionStorage.removeItem(PREFERENCE_KEY);
+  } catch {
+    // ignore
+  }
+}
+
+export function getProgress(): Promise<{ completedLessonIds: string[] }> {
+  return delay({ completedLessonIds: [...completedLessonIds] });
+}
+
+export function setLessonProgress(lessonId: string, completed: boolean): Promise<{ completedLessonIds: string[] }> {
+  if (completed) completedLessonIds.add(lessonId);
+  else completedLessonIds.delete(lessonId);
+  persistProgress();
+  return delay({ completedLessonIds: [...completedLessonIds] });
+}
+
+export function getPreferences(): Promise<{ lessonDisplayMode: LessonDisplayMode | null }> {
+  return delay({ lessonDisplayMode });
+}
+
+export function setPreferences(mode: LessonDisplayMode): Promise<{ lessonDisplayMode: LessonDisplayMode }> {
+  lessonDisplayMode = mode;
+  try {
+    sessionStorage.setItem(PREFERENCE_KEY, mode);
+  } catch {
+    // ignore
+  }
+  return delay({ lessonDisplayMode: mode });
 }
 
 export function listCourses(): Promise<Course[]> {
