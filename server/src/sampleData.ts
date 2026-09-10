@@ -1,4 +1,5 @@
 import { parseCourse, parseModule } from "@lms/shared";
+import { awsAiFoundationsModule, awsAiPractitionerCourse } from "./riseImportSample.js";
 import { seedCourse, seedModule } from "./store.js";
 
 const salesFundamentals = parseCourse({
@@ -116,4 +117,6 @@ export function seedSampleData(): void {
   seedModule(introToNegotiation);
   seedCourse(onboardingBasics);
   seedModule(companyOverview);
+  seedCourse(awsAiPractitionerCourse);
+  seedModule(awsAiFoundationsModule);
 }
