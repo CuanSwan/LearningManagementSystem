@@ -31,16 +31,22 @@ export function StudentModule() {
   const resolved = Theme.default().withOverrides(course.theme);
   const orderedLessons = [...foundModule.lessons].sort((a, b) => a.order - b.order);
   const completedCount = orderedLessons.filter((l) => completedIds.has(l.lessonId)).length;
+  // Accessible mode reuses the carousel's one-lesson-at-a-time layout; only the
+  // font/sizing changes, via the accessible-mode class applied below.
+  const usesCarousel = mode === "carousel" || mode === "accessible";
 
   return (
-    <main className="student-view" style={themeStyle(resolved)}>
+    <main
+      className={`student-view${mode === "accessible" ? " accessible-mode" : ""}`}
+      style={themeStyle(resolved)}
+    >
       <p className="breadcrumb">
         <Link to={`/courses/${courseId}`}>&larr; {course.title}</Link>
       </p>
       <h1>{foundModule.seed.title}</h1>
       <p className="course-description">{foundModule.seed.objective}</p>
 
-      {mode === "carousel" ? (
+      {usesCarousel ? (
         <LessonCarousel lessons={orderedLessons} completedIds={completedIds} onToggle={toggleComplete} />
       ) : (
         <>

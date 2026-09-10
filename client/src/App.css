@@ -319,6 +319,40 @@ main {
   color: var(--theme-primary, #3e6259);
 }
 
+.accessible-mode {
+  font-family: "Atkinson Hyperlegible", Verdana, Arial, sans-serif;
+  font-size: 1.2rem;
+  line-height: 1.7;
+}
+
+.accessible-mode h1 {
+  font-size: 2.2rem;
+}
+
+.accessible-mode .course-description {
+  font-size: 1.15rem;
+}
+
+.accessible-mode .lms-block {
+  font-size: 1.2rem;
+  line-height: 1.7;
+}
+
+.accessible-mode .complete-toggle {
+  font-size: 1rem;
+  padding: 0.6rem 1.1rem;
+}
+
+.accessible-mode .carousel-nav button {
+  font-size: 1.05rem;
+  padding: 0.6rem 1.2rem;
+}
+
+.accessible-mode .carousel-dot {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
 .student-view h1,
 .student-view h2 {
   color: var(--theme-primary, #3e6259);

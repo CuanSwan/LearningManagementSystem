@@ -1,4 +1,4 @@
-import type { Course, Module, User, UserRole } from "@lms/shared";
+import type { Course, LessonDisplayMode, Module, User, UserRole } from "@lms/shared";
 
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, {
@@ -96,8 +96,6 @@ export function getProgress(): Promise<{ completedLessonIds: string[] }> {
 export function setLessonProgress(lessonId: string, completed: boolean): Promise<{ completedLessonIds: string[] }> {
   return request(`/api/progress/lessons/${lessonId}`, { method: "PUT", body: JSON.stringify({ completed }) });
 }
-
-export type LessonDisplayMode = "vertical" | "carousel";
 
 export function getPreferences(): Promise<{ lessonDisplayMode: LessonDisplayMode | null }> {
   return request("/api/preferences");

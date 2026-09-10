@@ -1,4 +1,4 @@
-export type LessonDisplayMode = "vertical" | "carousel";
+import type { LessonDisplayMode } from "@lms/shared";
 
 const preferenceByUser = new Map<string, LessonDisplayMode>();
 

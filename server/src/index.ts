@@ -1,4 +1,4 @@
-import { ModuleSchema, ThemeOverrideSchema, UserRoleSchema, type UserRole } from "@lms/shared";
+import { LessonDisplayModeSchema, ModuleSchema, ThemeOverrideSchema, UserRoleSchema, type UserRole } from "@lms/shared";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import express, { type NextFunction, type Request, type Response } from "express";
@@ -279,7 +279,7 @@ app.get("/api/preferences", requireAuth, (req, res) => {
 });
 
 app.put("/api/preferences", requireAuth, (req, res) => {
-  const parsed = z.object({ lessonDisplayMode: z.enum(["vertical", "carousel"]) }).safeParse(req.body);
+  const parsed = z.object({ lessonDisplayMode: LessonDisplayModeSchema }).safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.issues });
     return;

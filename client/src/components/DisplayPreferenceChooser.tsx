@@ -1,4 +1,4 @@
-import type { LessonDisplayMode } from "../api.js";
+import type { LessonDisplayMode } from "@lms/shared";
 
 export function DisplayPreferenceChooser({ onChoose }: { onChoose: (mode: LessonDisplayMode) => void }) {
   return (
@@ -14,6 +14,10 @@ export function DisplayPreferenceChooser({ onChoose }: { onChoose: (mode: Lesson
           <button type="button" className="preference-option" onClick={() => onChoose("carousel")}>
             <strong>Carousel</strong>
             <span>Step through one lesson at a time</span>
+          </button>
+          <button type="button" className="preference-option" onClick={() => onChoose("accessible")}>
+            <strong>Accessible</strong>
+            <span>Step through lessons one at a time, with larger, easier-to-read text</span>
           </button>
         </div>
       </div>

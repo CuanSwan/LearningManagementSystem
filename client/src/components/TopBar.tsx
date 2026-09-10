@@ -30,6 +30,13 @@ export function TopBar() {
           >
             Carousel
           </button>
+          <button
+            type="button"
+            className={mode === "accessible" ? "active" : ""}
+            onClick={() => choose("accessible")}
+          >
+            Accessible
+          </button>
         </div>
         <span className="top-bar-user">
           {user.name} &middot; {user.role}
