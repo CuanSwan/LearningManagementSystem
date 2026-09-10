@@ -139,6 +139,12 @@ main {
   margin: 0 0 0.5rem;
 }
 
+.library-section-hint {
+  font-size: 0.75rem;
+  color: #888;
+  margin: 0 0 0.4rem;
+}
+
 .import-error {
   color: #b23b3b;
   font-size: 0.78rem;
