@@ -2,6 +2,7 @@ import { useEffect, useState, type CSSProperties } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Theme, type Course, type Module } from "@lms/shared";
 import { getCourse, getProgress, listModulesByCourse } from "../api.js";
+import { Breadcrumb } from "../components/Breadcrumb.js";
 import { describeLesson, lessonTypeLabel } from "../lessonTemplates.js";
 import { themeStyle } from "../theme.js";
 
@@ -46,9 +47,7 @@ export function StudentCourse() {
 
   return (
     <main className="student-view course-page" style={themeStyle(resolved)}>
-      <p className="breadcrumb">
-        <Link to="/">&larr; All courses</Link>
-      </p>
+      <Breadcrumb items={[{ label: "Courses", to: "/" }, { label: course.title }]} />
       <h1>{course.title}</h1>
       {course.description && <p className="course-description">{course.description}</p>}
 

@@ -1,18 +1,29 @@
-import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import { Theme, type Course, type Module } from "@lms/shared";
+import { useCallback, useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { Theme, type Course, type Lesson, type Module } from "@lms/shared";
 import { getCourse, getModule, getProgress, setLessonProgress } from "../api.js";
+import { Breadcrumb } from "../components/Breadcrumb.js";
 import { LessonCarousel } from "../components/LessonCarousel.js";
 import { StudentLessonBlock } from "../components/StudentLessonBlock.js";
 import { useDisplayPreference } from "../displayPreference.js";
+import { describeLesson } from "../lessonTemplates.js";
 import { themeStyle } from "../theme.js";
+
+function truncate(text: string, maxLength: number): string {
+  return text.length > maxLength ? `${text.slice(0, maxLength).trimEnd()}...` : text;
+}
 
 export function StudentModule() {
   const { courseId, moduleId } = useParams<{ courseId: string; moduleId: string }>();
   const [course, setCourse] = useState<Course | null>(null);
   const [foundModule, setModule] = useState<Module | null>(null);
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
+  const [currentLessonPreview, setCurrentLessonPreview] = useState<string | null>(null);
   const { mode } = useDisplayPreference();
+
+  const handleCurrentLessonChange = useCallback((lesson: Lesson) => {
+    setCurrentLessonPreview(truncate(describeLesson(lesson), 40));
+  }, []);
 
   useEffect(() => {
     if (!courseId || !moduleId) return;
@@ -33,20 +44,29 @@ export function StudentModule() {
   // Accessible mode reuses the carousel's one-lesson-at-a-time layout; only the
   // font/sizing changes, via the accessible-mode class applied below.
   const usesCarousel = mode === "carousel" || mode === "accessible";
+  const breadcrumbItems = [
+    { label: "Courses", to: "/" },
+    { label: course.title, to: `/courses/${courseId}` },
+    { label: foundModule.seed.title, to: `/courses/${courseId}/modules/${moduleId}` },
+    ...(usesCarousel && currentLessonPreview ? [{ label: currentLessonPreview }] : []),
+  ];
 
   return (
     <main
       className={`student-view module-page${mode === "accessible" ? " accessible-mode" : ""}`}
       style={themeStyle(resolved)}
     >
-      <p className="breadcrumb">
-        <Link to={`/courses/${courseId}`}>&larr; {course.title}</Link>
-      </p>
+      <Breadcrumb items={breadcrumbItems} />
       <h1>{foundModule.seed.title}</h1>
       <p className="course-description">{foundModule.seed.objective}</p>
 
       {usesCarousel ? (
-        <LessonCarousel lessons={orderedLessons} completedIds={completedIds} onComplete={markComplete} />
+        <LessonCarousel
+          lessons={orderedLessons}
+          completedIds={completedIds}
+          onComplete={markComplete}
+          onCurrentLessonChange={handleCurrentLessonChange}
+        />
       ) : (
         <>
           <div className="progress-summary">

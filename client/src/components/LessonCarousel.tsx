@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Lesson } from "@lms/shared";
 import { StudentLessonBlock } from "./StudentLessonBlock.js";
 
@@ -6,13 +6,19 @@ export function LessonCarousel({
   lessons,
   completedIds,
   onComplete,
+  onCurrentLessonChange,
 }: {
   lessons: Lesson[];
   completedIds: Set<string>;
   onComplete: (lessonId: string) => void;
+  onCurrentLessonChange?: (lesson: Lesson) => void;
 }) {
   const [index, setIndex] = useState(0);
   const lesson = lessons[index];
+
+  useEffect(() => {
+    if (lesson) onCurrentLessonChange?.(lesson);
+  }, [lesson, onCurrentLessonChange]);
 
   if (!lesson) return null;
 
