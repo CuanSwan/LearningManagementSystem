@@ -38,7 +38,7 @@ export function StudentCourse() {
   );
 
   return (
-    <main className="student-view" style={themeStyle(resolved)}>
+    <main className="student-view course-page" style={themeStyle(resolved)}>
       <p className="breadcrumb">
         <Link to="/">&larr; All courses</Link>
       </p>
