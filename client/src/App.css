@@ -1230,8 +1230,27 @@ main {
 .carousel-nav {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+  gap: 1.5rem;
   margin-top: 1.25rem;
   padding-top: 1rem;
   border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.carousel-nav button {
+  font-size: 1.05rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 0.9rem 2rem;
+  border: none;
+  border-radius: 0;
+  background: var(--theme-primary, #3e6259);
+  color: #fff;
+  cursor: pointer;
+}
+
+.carousel-nav button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
 }
