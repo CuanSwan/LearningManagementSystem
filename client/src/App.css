@@ -727,9 +727,11 @@ main {
 .auth-page {
   display: flex;
   justify-content: center;
-  align-items: flex-start;
-  padding-top: 3rem;
+  align-items: center;
   min-height: 100vh;
+  max-width: none;
+  margin: 0;
+  padding: 0;
   background: #0d0d0d;
 }
 
