@@ -12,7 +12,7 @@ export function StudentCatalog() {
   }, []);
 
   return (
-    <main className="student-view">
+    <main className="student-view catalog-page">
       <h1>Courses</h1>
       <div className="catalog-grid">
         {courses.map((course) => {
