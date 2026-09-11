@@ -516,6 +516,12 @@ main {
   border: 2px solid var(--module-accent, #3e6259);
   position: relative;
   z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--module-accent, #3e6259);
 }
 
 .tree-node-dot.is-complete::after {
@@ -671,6 +677,12 @@ main {
 .timeline-step-check {
   color: var(--module-accent, #3e6259);
   font-weight: 700;
+}
+
+.timeline-step-number {
+  color: #9ca3af;
+  font-weight: 700;
+  font-size: 0.85rem;
 }
 
 .timeline-step-type {

@@ -100,7 +100,7 @@ export function StudentCourse() {
                   <>
                     <hr className="tree-node-divider" />
                     <ol className="timeline-steps">
-                      {module.lessons.map((lesson) => {
+                      {module.lessons.map((lesson, lessonIndex) => {
                         const isComplete = completedIds.has(lesson.lessonId);
                         return (
                           <li
@@ -109,7 +109,11 @@ export function StudentCourse() {
                           >
                             <span className="timeline-step-type">{lessonTypeLabel(lesson.type)}</span>
                             <span className="timeline-step-preview">{truncate(describeLesson(lesson), 70)}</span>
-                            {isComplete && <span className="timeline-step-check">✓</span>}
+                            {isComplete ? (
+                              <span className="timeline-step-check">✓</span>
+                            ) : (
+                              <span className="timeline-step-number">{lessonIndex + 1}</span>
+                            )}
                           </li>
                         );
                       })}
@@ -129,7 +133,9 @@ export function StudentCourse() {
                   className={`tree-node-dot${complete ? " is-complete" : ""}`}
                   style={{ "--progress": pct } as CSSProperties}
                   aria-hidden="true"
-                />
+                >
+                  {!complete && index + 1}
+                </span>
                 {locked ? (
                   <div className="tree-node-card is-locked" aria-disabled="true">
                     {cardContent}
