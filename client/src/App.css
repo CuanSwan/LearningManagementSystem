@@ -783,7 +783,7 @@ main {
 .quiz-question legend {
   font-size: 1.05rem;
   font-weight: 600;
-  color: #1d4ed8;
+  color: var(--theme-primary, #3e6259);
   padding: 0;
   margin: 0 0 1rem;
 }
