@@ -738,22 +738,22 @@ main {
 .auth-form {
   box-sizing: border-box;
   width: 100%;
-  max-width: 420px;
-  padding: 48px 44px 40px;
+  max-width: 640px;
+  padding: 72px 64px 56px;
   background: #fff;
   border-radius: 0;
 }
 
 .auth-form h1 {
-  font-size: 48px;
+  font-size: 72px;
 }
 
 .auth-welcome {
   font-family: "Oranienbaum", serif;
   font-weight: 400;
-  font-size: 48px;
+  font-size: 72px;
   line-height: 1.05;
-  margin: 0 0 32px;
+  margin: 0 0 48px;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   padding-top: 0px;
@@ -769,23 +769,23 @@ main {
 
 .auth-form .field-label {
   display: block;
-  font-size: 12px;
+  font-size: 18px;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 .auth-form input {
   box-sizing: border-box;
   width: 100%;
-  font-size: 15px;
+  font-size: 22px;
   font-weight: 300;
-  padding: 13px 14px;
+  padding: 20px 21px;
   border: 1px solid #bfbfbf;
   border-radius: 0;
   background: #ffffff;
-  margin-bottom: 22px;
+  margin-bottom: 32px;
   outline: none;
 }
 
@@ -795,11 +795,11 @@ main {
   border-radius: 0;
   background: #59bdb2;
   color: #0d0d0d;
-  font-size: 18px;
+  font-size: 27px;
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  padding: 11px;
+  padding: 16px;
   cursor: pointer;
 }
 
