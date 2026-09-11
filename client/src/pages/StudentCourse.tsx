@@ -67,42 +67,51 @@ export function StudentCourse() {
             const isModuleComplete = moduleTotal > 0 && moduleCompleted === moduleTotal;
 
             return (
-              <li key={module.moduleId} className={`tree-node ${index % 2 === 0 ? "side-left" : "side-right"}`}>
+              <li key={module.moduleId} className="tree-node">
                 <span
                   className={`tree-node-dot${isModuleComplete ? " is-complete" : ""}`}
                   style={{ "--progress": pct } as CSSProperties}
                   aria-hidden="true"
                 />
-                <div className="tree-node-card">
-                  <Link to={`/courses/${courseId}/modules/${module.moduleId}`} className="timeline-module-link">
+                <Link to={`/courses/${courseId}/modules/${module.moduleId}`} className="tree-node-card">
+                  <div className="tree-node-card-header">
                     <h2>{module.seed.title}</h2>
-                    <p>{module.seed.objective}</p>
-                  </Link>
+                    {isModuleComplete && <span className="tree-node-complete-badge">Complete</span>}
+                  </div>
+                  <p className="tree-node-card-desc">{module.seed.objective}</p>
 
                   {moduleTotal > 0 && (
-                    <p className="module-progress-label">
-                      {moduleCompleted} of {moduleTotal} complete
-                    </p>
+                    <div className="tree-node-progress">
+                      <div className="tree-node-progress-bar">
+                        <div className="tree-node-progress-fill" style={{ width: `${pct}%` }} />
+                      </div>
+                      <span className="tree-node-progress-label">
+                        {moduleCompleted} of {moduleTotal} Complete
+                      </span>
+                    </div>
                   )}
 
                   {module.lessons.length > 0 && (
-                    <ol className="timeline-steps">
-                      {module.lessons.map((lesson) => {
-                        const isComplete = completedIds.has(lesson.lessonId);
-                        return (
-                          <li
-                            key={lesson.lessonId}
-                            className={`timeline-step${isComplete ? " is-complete" : ""}`}
-                          >
-                            <span className="timeline-step-type">{lessonTypeLabel(lesson.type)}</span>
-                            <span className="timeline-step-preview">{truncate(describeLesson(lesson), 70)}</span>
-                            {isComplete && <span className="timeline-step-check">✓</span>}
-                          </li>
-                        );
-                      })}
-                    </ol>
+                    <>
+                      <hr className="tree-node-divider" />
+                      <ol className="timeline-steps">
+                        {module.lessons.map((lesson) => {
+                          const isComplete = completedIds.has(lesson.lessonId);
+                          return (
+                            <li
+                              key={lesson.lessonId}
+                              className={`timeline-step${isComplete ? " is-complete" : ""}`}
+                            >
+                              <span className="timeline-step-type">{lessonTypeLabel(lesson.type)}</span>
+                              <span className="timeline-step-preview">{truncate(describeLesson(lesson), 70)}</span>
+                              {isComplete && <span className="timeline-step-check">✓</span>}
+                            </li>
+                          );
+                        })}
+                      </ol>
+                    </>
                   )}
-                </div>
+                </Link>
               </li>
             );
           })}
