@@ -653,11 +653,11 @@ main {
 
 .timeline-step-type {
   flex-shrink: 0;
-  border: 1px solid var(--theme-primary, #3e6259);
-  color: var(--theme-primary, #3e6259);
-  border-radius: 4px;
-  padding: 0.2rem 0.55rem;
-  font-size: 0.65rem;
+  border: 1px solid #0d0d0d;
+  color: #0d0d0d;
+  border-radius: 0;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.78rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
