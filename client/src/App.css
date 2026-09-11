@@ -501,6 +501,8 @@ main {
   font-family: "Oranienbaum", serif;
   font-weight: 400;
   color: #0d0d0d;
+  font-size: 3.25rem;
+  line-height: 1.15;
 }
 
 .catalog-page h1 {
