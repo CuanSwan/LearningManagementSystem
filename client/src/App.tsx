@@ -22,10 +22,10 @@ function LayoutInner() {
   if (mode === null) return <DisplayPreferenceChooser onChoose={choose} />;
 
   return (
-    <>
+    <div className="app-shell">
       <TopBar />
       <Outlet />
-    </>
+    </div>
   );
 }
 
