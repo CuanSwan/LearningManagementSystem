@@ -891,44 +891,57 @@ main {
   align-items: center;
   justify-content: center;
   padding: 2rem;
+  background: #f6f5f1;
 }
 
 .preference-chooser-card {
-  max-width: 480px;
-  text-align: center;
+  max-width: 760px;
+  width: 100%;
+  text-align: left;
+}
+
+.preference-chooser-card h1 {
+  font-family: "Oranienbaum", serif;
+  font-weight: 400;
+  font-size: 2.75rem;
+  line-height: 1.15;
+  margin: 0 0 0.75rem;
 }
 
 .preference-chooser-card p {
   color: #666;
-  margin-bottom: 1.5rem;
+  margin: 0 0 2rem;
 }
 
 .preference-options {
   display: flex;
-  gap: 1rem;
-  justify-content: center;
+  gap: 1.25rem;
+  justify-content: flex-start;
 }
 
 .preference-option {
   flex: 1;
-  max-width: 200px;
+  max-width: none;
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
-  padding: 1.25rem 1rem;
+  gap: 0.6rem;
+  padding: 1.75rem 1.5rem;
   border: 1px solid #ccc;
-  border-radius: 8px;
+  border-radius: 0;
   background: #fff;
   cursor: pointer;
   text-align: left;
 }
 
 .preference-option:hover {
-  border-color: #888;
+  border-color: #59bdb2;
 }
 
 .preference-option strong {
-  font-size: 1rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .preference-option span {
