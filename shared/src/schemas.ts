@@ -38,6 +38,10 @@ const PracticalContentSchema = z.object({
   submissionType: z.enum(["text", "file", "checklist"]),
 });
 
+const DiagramContentSchema = z.object({
+  imageUrl: z.string(),
+});
+
 const LessonBaseSchema = z.object({
   lessonId: z.string(),
   schemaVersion: z.number().int().positive(),
@@ -66,11 +70,17 @@ export const PracticalLessonSchema = LessonBaseSchema.extend({
   content: PracticalContentSchema,
 });
 
+export const DiagramLessonSchema = LessonBaseSchema.extend({
+  type: z.literal("diagram"),
+  content: DiagramContentSchema,
+});
+
 export const LessonSchema = z.discriminatedUnion("type", [
   TextLessonSchema,
   VideoLessonSchema,
   QuizLessonSchema,
   PracticalLessonSchema,
+  DiagramLessonSchema,
 ]);
 
 export type Lesson = z.infer<typeof LessonSchema>;
@@ -78,6 +88,7 @@ export type TextLesson = z.infer<typeof TextLessonSchema>;
 export type VideoLesson = z.infer<typeof VideoLessonSchema>;
 export type QuizLesson = z.infer<typeof QuizLessonSchema>;
 export type PracticalLesson = z.infer<typeof PracticalLessonSchema>;
+export type DiagramLesson = z.infer<typeof DiagramLessonSchema>;
 export type LessonType = Lesson["type"];
 
 export const ModuleSeedSchema = z.object({

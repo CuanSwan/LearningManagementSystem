@@ -1,4 +1,5 @@
 import type { Lesson } from "@lms/shared";
+import { DiagramLesson } from "./DiagramLesson.js";
 import { PracticalLesson } from "./PracticalLesson.js";
 import { QuizLesson } from "./QuizLesson.js";
 import { TextLesson } from "./TextLesson.js";
@@ -14,6 +15,8 @@ function renderContent(lesson: Lesson, isComplete: boolean, onComplete: () => vo
       return <QuizLesson content={lesson.content} isComplete={isComplete} onComplete={onComplete} />;
     case "practical":
       return <PracticalLesson content={lesson.content} isComplete={isComplete} onComplete={onComplete} />;
+    case "diagram":
+      return <DiagramLesson content={lesson.content} isComplete={isComplete} onComplete={onComplete} />;
   }
 }
 

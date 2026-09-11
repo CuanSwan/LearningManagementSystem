@@ -15,6 +15,12 @@ export function VideoLesson({
         controls
         src={content.videoUrl}
         className="video-lesson-player"
+        onPlay={(e) => {
+          const el = e.currentTarget;
+          if (document.fullscreenElement !== el) {
+            el.requestFullscreen?.().catch(() => {});
+          }
+        }}
         onEnded={() => {
           if (!isComplete) onComplete();
         }}

@@ -173,5 +173,15 @@ export function LessonEditorForm({
       return <QuizEditor content={lesson.content} onChange={onChange} />;
     case "practical":
       return <PracticalEditor content={lesson.content} onChange={onChange} />;
+    case "diagram":
+      return (
+        <label className="field">
+          Image URL
+          <input
+            value={lesson.content.imageUrl}
+            onChange={(e) => onChange({ imageUrl: e.target.value })}
+          />
+        </label>
+      );
   }
 }

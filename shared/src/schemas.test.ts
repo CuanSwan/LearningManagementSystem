@@ -55,11 +55,20 @@ const validModule = {
         submissionType: "text",
       },
     },
+    {
+      lessonId: "l5",
+      type: "diagram",
+      schemaVersion: 1,
+      source: "human",
+      wordingStyle: "official",
+      order: 5,
+      content: { imageUrl: "https://example.com/batna-diagram.png" },
+    },
   ],
 };
 
 describe("ModuleSchema", () => {
-  it("accepts a module with all four lesson types", () => {
+  it("accepts a module with all five lesson types", () => {
     expect(() => parseModule(validModule)).not.toThrow();
   });
 
