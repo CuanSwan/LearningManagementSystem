@@ -427,7 +427,7 @@ main {
 }
 
 .catalog-page h1 {
-  font-family: "Oranienbaum", serif;
+  font-family: "Poppins", sans-serif;
 }
 
 .catalog-grid {
@@ -452,15 +452,14 @@ main {
   border: 1px solid rgba(0, 0, 0, 0.08);
   border-top: 4px solid var(--theme-primary, #3e6259);
   border-radius: 0;
-  padding: 1.25rem;
+  padding: 2.5rem 1.25rem;
   text-decoration: none;
   color: inherit;
-  font-family: var(--theme-font, inherit);
+  font-family: "Poppins", sans-serif;
 }
 
 .catalog-card h2 {
   margin-top: 0;
-  font-family: "Oranienbaum", serif;
 }
 
 .tree-path {
