@@ -745,6 +745,10 @@ main {
   font-size: 48px;
 }
 
+.auth-welcome {
+  font-family: "Oranienbaum", serif;
+}
+
 .auth-form .field {
   margin-bottom: 0;
   gap: 0;

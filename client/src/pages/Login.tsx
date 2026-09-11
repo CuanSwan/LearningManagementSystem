@@ -25,7 +25,7 @@ export function Login() {
   return (
     <main className="auth-page">
       <form className="course-form auth-form" onSubmit={handleSubmit}>
-        <h1>Log in</h1>
+        <h1 className="auth-welcome">Welcome</h1>
         <label className="field">
           <span className="field-label">Email</span>
           <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
