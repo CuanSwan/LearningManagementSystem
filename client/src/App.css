@@ -423,7 +423,7 @@ main {
 .catalog-page {
   max-width: none;
   margin: 0;
-  padding: 2rem;
+  padding: 2rem 4rem;
 }
 
 .catalog-page h1 {
