@@ -13,7 +13,7 @@ export type ThemeOverride = z.infer<typeof ThemeOverrideSchema>;
 const GLOBAL_DEFAULT_VALUES: ThemeValues = {
   primaryColor: "#3e6259",
   backgroundColor: "#f6f5f1",
-  fontFamily: "'Oranienbaum', serif",
+  fontFamily: "'Poppins', sans-serif",
 };
 
 /**

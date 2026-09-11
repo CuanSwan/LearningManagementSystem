@@ -1,5 +1,5 @@
 body {
-  font-family: system-ui, sans-serif;
+  font-family: "Poppins", sans-serif;
   margin: 0;
 }
 
@@ -316,7 +316,7 @@ main {
 
 .student-view {
   background: var(--theme-bg, #f6f5f1);
-  font-family: var(--theme-font, system-ui, sans-serif);
+  font-family: var(--theme-font, "Poppins", sans-serif);
   min-height: 100vh;
   padding-bottom: 3rem;
 }
@@ -762,7 +762,7 @@ main {
 }
 
 .top-bar-brand {
-  font-family: "Oranienbaum", serif;
+  font-family: "Poppins", sans-serif;
   font-weight: 400;
   font-size: 1.1rem;
   text-decoration: none;
@@ -835,7 +835,7 @@ main {
 }
 
 .auth-welcome {
-  font-family: "Oranienbaum", serif;
+  font-family: "Poppins", sans-serif;
   font-weight: 400;
   font-size: 72px;
   line-height: 1.05;
@@ -957,7 +957,7 @@ main {
 }
 
 .preference-chooser-card h1 {
-  font-family: "Oranienbaum", serif;
+  font-family: "Poppins", sans-serif;
   font-weight: 400;
   font-size: 4rem;
   line-height: 1.15;
