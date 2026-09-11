@@ -432,8 +432,18 @@ main {
 
 .catalog-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 1.25rem;
+}
+
+.catalog-card-category {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--theme-primary, #3e6259);
+  margin-bottom: 0.5rem;
 }
 
 .catalog-card {

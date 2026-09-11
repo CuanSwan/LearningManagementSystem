@@ -105,6 +105,7 @@ export const CourseSchema = z.object({
   courseId: z.string(),
   title: z.string(),
   description: z.string().optional(),
+  category: z.string().optional(),
   // Only the fields this course chooses to override - see Theme.withOverrides().
   theme: ThemeOverrideSchema.default({}),
 });

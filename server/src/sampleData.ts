@@ -112,11 +112,40 @@ const companyOverview = parseModule({
   ],
 });
 
+// Temporary demo courses for previewing the course-category label on the
+// catalog grid - no modules, just enough to see the category/color styling.
+const projectManagementFundamentals = parseCourse({
+  courseId: "temp-project-management-fundamentals",
+  title: "Project Management Fundamentals",
+  description: "Plan, schedule & control projects from business case to closure.",
+  category: "Core",
+  theme: { primaryColor: "#0d0d0d" },
+});
+
+const agileScrumInPractice = parseCourse({
+  courseId: "temp-agile-scrum-in-practice",
+  title: "Agile & Scrum in Practice",
+  description: "Run iterative delivery with sprints, backlogs & retrospectives.",
+  category: "Core",
+  theme: { primaryColor: "#2dd4bf" },
+});
+
+const pythonProgrammingEssentials = parseCourse({
+  courseId: "temp-python-programming-essentials",
+  title: "Python Programming Essentials",
+  description: "Write, test & structure your first Python applications.",
+  category: "Coding",
+  theme: { primaryColor: "#c9920e" },
+});
+
 export function seedSampleData(): void {
   seedCourse(salesFundamentals);
   seedModule(introToNegotiation);
   seedCourse(onboardingBasics);
   seedModule(companyOverview);
+  seedCourse(projectManagementFundamentals);
+  seedCourse(agileScrumInPractice);
+  seedCourse(pythonProgrammingEssentials);
   seedCourse(awsAiPractitionerCourse);
   seedModule(awsAiFoundationsModule);
 }
