@@ -458,8 +458,14 @@ main {
   font-family: "Poppins", sans-serif;
 }
 
+.catalog-grid .catalog-card {
+  color: #0d0d0d;
+}
+
 .catalog-card h2 {
   margin-top: 0;
+  color: #0d0d0d;
+  font-weight: 400;
 }
 
 .tree-path {
