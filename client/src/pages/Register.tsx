@@ -26,15 +26,15 @@ export function Register() {
       <form className="course-form auth-form" onSubmit={handleSubmit}>
         <h1>Create a student account</h1>
         <label className="field">
-          Name
+          <span className="field-label">Name</span>
           <input value={name} onChange={(e) => setName(e.target.value)} required />
         </label>
         <label className="field">
-          Email
+          <span className="field-label">Email</span>
           <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         </label>
         <label className="field">
-          Password
+          <span className="field-label">Password</span>
           <input
             type="password"
             value={password}

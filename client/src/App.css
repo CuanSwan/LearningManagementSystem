@@ -747,6 +747,16 @@ main {
 
 .auth-form .field {
   margin-bottom: 0;
+  gap: 0;
+}
+
+.auth-form .field-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
 }
 
 .auth-form input {

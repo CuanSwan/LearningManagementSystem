@@ -27,11 +27,11 @@ export function Login() {
       <form className="course-form auth-form" onSubmit={handleSubmit}>
         <h1>Log in</h1>
         <label className="field">
-          Email
+          <span className="field-label">Email</span>
           <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         </label>
         <label className="field">
-          Password
+          <span className="field-label">Password</span>
           <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
         </label>
         {error && <p className="import-error">{error}</p>}
