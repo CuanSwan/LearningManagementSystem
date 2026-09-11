@@ -5,11 +5,11 @@ import { StudentLessonBlock } from "./StudentLessonBlock.js";
 export function LessonCarousel({
   lessons,
   completedIds,
-  onToggle,
+  onComplete,
 }: {
   lessons: Lesson[];
   completedIds: Set<string>;
-  onToggle: (lessonId: string) => void;
+  onComplete: (lessonId: string) => void;
 }) {
   const [index, setIndex] = useState(0);
   const lesson = lessons[index];
@@ -21,7 +21,7 @@ export function LessonCarousel({
       <StudentLessonBlock
         lesson={lesson}
         isComplete={completedIds.has(lesson.lessonId)}
-        onToggle={() => onToggle(lesson.lessonId)}
+        onComplete={() => onComplete(lesson.lessonId)}
       />
 
       <div className="carousel-dots" role="tablist" aria-label="Lessons">

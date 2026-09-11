@@ -21,9 +21,8 @@ export function StudentModule() {
     getProgress().then((p) => setCompletedIds(new Set(p.completedLessonIds)));
   }, [courseId, moduleId]);
 
-  async function toggleComplete(lessonId: string) {
-    const isComplete = completedIds.has(lessonId);
-    const result = await setLessonProgress(lessonId, !isComplete);
+  async function markComplete(lessonId: string) {
+    const result = await setLessonProgress(lessonId, true);
     setCompletedIds(new Set(result.completedLessonIds));
   }
 
@@ -47,7 +46,7 @@ export function StudentModule() {
       <p className="course-description">{foundModule.seed.objective}</p>
 
       {usesCarousel ? (
-        <LessonCarousel lessons={orderedLessons} completedIds={completedIds} onToggle={toggleComplete} />
+        <LessonCarousel lessons={orderedLessons} completedIds={completedIds} onComplete={markComplete} />
       ) : (
         <>
           <div className="progress-summary">
@@ -68,7 +67,7 @@ export function StudentModule() {
                 key={lesson.lessonId}
                 lesson={lesson}
                 isComplete={completedIds.has(lesson.lessonId)}
-                onToggle={() => toggleComplete(lesson.lessonId)}
+                onComplete={() => markComplete(lesson.lessonId)}
               />
             ))}
           </div>

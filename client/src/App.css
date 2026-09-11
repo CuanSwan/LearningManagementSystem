@@ -376,11 +376,9 @@ main {
   margin-bottom: 0.75rem;
 }
 
-.accessible-mode .complete-toggle {
-  font-size: 1.6rem;
-  padding: 1.1rem 2.2rem;
-  min-height: 3.75rem;
-  border-width: 2px;
+.accessible-mode .student-lesson-complete-badge {
+  font-size: 1.1rem;
+  padding: 0.6rem 1.2rem;
 }
 
 .accessible-mode .carousel-nav {
@@ -739,6 +737,14 @@ main {
   padding: 1.75rem 2rem;
 }
 
+.student-lesson-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 1rem;
+}
+
 .student-lesson-type {
   font-weight: 700;
   text-transform: uppercase;
@@ -747,30 +753,23 @@ main {
   color: var(--theme-primary, #3e6259);
 }
 
+.student-lesson-complete-badge {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.35rem 0.75rem;
+  border-radius: 0;
+  background: var(--theme-primary, #3e6259);
+  color: #fff;
+}
+
 .student-lesson .lms-block {
   border: none;
   border-radius: 0;
   padding: 0;
   width: 100%;
-}
-
-.complete-toggle {
-  align-self: flex-end;
-  font-size: 0.78rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  padding: 0.5rem 1.1rem;
-  border-radius: 0;
-  border: 1px solid var(--theme-primary, #3e6259);
-  background: transparent;
-  color: var(--theme-primary, #3e6259);
-  cursor: pointer;
-}
-
-.student-lesson.is-complete .complete-toggle {
-  background: var(--theme-primary, #3e6259);
-  color: #fff;
 }
 
 .quiz-question {
