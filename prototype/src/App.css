@@ -267,6 +267,39 @@ main {
   margin: 0 0 1rem;
 }
 
+.breadcrumb-trail {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.95rem;
+  margin: 0 0 1.5rem;
+  color: #777;
+}
+
+.breadcrumb-trail-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.breadcrumb-trail a {
+  text-decoration: none;
+}
+
+.breadcrumb-trail a:hover {
+  text-decoration: underline;
+}
+
+.breadcrumb-trail-current {
+  color: #0d0d0d;
+  font-weight: 600;
+}
+
+.breadcrumb-trail-sep {
+  color: #bbb;
+}
+
 .save-controls {
   display: flex;
   align-items: center;
@@ -468,7 +501,7 @@ main {
 
 .course-description {
   color: #555;
-  max-width: 60ch;
+  max-width: none;
 }
 
 .catalog-page {
@@ -488,6 +521,8 @@ main {
   font-family: "Oranienbaum", serif;
   font-weight: 400;
   color: #0d0d0d;
+  font-size: 3.25rem;
+  line-height: 1.15;
 }
 
 .module-page {
