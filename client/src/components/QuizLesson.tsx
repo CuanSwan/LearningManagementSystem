@@ -10,10 +10,13 @@ export function QuizLesson({ content }: { content: QuizLessonType["content"] }) 
         const pickedIndex = selected[questionIndex];
         const hasAnswered = pickedIndex !== undefined;
         return (
-          <fieldset key={questionIndex}>
+          <fieldset key={questionIndex} className="quiz-question">
             <legend>{question.prompt}</legend>
             {question.options.map((option, optionIndex) => (
-              <label key={optionIndex} style={{ display: "block" }}>
+              <label
+                key={optionIndex}
+                className={`quiz-option${pickedIndex === optionIndex ? " is-selected" : ""}`}
+              >
                 <input
                   type="radio"
                   name={`question-${questionIndex}`}
@@ -26,7 +29,9 @@ export function QuizLesson({ content }: { content: QuizLessonType["content"] }) 
               </label>
             ))}
             {hasAnswered && (
-              <p>{pickedIndex === question.correctIndex ? "Correct!" : "Not quite, try again."}</p>
+              <p className="quiz-feedback">
+                {pickedIndex === question.correctIndex ? "Correct!" : "Not quite, try again."}
+              </p>
             )}
           </fieldset>
         );

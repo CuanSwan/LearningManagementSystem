@@ -37,7 +37,7 @@ export function StudentModule() {
 
   return (
     <main
-      className={`student-view${mode === "accessible" ? " accessible-mode" : ""}`}
+      className={`student-view module-page${mode === "accessible" ? " accessible-mode" : ""}`}
       style={themeStyle(resolved)}
     >
       <p className="breadcrumb">

@@ -5,9 +5,9 @@ export function PracticalLesson({ content }: { content: PracticalLessonType["con
   const [completed, setCompleted] = useState<Record<number, boolean>>({});
 
   return (
-    <div>
-      <p>{content.instructions}</p>
-      <ol>
+    <div className="practical-lesson">
+      <p className="practical-lesson-instructions">{content.instructions}</p>
+      <ol className="practical-lesson-steps">
         {content.steps.map((step, stepIndex) => (
           <li key={stepIndex}>
             <label>
