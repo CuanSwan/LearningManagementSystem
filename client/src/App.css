@@ -747,6 +747,16 @@ main {
 
 .auth-welcome {
   font-family: "Oranienbaum", serif;
+  font-weight: 400;
+  font-size: 48px;
+  line-height: 1.05;
+  margin: 0 0 32px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding-top: 0px;
+  padding-right: 0px;
+  padding-bottom: 0px;
+  padding-left: 0px;
 }
 
 .auth-form .field {

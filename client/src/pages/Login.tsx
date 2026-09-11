@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth.js";
 
 export function Login() {
@@ -36,9 +36,6 @@ export function Login() {
         </label>
         {error && <p className="import-error">{error}</p>}
         <button type="submit">Log in</button>
-        <p className="auth-switch">
-          New here? <Link to="/register">Create a student account</Link>
-        </p>
       </form>
     </main>
   );
