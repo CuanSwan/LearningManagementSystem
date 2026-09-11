@@ -423,7 +423,7 @@ main {
 .catalog-page {
   max-width: none;
   margin: 0;
-  padding: 2rem 4rem;
+  padding: 2rem 7rem;
 }
 
 .catalog-page h1 {
@@ -433,7 +433,7 @@ main {
 .catalog-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1.25rem;
+  gap: 2.25rem;
 }
 
 .catalog-card-category {
