@@ -3,7 +3,8 @@ import { parseCourse, parseModule } from "@lms/shared";
 // Converted from a real Rise 360 export (SCORM package, runtime-data.js) as a
 // worked example of what an automated Rise -> LMS import can produce. Only the
 // course's first section converted here; most blocks mapped cleanly onto
-// text/quiz lessons, one unsupported "sorting" exercise was dropped.
+// text/quiz lessons, one unsupported "sorting" exercise was dropped. Split
+// into multiple modules along the original section's natural topic breaks.
 export const awsAiPractitionerCourse = parseCourse({
   "courseId": "aws-ai-practitioner",
   "title": "AWS Certified AI Practitioner: Foundations, Generative AI, and Real-World AWS Solutions",
@@ -11,12 +12,12 @@ export const awsAiPractitionerCourse = parseCourse({
   "theme": {}
 });
 
-export const awsAiFoundationsModule = parseModule({
-  "moduleId": "aws-ai-foundations",
+export const awsAiWhatIsAiModule = parseModule({
+  "moduleId": "aws-ai-what-is-ai",
   "courseId": "aws-ai-practitioner",
   "status": "published",
   "seed": {
-    "title": "Foundations of Artificial Intelligence and Machine Learning",
+    "title": "What Is AI? Defining AI, ML, and Deep Learning",
     "objective": "Imported from Rise 360."
   },
   "lessons": [
@@ -118,13 +119,25 @@ export const awsAiFoundationsModule = parseModule({
       "content": {
         "body": "[Converted from an accordion - expand/collapse interactivity lost]\n\nArtificial Intelligence (AI)\nAI is the broadest category, covering any system that mimics human intelligence. This includes everything from rule-based systems to advanced learning algorithms.\n\n\n\nExamples: Chess-playing programs, basic chatbots, and modern recommendation engines all fall under AI.\n\nMachine Learning (ML)\nMachine learning is a subset of AI that enables systems to learn from data and improve over time without being explicitly programmed for every scenario.\n\n\n\nExamples: Email spam filters that adapt to new threats, or image classifiers that learn to recognize objects.\n\nDeep Learning (DL)\nDeep learning is a specialized area of machine learning that uses neural networks with many layers to process large amounts of data and identify intricate patterns.\n\n\n\nExamples: Voice assistants that understand natural speech, or systems that can identify faces in photos with high accuracy."
       }
-    },
+    }
+  ]
+});
+
+export const awsAiNarrowVsGeneralModule = parseModule({
+  "moduleId": "aws-ai-narrow-vs-general",
+  "courseId": "aws-ai-practitioner",
+  "status": "published",
+  "seed": {
+    "title": "Narrow AI vs. General AI",
+    "objective": "Imported from Rise 360."
+  },
+  "lessons": [
     {
       "lessonId": "rise-29eaf4e5-6a3d-4640-a618-194e7debe2a1",
       "schemaVersion": 1,
       "source": "ai_generated",
       "wordingStyle": "shortened",
-      "order": 10,
+      "order": 1,
       "type": "quiz",
       "content": {
         "questions": [
@@ -146,7 +159,7 @@ export const awsAiFoundationsModule = parseModule({
       "schemaVersion": 1,
       "source": "ai_generated",
       "wordingStyle": "shortened",
-      "order": 11,
+      "order": 2,
       "type": "text",
       "content": {
         "body": "Narrow AI vs. General AI\n\nNot all AI systems are the same. Narrow AI refers to systems designed for a specific task, such as recognizing faces or filtering spam emails. This is the type of AI in use today across industries. General AI, on the other hand, is a theoretical concept—an AI system that could perform any intellectual task a human can. General AI does not exist yet; all real-world AI is narrow AI, focused on specialized tasks."
@@ -157,7 +170,7 @@ export const awsAiFoundationsModule = parseModule({
       "schemaVersion": 1,
       "source": "ai_generated",
       "wordingStyle": "shortened",
-      "order": 12,
+      "order": 3,
       "type": "text",
       "content": {
         "body": "Narrow AI vs. General AI Flashcards\n\nTest your recall of the differences between narrow AI and general AI with these flashcards."
@@ -168,7 +181,7 @@ export const awsAiFoundationsModule = parseModule({
       "schemaVersion": 1,
       "source": "ai_generated",
       "wordingStyle": "shortened",
-      "order": 13,
+      "order": 4,
       "type": "text",
       "content": {
         "body": "[Converted from a flip-card exercise - interactivity lost]\n\nQ: Narrow AI\nA: Designed for a specific task (e.g., spam filter, voice assistant)\n\nQ: General AI\nA: A theoretical system that could perform any intellectual task a human can\n\nQ: Which type is in production today?\nA: Narrow AI"
@@ -179,7 +192,7 @@ export const awsAiFoundationsModule = parseModule({
       "schemaVersion": 1,
       "source": "ai_generated",
       "wordingStyle": "shortened",
-      "order": 14,
+      "order": 5,
       "type": "quiz",
       "content": {
         "questions": [
@@ -195,13 +208,25 @@ export const awsAiFoundationsModule = parseModule({
           }
         ]
       }
-    },
+    }
+  ]
+});
+
+export const awsAiRealWorldModule = parseModule({
+  "moduleId": "aws-ai-real-world",
+  "courseId": "aws-ai-practitioner",
+  "status": "published",
+  "seed": {
+    "title": "AI in the Real World",
+    "objective": "Imported from Rise 360."
+  },
+  "lessons": [
     {
       "lessonId": "rise-oskrsfj4xhc3wsb5dqgaaxyu",
       "schemaVersion": 1,
       "source": "ai_generated",
       "wordingStyle": "shortened",
-      "order": 15,
+      "order": 1,
       "type": "text",
       "content": {
         "body": "AI in the Real World\n\nAI is already part of our daily lives and business operations, often in ways we don’t even notice. From personalized shopping recommendations to fraud detection and smart home devices, AI is quietly powering many of the tools and services we rely on. Understanding these real-world applications helps connect the theory of AI to its practical value."
@@ -212,7 +237,7 @@ export const awsAiFoundationsModule = parseModule({
       "schemaVersion": 1,
       "source": "ai_generated",
       "wordingStyle": "shortened",
-      "order": 16,
+      "order": 2,
       "type": "text",
       "content": {
         "body": "AI is utilized in a wide range of fields, each with its own unique applications and benefits. Below are some key categories and examples of how AI is being used today:"
@@ -223,7 +248,7 @@ export const awsAiFoundationsModule = parseModule({
       "schemaVersion": 1,
       "source": "ai_generated",
       "wordingStyle": "shortened",
-      "order": 17,
+      "order": 3,
       "type": "text",
       "content": {
         "body": "1. Consumer Applications: AI powers product recommendations, smart home devices, and voice assistants, making everyday life more convenient and personalized.\n2. Enterprise Solutions: Businesses use AI for fraud detection, process automation, and predictive analytics to improve efficiency and decision-making.\n3. Emerging Technologies: AI is at the core of innovations such as autonomous vehicles, healthcare diagnostics, and advanced robotics, driving progress in these cutting-edge fields."
@@ -234,7 +259,7 @@ export const awsAiFoundationsModule = parseModule({
       "schemaVersion": 1,
       "source": "ai_generated",
       "wordingStyle": "shortened",
-      "order": 18,
+      "order": 4,
       "type": "text",
       "content": {
         "body": "[Converted from an accordion - expand/collapse interactivity lost]\n\nProduct Recommendations\nAI analyzes your browsing and purchase history to suggest products you’re likely to want, making shopping more personalized and efficient.\n\n\n\nThis technology is used by major online retailers to increase sales and improve customer satisfaction.\n\nFraud Detection\nFinancial institutions use AI to monitor transactions for unusual patterns that may indicate fraud, helping to protect both businesses and consumers.\n\n\n\nAI systems can flag suspicious activity in real time, allowing for rapid response.\n\nVoice Assistants\nVoice assistants like Alexa or Siri use AI to understand spoken language and carry out tasks, from setting reminders to answering questions.\n\n\n\nThese systems rely on deep learning to continually improve their accuracy and usefulness.\n\nSmart Home Devices\nAI powers smart thermostats, lights, and security systems, enabling automation and remote control based on your habits and preferences.\n\n\n\nThese devices make homes more energy-efficient, secure, and convenient."
@@ -245,7 +270,7 @@ export const awsAiFoundationsModule = parseModule({
       "schemaVersion": 1,
       "source": "ai_generated",
       "wordingStyle": "shortened",
-      "order": 19,
+      "order": 5,
       "type": "text",
       "content": {
         "body": "Match AI Applications to Their Categories\n\nTest your ability to match AI applications to their categories. Drag each example to the correct group."
@@ -256,7 +281,7 @@ export const awsAiFoundationsModule = parseModule({
       "schemaVersion": 1,
       "source": "ai_generated",
       "wordingStyle": "shortened",
-      "order": 20,
+      "order": 6,
       "type": "text",
       "content": {
         "body": "AI is no longer just a buzzword—it's driving real change in how organizations operate and compete."
@@ -267,7 +292,7 @@ export const awsAiFoundationsModule = parseModule({
       "schemaVersion": 1,
       "source": "ai_generated",
       "wordingStyle": "shortened",
-      "order": 21,
+      "order": 7,
       "type": "text",
       "content": {
         "body": "In this lesson, you’ve learned what artificial intelligence is, how it relates to machine learning and deep learning, the difference between narrow and general AI, and how AI is already impacting the world around us. These foundational concepts are essential for anyone looking to make informed decisions about AI in their organization.\n\nNext, we’ll dive deeper into the three major paradigms of machine learning: supervised, unsupervised, and reinforcement learning. Understanding these will help you see how AI systems are trained and how they learn to solve different types of problems."

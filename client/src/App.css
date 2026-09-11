@@ -494,12 +494,14 @@ main {
   display: grid;
   grid-template-columns: 2.75rem 1fr;
   column-gap: 1.25rem;
-  align-items: center;
+  align-items: start;
 }
 
 .tree-node-dot {
   grid-column: 1;
+  grid-row: 1;
   justify-self: center;
+  margin-top: 1.1rem;
   width: 2.75rem;
   height: 2.75rem;
   border-radius: 50%;
