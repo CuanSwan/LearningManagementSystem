@@ -433,6 +433,12 @@ main {
   background: #fff;
 }
 
+.course-page h1 {
+  font-family: "Poppins", sans-serif;
+  font-weight: 400;
+  color: #0d0d0d;
+}
+
 .catalog-page h1 {
   font-family: "Poppins", sans-serif;
 }
