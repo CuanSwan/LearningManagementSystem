@@ -702,26 +702,56 @@ main {
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem 1.5rem;
-  border-bottom: 1px solid #ddd;
-  background: #fafafa;
+  background: #0d0d0d;
 }
 
 .top-bar-brand {
-  font-weight: 700;
+  font-family: "Oranienbaum", serif;
+  font-weight: 400;
+  font-size: 1.1rem;
   text-decoration: none;
-  color: inherit;
+  color: #fff;
 }
 
 .top-bar-nav {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 1.5rem;
   font-size: 0.9rem;
 }
 
+.top-bar-nav a {
+  color: #fff;
+}
+
 .top-bar-user {
-  color: #666;
+  color: #fff;
   font-size: 0.85rem;
+}
+
+.top-bar-logout {
+  background: none;
+  border: none;
+  color: #fff;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.display-toggle-group {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.top-bar-label {
+  color: #59bdb2;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 .auth-page {
@@ -908,22 +938,24 @@ main {
 
 .display-toggle {
   display: flex;
-  border: 1px solid #ccc;
-  border-radius: 999px;
-  overflow: hidden;
+  gap: 0.5rem;
 }
 
 .display-toggle button {
-  border: none;
+  border: 1px solid #ffffff;
+  border-radius: 0;
   background: none;
-  padding: 0.3rem 0.75rem;
+  color: #fff;
+  padding: 0.4rem 0.9rem;
   font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
   cursor: pointer;
 }
 
 .display-toggle button.active {
-  background: #333;
-  color: #fff;
+  border-color: #59bdb2;
 }
 
 .lesson-carousel {
