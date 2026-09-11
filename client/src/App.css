@@ -741,6 +741,7 @@ main {
   max-width: 420px;
   padding: 48px 44px 40px;
   background: #fff;
+  border-radius: 0;
 }
 
 .auth-form h1 {
@@ -782,6 +783,7 @@ main {
   font-weight: 300;
   padding: 13px 14px;
   border: 1px solid #bfbfbf;
+  border-radius: 0;
   background: #ffffff;
   margin-bottom: 22px;
   outline: none;
@@ -790,7 +792,7 @@ main {
 .auth-form button[type="submit"] {
   width: 100%;
   border: none;
-  border-radius: 6px;
+  border-radius: 0;
   background: #59bdb2;
   color: #0d0d0d;
   font-size: 18px;
