@@ -4,6 +4,7 @@ const salesFundamentals = parseCourse({
   courseId: "sales-fundamentals",
   title: "Sales Fundamentals",
   description: "Core negotiation and sales skills.",
+  category: "Business",
   theme: {},
 });
 
@@ -82,6 +83,7 @@ const onboardingBasics = parseCourse({
   courseId: "onboarding-basics",
   title: "New Hire Onboarding",
   description: "Company basics for new employees.",
+  category: "Core",
   theme: { primaryColor: "#8a4b8f", fontFamily: "'Merriweather', Georgia, serif" },
 });
 
@@ -103,6 +105,17 @@ const companyOverview = parseModule({
       order: 1,
       content: {
         body: "Welcome! This module covers our mission, the teams you'll work with, and where to go for help.",
+      },
+    },
+    {
+      lessonId: "co-l2",
+      type: "diagram",
+      schemaVersion: 1,
+      source: "human",
+      wordingStyle: "official",
+      order: 2,
+      content: {
+        imageUrl: "https://interactive-examples.mdn.mozilla.net/media/cc0-images/grapefruit-slice-332-332.jpg",
       },
     },
   ],

@@ -12,7 +12,7 @@ export function StudentCatalog() {
   }, []);
 
   return (
-    <main className="student-view">
+    <main className="student-view catalog-page">
       <h1>Courses</h1>
       <div className="catalog-grid">
         {courses.map((course) => {
@@ -24,6 +24,7 @@ export function StudentCatalog() {
               className="catalog-card"
               style={themeStyle(resolved)}
             >
+              {course.category && <span className="catalog-card-category">{course.category}</span>}
               <h2>{course.title}</h2>
               {course.description && <p>{course.description}</p>}
             </Link>

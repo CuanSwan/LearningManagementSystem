@@ -49,14 +49,20 @@ function StudentLayout() {
 
   return (
     <>
-      <div className="display-toggle" role="group" aria-label="Lesson display">
-        <button type="button" className={mode === "vertical" ? "active" : ""} onClick={() => choose("vertical")}>
-          List
-        </button>
-        <button type="button" className={mode === "carousel" ? "active" : ""} onClick={() => choose("carousel")}>
-          Carousel
-        </button>
-      </div>
+      <header className="top-bar">
+        <span className="top-bar-brand">LMS</span>
+        <div className="display-toggle-group">
+          <span className="top-bar-label">Reading Mode</span>
+          <div className="display-toggle" role="group" aria-label="Lesson display">
+            <button type="button" className={mode === "vertical" ? "active" : ""} onClick={() => choose("vertical")}>
+              List
+            </button>
+            <button type="button" className={mode === "carousel" ? "active" : ""} onClick={() => choose("carousel")}>
+              Carousel
+            </button>
+          </div>
+        </div>
+      </header>
       <Outlet />
     </>
   );
@@ -77,18 +83,20 @@ export function App() {
 
   return (
     <BrowserRouter>
-      <PrototypeHeader onReset={() => setResetKey((k) => k + 1)} />
-      <Routes key={resetKey}>
-        <Route element={<StudentSection />}>
-          <Route path="/" element={<StudentCatalog />} />
-          <Route path="/courses/:courseId" element={<StudentCourse />} />
-          <Route path="/courses/:courseId/modules/:moduleId" element={<StudentModule />} />
-        </Route>
+      <div className="app-shell">
+        <PrototypeHeader onReset={() => setResetKey((k) => k + 1)} />
+        <Routes key={resetKey}>
+          <Route element={<StudentSection />}>
+            <Route path="/" element={<StudentCatalog />} />
+            <Route path="/courses/:courseId" element={<StudentCourse />} />
+            <Route path="/courses/:courseId/modules/:moduleId" element={<StudentModule />} />
+          </Route>
 
-        <Route path="/admin" element={<AdminCourseList />} />
-        <Route path="/admin/courses/:courseId" element={<AdminCourseDetail />} />
-        <Route path="/admin/modules/:moduleId" element={<AdminModuleEditor />} />
-      </Routes>
+          <Route path="/admin" element={<AdminCourseList />} />
+          <Route path="/admin/courses/:courseId" element={<AdminCourseDetail />} />
+          <Route path="/admin/modules/:moduleId" element={<AdminModuleEditor />} />
+        </Routes>
+      </div>
     </BrowserRouter>
   );
 }

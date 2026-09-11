@@ -1,12 +1,13 @@
 import type { Lesson, LessonType } from "@lms/shared";
 
-export const LESSON_TYPES: LessonType[] = ["text", "video", "quiz", "practical"];
+export const LESSON_TYPES: LessonType[] = ["text", "video", "quiz", "practical", "diagram"];
 
 const LESSON_TYPE_LABELS: Record<LessonType, string> = {
   text: "Text",
   video: "Video",
   quiz: "Quiz",
   practical: "Practical",
+  diagram: "Diagram",
 };
 
 export function lessonTypeLabel(type: LessonType): string {
@@ -23,6 +24,8 @@ export function describeLesson(lesson: Lesson): string {
       return lesson.content.questions[0]?.prompt || "(empty)";
     case "practical":
       return lesson.content.instructions || "(empty)";
+    case "diagram":
+      return lesson.content.imageUrl || "(empty)";
   }
 }
 
@@ -47,5 +50,7 @@ export function createBlankLesson(type: LessonType, order: number): Lesson {
       };
     case "practical":
       return { ...base, type, content: { instructions: "", steps: [], submissionType: "text" } };
+    case "diagram":
+      return { ...base, type, content: { imageUrl: "" } };
   }
 }

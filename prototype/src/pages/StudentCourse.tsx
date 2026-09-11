@@ -9,6 +9,13 @@ function truncate(text: string, maxLength: number): string {
   return text.length > maxLength ? `${text.slice(0, maxLength).trimEnd()}...` : text;
 }
 
+const IN_PROGRESS_COLOR = "#e8862f";
+const LOCKED_COLOR = "#9ca3af";
+
+function isModuleComplete(module: Module, completedIds: Set<string>): boolean {
+  return module.lessons.length > 0 && module.lessons.every((l) => completedIds.has(l.lessonId));
+}
+
 export function StudentCourse() {
   const { courseId } = useParams<{ courseId: string }>();
   const [course, setCourse] = useState<Course | null>(null);
@@ -38,7 +45,7 @@ export function StudentCourse() {
   );
 
   return (
-    <main className="student-view" style={themeStyle(resolved)}>
+    <main className="student-view course-page" style={themeStyle(resolved)}>
       <p className="breadcrumb">
         <Link to="/">&larr; All courses</Link>
       </p>
@@ -64,30 +71,36 @@ export function StudentCourse() {
             const moduleCompleted = module.lessons.filter((l) => completedIds.has(l.lessonId)).length;
             const moduleTotal = module.lessons.length;
             const pct = moduleTotal ? (moduleCompleted / moduleTotal) * 100 : 0;
-            const isModuleComplete = moduleTotal > 0 && moduleCompleted === moduleTotal;
+            const complete = isModuleComplete(module, completedIds);
+            const priorModulesComplete = modules.slice(0, index).every((m) => isModuleComplete(m, completedIds));
+            const locked = !complete && !priorModulesComplete;
+            const accentColor = complete ? resolved.primaryColor : locked ? LOCKED_COLOR : IN_PROGRESS_COLOR;
 
-            return (
-              <li key={module.moduleId} className={`tree-node ${index % 2 === 0 ? "side-left" : "side-right"}`}>
-                <span
-                  className={`tree-node-dot${isModuleComplete ? " is-complete" : ""}`}
-                  style={{ "--progress": pct } as CSSProperties}
-                  aria-hidden="true"
-                />
-                <div className="tree-node-card">
-                  <Link to={`/courses/${courseId}/modules/${module.moduleId}`} className="timeline-module-link">
-                    <h2>{module.seed.title}</h2>
-                    <p>{module.seed.objective}</p>
-                  </Link>
+            const cardContent = (
+              <>
+                <div className="tree-node-card-header">
+                  <h2>{module.seed.title}</h2>
+                  {complete && <span className="tree-node-complete-badge">Complete</span>}
+                  {locked && <span className="tree-node-locked-badge">Locked</span>}
+                </div>
+                <p className="tree-node-card-desc">{module.seed.objective}</p>
 
-                  {moduleTotal > 0 && (
-                    <p className="module-progress-label">
-                      {moduleCompleted} of {moduleTotal} complete
-                    </p>
-                  )}
+                {moduleTotal > 0 && (
+                  <div className="tree-node-progress">
+                    <div className="tree-node-progress-bar">
+                      <div className="tree-node-progress-fill" style={{ width: `${pct}%` }} />
+                    </div>
+                    <span className="tree-node-progress-label">
+                      {moduleCompleted} of {moduleTotal} Complete
+                    </span>
+                  </div>
+                )}
 
-                  {module.lessons.length > 0 && (
+                {module.lessons.length > 0 && (
+                  <>
+                    <hr className="tree-node-divider" />
                     <ol className="timeline-steps">
-                      {module.lessons.map((lesson) => {
+                      {module.lessons.map((lesson, lessonIndex) => {
                         const isComplete = completedIds.has(lesson.lessonId);
                         return (
                           <li
@@ -96,13 +109,42 @@ export function StudentCourse() {
                           >
                             <span className="timeline-step-type">{lessonTypeLabel(lesson.type)}</span>
                             <span className="timeline-step-preview">{truncate(describeLesson(lesson), 70)}</span>
-                            {isComplete && <span className="timeline-step-check">✓</span>}
+                            {isComplete ? (
+                              <span className="timeline-step-check">✓</span>
+                            ) : (
+                              <span className="timeline-step-number">{lessonIndex + 1}</span>
+                            )}
                           </li>
                         );
                       })}
                     </ol>
-                  )}
-                </div>
+                  </>
+                )}
+              </>
+            );
+
+            return (
+              <li
+                key={module.moduleId}
+                className="tree-node"
+                style={{ "--module-accent": accentColor } as CSSProperties}
+              >
+                <span
+                  className={`tree-node-dot${complete ? " is-complete" : ""}`}
+                  style={{ "--progress": pct } as CSSProperties}
+                  aria-hidden="true"
+                >
+                  {!complete && index + 1}
+                </span>
+                {locked ? (
+                  <div className="tree-node-card is-locked" aria-disabled="true">
+                    {cardContent}
+                  </div>
+                ) : (
+                  <Link to={`/courses/${courseId}/modules/${module.moduleId}`} className="tree-node-card">
+                    {cardContent}
+                  </Link>
+                )}
               </li>
             );
           })}

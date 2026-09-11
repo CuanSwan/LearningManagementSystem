@@ -1,12 +1,12 @@
 import { useEffect, useRef } from "react";
-import type { TextLesson as TextLessonType } from "@lms/shared";
+import type { DiagramLesson as DiagramLessonType } from "@lms/shared";
 
-export function TextLesson({
+export function DiagramLesson({
   content,
   isComplete = false,
   onComplete = () => {},
 }: {
-  content: TextLessonType["content"];
+  content: DiagramLessonType["content"];
   isComplete?: boolean;
   onComplete?: () => void;
 }) {
@@ -19,5 +19,9 @@ export function TextLesson({
     }
   }, [isComplete, onComplete]);
 
-  return <p>{content.body}</p>;
+  return (
+    <div className="diagram-lesson">
+      <img src={content.imageUrl} alt="" className="diagram-lesson-image" />
+    </div>
+  );
 }
