@@ -10,12 +10,16 @@ import { seedSampleData } from "./sampleData.js";
 import { seedUsers } from "./seedUsers.js";
 import {
   createCourse,
+  createLearningPath,
   createModule,
   getCourse,
+  getLearningPath,
   getModule,
   listCourses,
+  listLearningPaths,
   listModulesByCourse,
   patchCourse,
+  patchLearningPath,
   saveModule,
 } from "./store.js";
 import { createUser, getUserById, listUsers, setUserRole, verifyCredentials } from "./userStore.js";
@@ -254,6 +258,62 @@ app.put("/api/modules/:moduleId", requireRole("admin", "super_admin"), (req, res
   }
   const saved = saveModule(req.params.moduleId, parsed.data);
   res.json(saved);
+});
+
+// --- Learning paths ---
+
+const CreateLearningPathInputSchema = z.object({
+  title: z.string().min(1),
+  description: z.string().optional(),
+  courseIds: z.array(z.string()).optional(),
+});
+
+const LearningPathPatchSchema = z.object({
+  title: z.string().min(1).optional(),
+  description: z.string().optional(),
+  courseIds: z.array(z.string()).optional(),
+});
+
+app.get("/api/learning-paths", requireAuth, (_req, res) => {
+  res.json(listLearningPaths());
+});
+
+app.post("/api/learning-paths", requireRole("admin", "super_admin"), (req, res) => {
+  const parsed = CreateLearningPathInputSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.issues });
+    return;
+  }
+  const path = createLearningPath({
+    pathId: crypto.randomUUID(),
+    title: parsed.data.title,
+    description: parsed.data.description,
+    courseIds: parsed.data.courseIds ?? [],
+  });
+  res.status(201).json(path);
+});
+
+app.get("/api/learning-paths/:pathId", requireAuth, (req, res) => {
+  const path = getLearningPath(req.params.pathId);
+  if (!path) {
+    res.status(404).json({ error: "Learning path not found" });
+    return;
+  }
+  res.json(path);
+});
+
+app.patch("/api/learning-paths/:pathId", requireRole("admin", "super_admin"), (req, res) => {
+  const parsed = LearningPathPatchSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.issues });
+    return;
+  }
+  const updated = patchLearningPath(req.params.pathId, parsed.data);
+  if (!updated) {
+    res.status(404).json({ error: "Learning path not found" });
+    return;
+  }
+  res.json(updated);
 });
 
 // --- Lesson completion (per-user) ---

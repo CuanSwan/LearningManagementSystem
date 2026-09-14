@@ -31,7 +31,9 @@ export function AdminCourseList() {
           <h1>Courses</h1>
           <p>Create and manage courses.</p>
         </div>
-        <Link to="/">View student site</Link>
+        <div>
+          <Link to="/admin/learning-paths">Learning paths</Link> &middot; <Link to="/">View student site</Link>
+        </div>
       </div>
 
       {error && <p>Failed to load courses: {error}</p>}

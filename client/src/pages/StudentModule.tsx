@@ -45,7 +45,7 @@ export function StudentModule() {
   // font/sizing changes, via the accessible-mode class applied below.
   const usesCarousel = mode === "carousel" || mode === "accessible";
   const breadcrumbItems = [
-    { label: "Courses", to: "/" },
+    { label: "Courses", to: "/courses" },
     { label: course.title, to: `/courses/${courseId}` },
     { label: foundModule.seed.title, to: `/courses/${courseId}/modules/${moduleId}` },
     ...(usesCarousel && currentLessonPreview ? [{ label: currentLessonPreview }] : []),

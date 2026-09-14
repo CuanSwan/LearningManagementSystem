@@ -13,6 +13,8 @@ export function TopBar() {
         LMS
       </Link>
       <nav className="top-bar-nav">
+        <Link to="/">Learning Paths</Link>
+        <Link to="/courses">Courses</Link>
         {(user.role === "admin" || user.role === "super_admin") && <Link to="/admin">Admin</Link>}
         {user.role === "super_admin" && <Link to="/admin/users">Users</Link>}
         <div className="display-toggle-group">

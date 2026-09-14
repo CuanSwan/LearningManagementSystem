@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Theme, type Course } from "@lms/shared";
 import { listCourses } from "../api.js";
+import { Breadcrumb } from "../components/Breadcrumb.js";
 import { themeStyle } from "../theme.js";
 
 export function StudentCatalog() {
@@ -13,6 +14,7 @@ export function StudentCatalog() {
 
   return (
     <main className="student-view catalog-page">
+      <Breadcrumb items={[{ label: "Learning Paths", to: "/" }, { label: "Courses" }]} />
       <h1>Courses</h1>
       <div className="catalog-grid">
         {courses.map((course) => {

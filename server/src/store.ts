@@ -1,7 +1,8 @@
-import { parseCourse, parseModule, type Course, type Module } from "@lms/shared";
+import { parseCourse, parseLearningPath, parseModule, type Course, type LearningPath, type Module } from "@lms/shared";
 
 const courses = new Map<string, Course>();
 const modules = new Map<string, Module>();
+const learningPaths = new Map<string, LearningPath>();
 
 export function listCourses(): Course[] {
   return [...courses.values()];
@@ -60,4 +61,33 @@ export function seedCourse(course: Course): void {
 
 export function seedModule(module: Module): void {
   modules.set(module.moduleId, module);
+}
+
+export function listLearningPaths(): LearningPath[] {
+  return [...learningPaths.values()];
+}
+
+export function getLearningPath(pathId: string): LearningPath | undefined {
+  return learningPaths.get(pathId);
+}
+
+export function createLearningPath(data: unknown): LearningPath {
+  const path = parseLearningPath(data);
+  learningPaths.set(path.pathId, path);
+  return path;
+}
+
+export function patchLearningPath(
+  pathId: string,
+  patch: { title?: string; description?: string; courseIds?: string[] }
+): LearningPath | undefined {
+  const existing = learningPaths.get(pathId);
+  if (!existing) return undefined;
+  const merged = parseLearningPath({ ...existing, ...patch, pathId });
+  learningPaths.set(pathId, merged);
+  return merged;
+}
+
+export function seedLearningPath(path: LearningPath): void {
+  learningPaths.set(path.pathId, path);
 }

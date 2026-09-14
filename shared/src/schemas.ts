@@ -126,3 +126,17 @@ export type Course = z.infer<typeof CourseSchema>;
 export function parseCourse(data: unknown): Course {
   return CourseSchema.parse(data);
 }
+
+export const LearningPathSchema = z.object({
+  pathId: z.string(),
+  title: z.string(),
+  description: z.string().optional(),
+  // Ordered - a student moves through these courses one by one.
+  courseIds: z.array(z.string()).default([]),
+});
+
+export type LearningPath = z.infer<typeof LearningPathSchema>;
+
+export function parseLearningPath(data: unknown): LearningPath {
+  return LearningPathSchema.parse(data);
+}

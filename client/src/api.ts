@@ -1,4 +1,4 @@
-import type { Course, LessonDisplayMode, Module, User, UserRole } from "@lms/shared";
+import type { Course, LearningPath, LessonDisplayMode, Module, User, UserRole } from "@lms/shared";
 
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, {
@@ -87,6 +87,29 @@ export function createModule(input: { courseId: string; title: string; objective
 
 export function saveModule(moduleId: string, module: Module): Promise<Module> {
   return request(`/api/modules/${moduleId}`, { method: "PUT", body: JSON.stringify(module) });
+}
+
+export function listLearningPaths(): Promise<LearningPath[]> {
+  return request("/api/learning-paths");
+}
+
+export function getLearningPath(pathId: string): Promise<LearningPath> {
+  return request(`/api/learning-paths/${pathId}`);
+}
+
+export function createLearningPath(input: {
+  title: string;
+  description?: string;
+  courseIds?: string[];
+}): Promise<LearningPath> {
+  return request("/api/learning-paths", { method: "POST", body: JSON.stringify(input) });
+}
+
+export function patchLearningPath(
+  pathId: string,
+  patch: { title?: string; description?: string; courseIds?: string[] }
+): Promise<LearningPath> {
+  return request(`/api/learning-paths/${pathId}`, { method: "PATCH", body: JSON.stringify(patch) });
 }
 
 export function getProgress(): Promise<{ completedLessonIds: string[] }> {

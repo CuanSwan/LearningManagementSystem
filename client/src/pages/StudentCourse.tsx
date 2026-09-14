@@ -47,7 +47,7 @@ export function StudentCourse() {
 
   return (
     <main className="student-view course-page" style={themeStyle(resolved)}>
-      <Breadcrumb items={[{ label: "Courses", to: "/" }, { label: course.title }]} />
+      <Breadcrumb items={[{ label: "Courses", to: "/courses" }, { label: course.title }]} />
       <h1>{course.title}</h1>
       {course.description && <p className="course-description">{course.description}</p>}
 

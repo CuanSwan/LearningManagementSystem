@@ -8,7 +8,11 @@ import { DisplayPreferenceProvider, useDisplayPreference } from "./displayPrefer
 import { AdminCourseDetail } from "./pages/AdminCourseDetail.js";
 import { AdminCourseList } from "./pages/AdminCourseList.js";
 import { AdminModuleEditor } from "./pages/AdminModuleEditor.js";
+import { AdminLearningPathDetail } from "./pages/AdminLearningPathDetail.js";
+import { AdminLearningPathList } from "./pages/AdminLearningPathList.js";
 import { AdminUsers } from "./pages/AdminUsers.js";
+import { LearningPathDetail } from "./pages/LearningPathDetail.js";
+import { LearningPaths } from "./pages/LearningPaths.js";
 import { Login } from "./pages/Login.js";
 import { Register } from "./pages/Register.js";
 import { StudentCatalog } from "./pages/StudentCatalog.js";
@@ -52,7 +56,9 @@ export function App() {
               </RequireAuth>
             }
           >
-            <Route path="/" element={<StudentCatalog />} />
+            <Route path="/" element={<LearningPaths />} />
+            <Route path="/learning-paths/:pathId" element={<LearningPathDetail />} />
+            <Route path="/courses" element={<StudentCatalog />} />
             <Route path="/courses/:courseId" element={<StudentCourse />} />
             <Route path="/courses/:courseId/modules/:moduleId" element={<StudentModule />} />
 
@@ -60,6 +66,8 @@ export function App() {
               <Route path="/admin" element={<AdminCourseList />} />
               <Route path="/admin/courses/:courseId" element={<AdminCourseDetail />} />
               <Route path="/admin/modules/:moduleId" element={<AdminModuleEditor />} />
+              <Route path="/admin/learning-paths" element={<AdminLearningPathList />} />
+              <Route path="/admin/learning-paths/:pathId" element={<AdminLearningPathDetail />} />
             </Route>
 
             <Route element={<RequireRole roles={["super_admin"]} />}>

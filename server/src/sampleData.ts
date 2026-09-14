@@ -1,5 +1,5 @@
-import { parseCourse } from "@lms/shared";
-import { seedCourse } from "./store.js";
+import { parseCourse, parseLearningPath } from "@lms/shared";
+import { seedCourse, seedLearningPath } from "./store.js";
 
 // Temporary demo courses for previewing the course-category label on the
 // catalog grid - no modules, just enough to see the category/color styling.
@@ -51,6 +51,20 @@ const cyberSecurityAwareness = parseCourse({
   theme: { primaryColor: "#6b7280" },
 });
 
+const projectDeliveryTrack = parseLearningPath({
+  pathId: "temp-project-delivery-track",
+  title: "Project Delivery Track",
+  description: "Plan and run projects, then layer in iterative Agile delivery.",
+  courseIds: [projectManagementFundamentals.courseId, agileScrumInPractice.courseId],
+});
+
+const itFoundationsTrack = parseLearningPath({
+  pathId: "temp-it-foundations-track",
+  title: "IT Foundations Track",
+  description: "Understand core infrastructure, then how to keep it secure.",
+  courseIds: [networkingInfrastructure.courseId, cyberSecurityAwareness.courseId],
+});
+
 export function seedSampleData(): void {
   seedCourse(projectManagementFundamentals);
   seedCourse(agileScrumInPractice);
@@ -58,4 +72,7 @@ export function seedSampleData(): void {
   seedCourse(networkingInfrastructure);
   seedCourse(businessAnalysisFoundations);
   seedCourse(cyberSecurityAwareness);
+
+  seedLearningPath(projectDeliveryTrack);
+  seedLearningPath(itFoundationsTrack);
 }
