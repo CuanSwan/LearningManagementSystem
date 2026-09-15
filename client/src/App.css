@@ -593,6 +593,15 @@ main {
 
 .path-snake-node {
   display: flex;
+  width: 100%;
+}
+
+.path-snake-node.align-start {
+  justify-content: flex-start;
+}
+
+.path-snake-node.align-end {
+  justify-content: flex-end;
 }
 
 .path-snake-link {
@@ -602,6 +611,10 @@ main {
   text-decoration: none;
   color: inherit;
   max-width: 480px;
+}
+
+.path-snake-node.align-end .path-snake-link {
+  flex-direction: row-reverse;
 }
 
 .path-snake-bubble {
@@ -614,7 +627,8 @@ main {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: "Oranienbaum", serif;
+  font-family: "Poppins", sans-serif;
+  font-weight: 600;
   font-size: 1.75rem;
   color: var(--module-accent, #3e6259);
   transition: transform 0.15s ease;
@@ -683,8 +697,13 @@ a.path-snake-link:hover .path-snake-bubble {
 }
 
 @media (max-width: 640px) {
-  .path-snake-node {
-    margin-left: 0 !important;
+  .path-snake-node.align-start,
+  .path-snake-node.align-end {
+    justify-content: flex-start;
+  }
+
+  .path-snake-node.align-end .path-snake-link {
+    flex-direction: row;
   }
 }
 

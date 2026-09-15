@@ -6,7 +6,8 @@ import { Breadcrumb } from "../components/Breadcrumb.js";
 
 const IN_PROGRESS_COLOR = "#e8862f";
 const LOCKED_COLOR = "#9ca3af";
-const LANE_OFFSETS = [0, 170];
+const LANE_CLASSES = ["align-start", "align-end"];
+const CORNER_RADIUS = 48;
 
 function isModuleComplete(module: Module, completedIds: Set<string>): boolean {
   return module.lessons.length > 0 && module.lessons.every((l) => completedIds.has(l.lessonId));
@@ -69,10 +70,19 @@ export function LearningPathDetail() {
         const prev = points[i - 1];
         const curr = points[i];
         const dx = curr.x - prev.x;
-        const dy = curr.y - prev.y;
-        const radius = Math.sqrt(dx * dx + dy * dy) / 2;
-        const sweep = i % 2 === 1 ? 1 : 0;
-        d += ` A ${radius} ${radius} 0 0 ${sweep} ${curr.x} ${curr.y}`;
+        const midY = (prev.y + curr.y) / 2;
+        const sign = dx >= 0 ? 1 : -1;
+        const r = Math.max(8, Math.min(CORNER_RADIUS, Math.abs(dx) / 2, (curr.y - prev.y) / 2 - 2));
+        const entrySweep = sign > 0 ? 0 : 1;
+        const exitSweep = sign > 0 ? 1 : 0;
+        const turnInX = prev.x + sign * r;
+        const turnOutX = curr.x - sign * r;
+        // A rounded "elbow": drop, quarter-circle turn, run across, quarter-circle turn, drop.
+        d += ` L ${prev.x} ${midY - r}`;
+        d += ` A ${r} ${r} 0 0 ${entrySweep} ${turnInX} ${midY}`;
+        d += ` L ${turnOutX} ${midY}`;
+        d += ` A ${r} ${r} 0 0 ${exitSweep} ${curr.x} ${midY + r}`;
+        d += ` L ${curr.x} ${curr.y}`;
       }
       d += ` L ${last.x} ${last.y + TAIL}`;
       setLinePath(d);
@@ -124,7 +134,7 @@ export function LearningPathDetail() {
                 .every((c) => isCourseComplete(modulesByCourse[c.courseId] ?? [], completedIds));
               const locked = !complete && !priorCoursesComplete;
               const accentColor = complete ? Theme.default().primaryColor : locked ? LOCKED_COLOR : IN_PROGRESS_COLOR;
-              const laneOffset = LANE_OFFSETS[index % LANE_OFFSETS.length];
+              const lane = LANE_CLASSES[index % LANE_CLASSES.length];
 
               const inner = (
                 <>
@@ -155,8 +165,8 @@ export function LearningPathDetail() {
               return (
                 <li
                   key={course.courseId}
-                  className={`path-snake-node${locked ? " is-locked" : ""}`}
-                  style={{ "--module-accent": accentColor, marginLeft: laneOffset } as CSSProperties}
+                  className={`path-snake-node ${lane}${locked ? " is-locked" : ""}`}
+                  style={{ "--module-accent": accentColor } as CSSProperties}
                 >
                   {locked ? (
                     <span className="path-snake-link" aria-disabled="true">
