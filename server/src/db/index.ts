@@ -17,7 +17,10 @@ export async function connectDb(): Promise<Database> {
   const uri = process.env.MONGODB_URI;
 
   if (uri) {
-    const client = new MongoClient(uri);
+    // Some hosts (e.g. Render) black-hole outbound IPv6, which the driver's
+    // TLS handshake to Atlas surfaces as a confusing "tlsv1 alert internal
+    // error" instead of a clean connection failure. Forcing IPv4 avoids it.
+    const client = new MongoClient(uri, { family: 4 });
     await client.connect();
     const db = client.db(process.env.MONGODB_DB ?? "lms");
     console.log("Connected to MongoDB");
