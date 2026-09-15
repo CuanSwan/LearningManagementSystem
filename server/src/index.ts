@@ -46,6 +46,14 @@ app.use(cors({ origin: clientOrigin ?? true, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const start = Date.now();
+  res.on("finish", () => {
+    console.log(`${req.method} ${req.originalUrl} ${res.statusCode} ${Date.now() - start}ms`);
+  });
+  next();
+});
+
 app.use(async (req: Request, _res: Response, next: NextFunction) => {
   const userId = getSessionUserId(req.cookies[SESSION_COOKIE]);
   req.user = userId ? await getUserById(userId) : undefined;
