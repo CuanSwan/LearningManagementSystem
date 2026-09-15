@@ -32,8 +32,17 @@ import { createUser, getUserById, initUserStore, listUsers, setUserRole, verifyC
 const app = express();
 const port = process.env.PORT ?? 4000;
 const SESSION_COOKIE = "lms_session";
+// In production the client and server are on different domains (e.g. a
+// Netlify frontend and a Render backend), so the cookie needs SameSite=None
+// (which browsers only honor over HTTPS, hence secure too) and CORS needs
+// to be locked to that exact origin rather than reflecting anything. Locally
+// they share an origin family (localhost), so the old lax/permissive
+// behavior is kept unless these are explicitly configured.
+const isProduction = process.env.NODE_ENV === "production";
+const clientOrigin = process.env.CLIENT_ORIGIN;
+const cookieOptions = { httpOnly: true, sameSite: isProduction ? ("none" as const) : ("lax" as const), secure: isProduction };
 
-app.use(cors({ origin: true, credentials: true }));
+app.use(cors({ origin: clientOrigin ?? true, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
@@ -80,7 +89,7 @@ const LoginSchema = z.object({
 
 function setSessionCookie(res: Response, userId: string) {
   const sessionId = createSession(userId);
-  res.cookie(SESSION_COOKIE, sessionId, { httpOnly: true, sameSite: "lax" });
+  res.cookie(SESSION_COOKIE, sessionId, cookieOptions);
 }
 
 app.post("/api/auth/register", async (req, res) => {
@@ -115,7 +124,7 @@ app.post("/api/auth/login", async (req, res) => {
 
 app.post("/api/auth/logout", (req, res) => {
   destroySession(req.cookies[SESSION_COOKIE]);
-  res.clearCookie(SESSION_COOKIE);
+  res.clearCookie(SESSION_COOKIE, cookieOptions);
   res.status(204).end();
 });
 
