@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import type { TextLesson as TextLessonType } from "@lms/shared";
+import type { TextLesson as TextLessonType } from "../types.js";
 
 export function TextLesson({
   content,

@@ -1,4 +1,4 @@
-import type { Lesson } from "@lms/shared";
+import type { Lesson } from "../types.js";
 import { DiagramLesson } from "./DiagramLesson.js";
 import { PracticalLesson } from "./PracticalLesson.js";
 import { QuizLesson } from "./QuizLesson.js";

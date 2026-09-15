@@ -1,4 +1,4 @@
-import type { Lesson, LessonType } from "@lms/shared";
+import type { Lesson, LessonType } from "../types.js";
 import { EXISTING_LESSON_MIME, NEW_LESSON_MIME, SAVED_LESSON_MIME } from "../dnd.js";
 import { LessonEditorForm } from "./LessonEditorForm.js";
 import { LessonRenderer } from "./LessonRenderer.js";

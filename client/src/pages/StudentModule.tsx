@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Theme, type Course, type Lesson, type Module } from "@lms/shared";
+import type { Course, Lesson, Module } from "../types.js";
 import { getCourse, getModule, getProgress, setLessonProgress } from "../api.js";
 import { Breadcrumb } from "../components/Breadcrumb.js";
 import { LessonCarousel } from "../components/LessonCarousel.js";
 import { StudentLessonBlock } from "../components/StudentLessonBlock.js";
 import { useDisplayPreference } from "../displayPreference.js";
 import { describeLesson } from "../lessonTemplates.js";
-import { themeStyle } from "../theme.js";
+import { Theme, themeStyle } from "../theme.js";
 
 function truncate(text: string, maxLength: number): string {
   return text.length > maxLength ? `${text.slice(0, maxLength).trimEnd()}...` : text;

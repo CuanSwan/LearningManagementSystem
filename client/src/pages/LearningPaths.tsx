@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import type { LearningPath } from "@lms/shared";
+import type { LearningPath } from "../types.js";
 import { listLearningPaths } from "../api.js";
 
 export function LearningPaths() {

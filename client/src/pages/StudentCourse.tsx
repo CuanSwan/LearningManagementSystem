@@ -1,10 +1,10 @@
 import { useEffect, useState, type CSSProperties } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Theme, type Course, type Module } from "@lms/shared";
+import type { Course, Module } from "../types.js";
 import { getCourse, getProgress, listModulesByCourse } from "../api.js";
 import { Breadcrumb } from "../components/Breadcrumb.js";
 import { describeLesson, lessonTypeLabel } from "../lessonTemplates.js";
-import { themeStyle } from "../theme.js";
+import { Theme, themeStyle } from "../theme.js";
 
 function truncate(text: string, maxLength: number): string {
   return text.length > maxLength ? `${text.slice(0, maxLength).trimEnd()}...` : text;

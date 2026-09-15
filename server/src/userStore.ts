@@ -1,7 +1,8 @@
-import { UserSchema, type User, type UserRole } from "@lms/shared";
 import { hashPassword, verifyPassword } from "./auth.js";
+import type { Database, DocumentStore } from "./db/index.js";
+import { UserSchema, type User, type UserRole } from "./userSchema.js";
 
-interface StoredUser {
+interface StoredUser extends Record<string, unknown> {
   userId: string;
   email: string;
   name: string;
@@ -9,8 +10,11 @@ interface StoredUser {
   passwordHash: string;
 }
 
-const usersById = new Map<string, StoredUser>();
-const idByEmail = new Map<string, string>();
+let users: DocumentStore<StoredUser>;
+
+export function initUserStore(db: Database): void {
+  users = db.createStore<StoredUser>("users", "userId");
+}
 
 function toPublicUser(stored: StoredUser): User {
   return UserSchema.parse({
@@ -21,9 +25,15 @@ function toPublicUser(stored: StoredUser): User {
   });
 }
 
-export function createUser(input: { email: string; name: string; password: string; role: UserRole }): User {
+export async function createUser(input: {
+  email: string;
+  name: string;
+  password: string;
+  role: UserRole;
+}): Promise<User> {
   const email = input.email.toLowerCase();
-  if (idByEmail.has(email)) {
+  const existing = await users.list({ email });
+  if (existing.length > 0) {
     throw new Error("A user with that email already exists");
   }
   const stored: StoredUser = {
@@ -33,30 +43,32 @@ export function createUser(input: { email: string; name: string; password: strin
     role: input.role,
     passwordHash: hashPassword(input.password),
   };
-  usersById.set(stored.userId, stored);
-  idByEmail.set(email, stored.userId);
+  await users.set(stored.userId, stored);
   return toPublicUser(stored);
 }
 
-export function verifyCredentials(email: string, password: string): User | undefined {
-  const id = idByEmail.get(email.toLowerCase());
-  const stored = id ? usersById.get(id) : undefined;
+export async function verifyCredentials(email: string, password: string): Promise<User | undefined> {
+  const matches = await users.list({ email: email.toLowerCase() });
+  const stored = matches[0];
   if (!stored || !verifyPassword(password, stored.passwordHash)) return undefined;
   return toPublicUser(stored);
 }
 
-export function getUserById(userId: string): User | undefined {
-  const stored = usersById.get(userId);
+export async function getUserById(userId: string): Promise<User | undefined> {
+  const stored = await users.get(userId);
   return stored ? toPublicUser(stored) : undefined;
 }
 
-export function listUsers(): User[] {
-  return [...usersById.values()].map(toPublicUser);
+export async function listUsers(): Promise<User[]> {
+  return (await users.list()).map(toPublicUser);
 }
 
-export function setUserRole(userId: string, role: UserRole): User | undefined {
-  const stored = usersById.get(userId);
-  if (!stored) return undefined;
-  stored.role = role;
-  return toPublicUser(stored);
+export async function setUserRole(userId: string, role: UserRole): Promise<User | undefined> {
+  const updated = await users.update(userId, { role });
+  return updated ? toPublicUser(updated) : undefined;
+}
+
+export async function userExistsByEmail(email: string): Promise<boolean> {
+  const matches = await users.list({ email: email.toLowerCase() });
+  return matches.length > 0;
 }

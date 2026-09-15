@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Theme, type Course, type LearningPath, type Module } from "@lms/shared";
+import { Theme } from "../theme.js";
+import type { Course, LearningPath, Module } from "../types.js";
 import { getCourse, getLearningPath, getProgress, listModulesByCourse } from "../api.js";
 import { Breadcrumb } from "../components/Breadcrumb.js";
 

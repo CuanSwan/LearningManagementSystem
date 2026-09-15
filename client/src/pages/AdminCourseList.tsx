@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Theme, suggestTheme, type Course, type ThemeOverride } from "@lms/shared";
+import { Theme } from "../theme.js";
+import { suggestTheme } from "../themeSuggestion.js";
+import type { Course, ThemeOverride } from "../types.js";
 import { createCourse, listCourses } from "../api.js";
 import { ThemeOverrideFields } from "../components/ThemeOverrideFields.js";
 

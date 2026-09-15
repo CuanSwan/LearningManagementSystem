@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { PracticalLesson as PracticalLessonType } from "@lms/shared";
+import type { PracticalLesson as PracticalLessonType } from "../types.js";
 
 export function PracticalLesson({
   content,

@@ -1,43 +1,50 @@
-import { parseCourse, parseLearningPath, parseModule, type Course, type LearningPath, type Module } from "@lms/shared";
+import type { Database, DocumentStore } from "./db/index.js";
+import { parseCourse, parseLearningPath, parseModule, type Course, type LearningPath, type Module } from "./schemas.js";
 
-const courses = new Map<string, Course>();
-const modules = new Map<string, Module>();
-const learningPaths = new Map<string, LearningPath>();
+let courses: DocumentStore<Course>;
+let modules: DocumentStore<Module>;
+let learningPaths: DocumentStore<LearningPath>;
 
-export function listCourses(): Course[] {
-  return [...courses.values()];
+export function initStore(db: Database): void {
+  courses = db.createStore<Course>("courses", "courseId");
+  modules = db.createStore<Module>("modules", "moduleId");
+  learningPaths = db.createStore<LearningPath>("learningPaths", "pathId");
 }
 
-export function getCourse(courseId: string): Course | undefined {
-  return courses.get(courseId);
+export function listCourses(): Promise<Course[]> {
+  return courses.list();
 }
 
-export function createCourse(data: unknown): Course {
+export async function getCourse(courseId: string): Promise<Course | undefined> {
+  return (await courses.get(courseId)) ?? undefined;
+}
+
+export async function createCourse(data: unknown): Promise<Course> {
   const course = parseCourse(data);
-  courses.set(course.courseId, course);
+  await courses.set(course.courseId, course);
   return course;
 }
 
-export function patchCourse(
+export async function patchCourse(
   courseId: string,
   patch: { title?: string; description?: string; theme?: unknown }
-): Course | undefined {
-  const existing = courses.get(courseId);
+): Promise<Course | undefined> {
+  const existing = await courses.get(courseId);
   if (!existing) return undefined;
   const merged = parseCourse({ ...existing, ...patch, courseId });
-  courses.set(courseId, merged);
+  await courses.set(courseId, merged);
   return merged;
 }
 
-export function listModulesByCourse(courseId: string): Module[] {
-  return [...modules.values()].filter((m) => m.courseId === courseId);
+export function listModulesByCourse(courseId: string): Promise<Module[]> {
+  return modules.list({ courseId });
 }
 
-export function getModule(moduleId: string): Module | undefined {
-  return modules.get(moduleId);
+export async function getModule(moduleId: string): Promise<Module | undefined> {
+  return (await modules.get(moduleId)) ?? undefined;
 }
 
-export function createModule(input: { courseId: string; title: string; objective: string }): Module {
+export async function createModule(input: { courseId: string; title: string; objective: string }): Promise<Module> {
   const module = parseModule({
     moduleId: crypto.randomUUID(),
     courseId: input.courseId,
@@ -45,49 +52,49 @@ export function createModule(input: { courseId: string; title: string; objective
     seed: { title: input.title, objective: input.objective },
     lessons: [],
   });
-  modules.set(module.moduleId, module);
+  await modules.set(module.moduleId, module);
   return module;
 }
 
-export function saveModule(moduleId: string, data: unknown): Module {
+export async function saveModule(moduleId: string, data: unknown): Promise<Module> {
   const module = parseModule({ ...(data as object), moduleId });
-  modules.set(moduleId, module);
+  await modules.set(moduleId, module);
   return module;
 }
 
-export function seedCourse(course: Course): void {
-  courses.set(course.courseId, course);
+export function seedCourse(course: Course): Promise<void> {
+  return courses.set(course.courseId, course);
 }
 
-export function seedModule(module: Module): void {
-  modules.set(module.moduleId, module);
+export function seedModule(module: Module): Promise<void> {
+  return modules.set(module.moduleId, module);
 }
 
-export function listLearningPaths(): LearningPath[] {
-  return [...learningPaths.values()];
+export function listLearningPaths(): Promise<LearningPath[]> {
+  return learningPaths.list();
 }
 
-export function getLearningPath(pathId: string): LearningPath | undefined {
-  return learningPaths.get(pathId);
+export async function getLearningPath(pathId: string): Promise<LearningPath | undefined> {
+  return (await learningPaths.get(pathId)) ?? undefined;
 }
 
-export function createLearningPath(data: unknown): LearningPath {
+export async function createLearningPath(data: unknown): Promise<LearningPath> {
   const path = parseLearningPath(data);
-  learningPaths.set(path.pathId, path);
+  await learningPaths.set(path.pathId, path);
   return path;
 }
 
-export function patchLearningPath(
+export async function patchLearningPath(
   pathId: string,
   patch: { title?: string; description?: string; courseIds?: string[] }
-): LearningPath | undefined {
-  const existing = learningPaths.get(pathId);
+): Promise<LearningPath | undefined> {
+  const existing = await learningPaths.get(pathId);
   if (!existing) return undefined;
   const merged = parseLearningPath({ ...existing, ...patch, pathId });
-  learningPaths.set(pathId, merged);
+  await learningPaths.set(pathId, merged);
   return merged;
 }
 
-export function seedLearningPath(path: LearningPath): void {
-  learningPaths.set(path.pathId, path);
+export function seedLearningPath(path: LearningPath): Promise<void> {
+  return learningPaths.set(path.pathId, path);
 }

@@ -317,6 +317,9 @@ node_modules/
 dist/
 *.tsbuildinfo
 
+# server/db/fileStore.ts JSON-backed data (used when MONGODB_URI isn't set)
+server/.data/
+
 # Visual Studio 6 build log
 *.plg
 

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { QuizLesson as QuizLessonType } from "@lms/shared";
+import type { QuizLesson as QuizLessonType } from "../types.js";
 
 export function QuizLesson({
   content,

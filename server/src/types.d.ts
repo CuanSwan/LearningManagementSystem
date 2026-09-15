@@ -1,4 +1,4 @@
-import type { User } from "@lms/shared";
+import type { User } from "./userSchema.js";
 
 declare global {
   namespace Express {

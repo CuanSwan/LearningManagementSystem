@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import type { User } from "@lms/shared";
+import type { User } from "./types.js";
 import * as api from "./api.js";
 
 interface AuthState {

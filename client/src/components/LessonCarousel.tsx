@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { Lesson } from "@lms/shared";
+import type { Lesson } from "../types.js";
 import { StudentLessonBlock } from "./StudentLessonBlock.js";
 
 export function LessonCarousel({

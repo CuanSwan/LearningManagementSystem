@@ -1,4 +1,4 @@
-import { parseCourse, parseModule } from "@lms/shared";
+import { parseCourse, parseModule } from "./schemas.js";
 
 // Converted from a real Rise 360 export (SCORM package, runtime-data.js) as a
 // worked example of what an automated Rise -> LMS import can produce. Only the

@@ -1,4 +1,4 @@
-import { parseCourse, parseLearningPath } from "@lms/shared";
+import { parseCourse, parseLearningPath } from "./schemas.js";
 import { seedCourse, seedLearningPath } from "./store.js";
 
 // Temporary demo courses for previewing the course-category label on the
@@ -65,14 +65,17 @@ const itFoundationsTrack = parseLearningPath({
   courseIds: [networkingInfrastructure.courseId, cyberSecurityAwareness.courseId],
 });
 
-export function seedSampleData(): void {
-  seedCourse(projectManagementFundamentals);
-  seedCourse(agileScrumInPractice);
-  seedCourse(pythonProgrammingEssentials);
-  seedCourse(networkingInfrastructure);
-  seedCourse(businessAnalysisFoundations);
-  seedCourse(cyberSecurityAwareness);
+export async function seedSampleData(): Promise<void> {
+  // seedCourse/seedLearningPath are upserts, so re-running this on every
+  // startup is safe - it just re-writes the same sample data in place.
+  await Promise.all([
+    seedCourse(projectManagementFundamentals),
+    seedCourse(agileScrumInPractice),
+    seedCourse(pythonProgrammingEssentials),
+    seedCourse(networkingInfrastructure),
+    seedCourse(businessAnalysisFoundations),
+    seedCourse(cyberSecurityAwareness),
+  ]);
 
-  seedLearningPath(projectDeliveryTrack);
-  seedLearningPath(itFoundationsTrack);
+  await Promise.all([seedLearningPath(projectDeliveryTrack), seedLearningPath(itFoundationsTrack)]);
 }

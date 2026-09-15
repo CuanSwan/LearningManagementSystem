@@ -1,4 +1,4 @@
-import type { Lesson, PracticalLesson, QuizLesson } from "@lms/shared";
+import type { Lesson, PracticalLesson, QuizLesson } from "../types.js";
 
 function QuizEditor({
   content,

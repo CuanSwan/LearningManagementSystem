@@ -1,4 +1,4 @@
-import type { Lesson, LessonType } from "@lms/shared";
+import type { Lesson, LessonType } from "./types.js";
 
 export const LESSON_TYPES: LessonType[] = ["text", "video", "quiz", "practical", "diagram"];
 

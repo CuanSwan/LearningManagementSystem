@@ -1,4 +1,4 @@
-import type { Lesson } from "@lms/shared";
+import type { Lesson } from "../types.js";
 import { lessonTypeLabel } from "../lessonTemplates.js";
 import { LessonRenderer } from "./LessonRenderer.js";
 

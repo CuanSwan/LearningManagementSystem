@@ -1,4 +1,5 @@
-import { Theme, type ThemeOverride } from "@lms/shared";
+import { Theme } from "../theme.js";
+import type { ThemeOverride } from "../types.js";
 import { FONT_OPTIONS } from "../theme.js";
 
 export function ThemeOverrideFields({

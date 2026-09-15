@@ -1,4 +1,5 @@
-import { LessonSchema, type Lesson } from "@lms/shared";
+import { LessonSchema } from "../lessonSchema.js";
+import type { Lesson } from "../types.js";
 import { useState } from "react";
 import { EXISTING_LESSON_MIME, NEW_LESSON_MIME, SAVED_LESSON_MIME } from "../dnd.js";
 import { describeLesson, LESSON_TYPES, lessonTypeLabel } from "../lessonTemplates.js";

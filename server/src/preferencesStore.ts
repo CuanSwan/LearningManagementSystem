@@ -1,11 +1,22 @@
-import type { LessonDisplayMode } from "@lms/shared";
+import type { Database, DocumentStore } from "./db/index.js";
+import type { LessonDisplayMode } from "./displayPreference.js";
 
-const preferenceByUser = new Map<string, LessonDisplayMode>();
-
-export function getLessonDisplayMode(userId: string): LessonDisplayMode | null {
-  return preferenceByUser.get(userId) ?? null;
+interface PreferenceDoc extends Record<string, unknown> {
+  userId: string;
+  lessonDisplayMode: LessonDisplayMode;
 }
 
-export function setLessonDisplayMode(userId: string, mode: LessonDisplayMode): void {
-  preferenceByUser.set(userId, mode);
+let preferences: DocumentStore<PreferenceDoc>;
+
+export function initPreferencesStore(db: Database): void {
+  preferences = db.createStore<PreferenceDoc>("preferences", "userId");
+}
+
+export async function getLessonDisplayMode(userId: string): Promise<LessonDisplayMode | null> {
+  const doc = await preferences.get(userId);
+  return doc?.lessonDisplayMode ?? null;
+}
+
+export async function setLessonDisplayMode(userId: string, mode: LessonDisplayMode): Promise<void> {
+  await preferences.set(userId, { userId, lessonDisplayMode: mode });
 }

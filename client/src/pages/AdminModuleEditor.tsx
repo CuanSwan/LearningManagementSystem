@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import type { Lesson, LessonType, Module, ModuleStatus } from "@lms/shared";
+import type { Lesson, LessonType, Module, ModuleStatus } from "../types.js";
 import { getModule, saveModule } from "../api.js";
 import { ComponentLibrary } from "../components/ComponentLibrary.js";
 import { DraggableLessonBlock } from "../components/DraggableLessonBlock.js";

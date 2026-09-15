@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import type { Course, LearningPath } from "@lms/shared";
+import type { Course, LearningPath } from "../types.js";
 import { getLearningPath, listCourses, patchLearningPath } from "../api.js";
 
 export function AdminLearningPathDetail() {

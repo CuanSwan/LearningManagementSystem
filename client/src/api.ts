@@ -1,4 +1,4 @@
-import type { Course, LearningPath, LessonDisplayMode, Module, User, UserRole } from "@lms/shared";
+import type { Course, LearningPath, LessonDisplayMode, Module, User, UserRole } from "./types.js";
 
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, {

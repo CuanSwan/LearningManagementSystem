@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import type { DiagramLesson as DiagramLessonType } from "@lms/shared";
+import type { DiagramLesson as DiagramLessonType } from "../types.js";
 
 export function DiagramLesson({
   content,

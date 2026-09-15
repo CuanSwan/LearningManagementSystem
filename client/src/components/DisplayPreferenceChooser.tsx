@@ -1,4 +1,4 @@
-import type { LessonDisplayMode } from "@lms/shared";
+import type { LessonDisplayMode } from "../types.js";
 
 export function DisplayPreferenceChooser({ onChoose }: { onChoose: (mode: LessonDisplayMode) => void }) {
   return (

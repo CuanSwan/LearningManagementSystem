@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import type { LessonDisplayMode } from "@lms/shared";
+import type { LessonDisplayMode } from "./types.js";
 import { getPreferences, setPreferences } from "./api.js";
 
 interface DisplayPreferenceState {

@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import type { User, UserRole } from "@lms/shared";
+import type { User, UserRole } from "../types.js";
 import { createUser, listUsers, setUserRole } from "../api.js";
 
 export function AdminUsers() {

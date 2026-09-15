@@ -1,4 +1,4 @@
-import type { VideoLesson as VideoLessonType } from "@lms/shared";
+import type { VideoLesson as VideoLessonType } from "../types.js";
 
 export function VideoLesson({
   content,

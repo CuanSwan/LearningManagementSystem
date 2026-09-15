@@ -1,4 +1,4 @@
-import type { UserRole } from "@lms/shared";
+import type { UserRole } from "../types.js";
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../auth.js";
 
