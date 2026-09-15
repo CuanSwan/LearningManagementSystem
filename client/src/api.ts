@@ -1,7 +1,12 @@
 import type { Course, LearningPath, LessonDisplayMode, Module, User, UserRole } from "./types.js";
 
-async function request<T>(url: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(url, {
+// In production this points at the deployed API (e.g. Render); in local
+// dev it's left empty and vite.config.ts's proxy forwards /api requests
+// to localhost:4000 instead.
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
+
+async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(`${API_BASE_URL}${path}`, {
     ...init,
     credentials: "include",
     headers: { "Content-Type": "application/json", ...init?.headers },
@@ -20,7 +25,7 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
 }
 
 export async function me(): Promise<User | null> {
-  const res = await fetch("/api/auth/me", { credentials: "include" });
+  const res = await fetch(`${API_BASE_URL}/api/auth/me`, { credentials: "include" });
   if (res.status === 401) return null;
   if (!res.ok) throw new Error(`Request failed: ${res.status}`);
   return res.json();
@@ -35,7 +40,7 @@ export function register(email: string, name: string, password: string): Promise
 }
 
 export async function logout(): Promise<void> {
-  await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+  await fetch(`${API_BASE_URL}/api/auth/logout`, { method: "POST", credentials: "include" });
 }
 
 export function listUsers(): Promise<User[]> {
