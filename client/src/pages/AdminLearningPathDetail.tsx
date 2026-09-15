@@ -8,10 +8,17 @@ export function AdminLearningPathDetail() {
   const [path, setPath] = useState<LearningPath | null>(null);
   const [allCourses, setAllCourses] = useState<Course[]>([]);
   const [selectedCourseId, setSelectedCourseId] = useState("");
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
 
   useEffect(() => {
     if (!pathId) return;
-    getLearningPath(pathId).then(setPath);
+    getLearningPath(pathId).then((p) => {
+      setPath(p);
+      setTitle(p.title);
+      setDescription(p.description ?? "");
+    });
     listCourses().then(setAllCourses);
   }, [pathId]);
 
@@ -24,6 +31,19 @@ export function AdminLearningPathDetail() {
     if (!pathId) return;
     const updated = await patchLearningPath(pathId, { courseIds });
     setPath(updated);
+  }
+
+  async function handleSaveDetails(e: React.FormEvent) {
+    e.preventDefault();
+    if (!pathId) return;
+    setSaveStatus("saving");
+    try {
+      const updated = await patchLearningPath(pathId, { title, description: description || undefined });
+      setPath(updated);
+      setSaveStatus("saved");
+    } catch {
+      setSaveStatus("error");
+    }
   }
 
   function handleAdd(e: React.FormEvent) {
@@ -54,6 +74,27 @@ export function AdminLearningPathDetail() {
       </p>
       <h1>{path.title}</h1>
       {path.description && <p>{path.description}</p>}
+
+      <section>
+        <h2>Path details</h2>
+        <form className="course-form" onSubmit={handleSaveDetails}>
+          <label className="field">
+            Title
+            <input value={title} onChange={(e) => setTitle(e.target.value)} required />
+          </label>
+          <label className="field">
+            Description
+            <textarea rows={2} value={description} onChange={(e) => setDescription(e.target.value)} />
+          </label>
+          <div className="save-controls">
+            <button type="submit" disabled={saveStatus === "saving"}>
+              {saveStatus === "saving" ? "Saving..." : "Save details"}
+            </button>
+            {saveStatus === "saved" && <span className="save-status save-status-ok">Saved</span>}
+            {saveStatus === "error" && <span className="save-status save-status-error">Save failed</span>}
+          </div>
+        </form>
+      </section>
 
       <section>
         <h2>Courses (in order)</h2>

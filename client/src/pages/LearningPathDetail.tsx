@@ -116,8 +116,7 @@ export function LearningPathDetail() {
                 .slice(0, index)
                 .every((c) => isCourseComplete(modulesByCourse[c.courseId] ?? [], completedIds));
               const locked = !complete && !priorCoursesComplete;
-              const resolved = Theme.default().withOverrides(course.theme);
-              const accentColor = complete ? resolved.primaryColor : locked ? LOCKED_COLOR : IN_PROGRESS_COLOR;
+              const accentColor = complete ? Theme.default().primaryColor : locked ? LOCKED_COLOR : IN_PROGRESS_COLOR;
               const lane = LANE_CLASSES[index % LANE_CLASSES.length];
 
               const inner = (
