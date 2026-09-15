@@ -61,13 +61,17 @@ export function LearningPathDetail() {
         setLinePath("");
         return;
       }
-      let d = `M ${points[0].x} ${points[0].y}`;
+      const TAIL = 70;
+      const first = points[0];
+      const last = points[points.length - 1];
+      let d = `M ${first.x} ${first.y - TAIL} L ${first.x} ${first.y}`;
       for (let i = 1; i < points.length; i++) {
         const prev = points[i - 1];
         const curr = points[i];
         const midY = (prev.y + curr.y) / 2;
         d += ` C ${prev.x} ${midY}, ${curr.x} ${midY}, ${curr.x} ${curr.y}`;
       }
+      d += ` L ${last.x} ${last.y + TAIL}`;
       setLinePath(d);
     }
     recompute();
