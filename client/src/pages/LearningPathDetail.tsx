@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Theme, type Course, type LearningPath, type Module } from "@lms/shared";
 import { getCourse, getLearningPath, getProgress, listModulesByCourse } from "../api.js";
@@ -6,6 +6,7 @@ import { Breadcrumb } from "../components/Breadcrumb.js";
 
 const IN_PROGRESS_COLOR = "#e8862f";
 const LOCKED_COLOR = "#9ca3af";
+const LANE_CLASSES = ["align-start", "align-center", "align-end", "align-center"];
 
 function isModuleComplete(module: Module, completedIds: Set<string>): boolean {
   return module.lessons.length > 0 && module.lessons.every((l) => completedIds.has(l.lessonId));
@@ -21,6 +22,9 @@ export function LearningPathDetail() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [modulesByCourse, setModulesByCourse] = useState<Record<string, Module[]>>({});
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
+  const containerRef = useRef<HTMLDivElement>(null);
+  const nodeRefs = useRef<Array<HTMLElement | null>>([]);
+  const [linePath, setLinePath] = useState("");
 
   useEffect(() => {
     if (!pathId) return;
@@ -41,6 +45,35 @@ export function LearningPathDetail() {
     });
     getProgress().then((p) => setCompletedIds(new Set(p.completedLessonIds)));
   }, [pathId]);
+
+  useLayoutEffect(() => {
+    function recompute() {
+      const container = containerRef.current;
+      if (!container) return;
+      const containerBox = container.getBoundingClientRect();
+      const points = nodeRefs.current
+        .filter((el): el is HTMLElement => !!el)
+        .map((el) => {
+          const box = el.getBoundingClientRect();
+          return { x: box.left + box.width / 2 - containerBox.left, y: box.top + box.height / 2 - containerBox.top };
+        });
+      if (points.length < 2) {
+        setLinePath("");
+        return;
+      }
+      let d = `M ${points[0].x} ${points[0].y}`;
+      for (let i = 1; i < points.length; i++) {
+        const prev = points[i - 1];
+        const curr = points[i];
+        const midY = (prev.y + curr.y) / 2;
+        d += ` C ${prev.x} ${midY}, ${curr.x} ${midY}, ${curr.x} ${curr.y}`;
+      }
+      setLinePath(d);
+    }
+    recompute();
+    window.addEventListener("resize", recompute);
+    return () => window.removeEventListener("resize", recompute);
+  }, [courses]);
 
   if (!path) return <p>Loading...</p>;
 
@@ -68,87 +101,71 @@ export function LearningPathDetail() {
       {courses.length === 0 ? (
         <p>No courses in this path yet.</p>
       ) : (
-        <ol className="tree-path">
-          {courses.map((course, index) => {
-            const courseModules = modulesByCourse[course.courseId] ?? [];
-            const courseLessons = courseModules.flatMap((m) => m.lessons);
-            const courseCompleted = courseLessons.filter((l) => completedIds.has(l.lessonId)).length;
-            const courseTotal = courseLessons.length;
-            const pct = courseTotal ? (courseCompleted / courseTotal) * 100 : 0;
-            const complete = isCourseComplete(courseModules, completedIds);
-            const priorCoursesComplete = courses
-              .slice(0, index)
-              .every((c) => isCourseComplete(modulesByCourse[c.courseId] ?? [], completedIds));
-            const locked = !complete && !priorCoursesComplete;
-            const resolved = Theme.default().withOverrides(course.theme);
-            const accentColor = complete ? resolved.primaryColor : locked ? LOCKED_COLOR : IN_PROGRESS_COLOR;
+        <div className="path-snake-wrap" ref={containerRef}>
+          <svg className="path-snake-svg" aria-hidden="true">
+            <path d={linePath} />
+          </svg>
+          <ol className="path-snake">
+            {courses.map((course, index) => {
+              const courseModules = modulesByCourse[course.courseId] ?? [];
+              const courseLessons = courseModules.flatMap((m) => m.lessons);
+              const courseCompleted = courseLessons.filter((l) => completedIds.has(l.lessonId)).length;
+              const courseTotal = courseLessons.length;
+              const complete = isCourseComplete(courseModules, completedIds);
+              const priorCoursesComplete = courses
+                .slice(0, index)
+                .every((c) => isCourseComplete(modulesByCourse[c.courseId] ?? [], completedIds));
+              const locked = !complete && !priorCoursesComplete;
+              const resolved = Theme.default().withOverrides(course.theme);
+              const accentColor = complete ? resolved.primaryColor : locked ? LOCKED_COLOR : IN_PROGRESS_COLOR;
+              const lane = LANE_CLASSES[index % LANE_CLASSES.length];
 
-            const cardContent = (
-              <>
-                <div className="tree-node-card-header">
-                  <h2>{course.title}</h2>
-                  {complete && <span className="tree-node-complete-badge">Complete</span>}
-                  {locked && <span className="tree-node-locked-badge">Locked</span>}
-                </div>
-                {course.description && <p className="tree-node-card-desc">{course.description}</p>}
-
-                {courseTotal > 0 && (
-                  <div className="tree-node-progress">
-                    <div className="tree-node-progress-bar">
-                      <div className="tree-node-progress-fill" style={{ width: `${pct}%` }} />
-                    </div>
-                    <span className="tree-node-progress-label">
-                      {courseCompleted} of {courseTotal} Complete
+              const inner = (
+                <>
+                  <span
+                    ref={(el) => {
+                      nodeRefs.current[index] = el;
+                    }}
+                    className={`path-snake-bubble${complete ? " is-complete" : ""}${locked ? " is-locked" : ""}`}
+                  >
+                    {complete ? "✓" : locked ? "🔒" : index + 1}
+                  </span>
+                  <span className="path-snake-label">
+                    <span className="path-snake-label-header">
+                      <h2>{course.title}</h2>
+                      {complete && <span className="tree-node-complete-badge">Complete</span>}
+                      {locked && <span className="tree-node-locked-badge">Locked</span>}
                     </span>
-                  </div>
-                )}
+                    {course.description && <p>{course.description}</p>}
+                    {courseTotal > 0 && (
+                      <span className="path-snake-progress">
+                        {courseCompleted} of {courseTotal} lessons complete
+                      </span>
+                    )}
+                  </span>
+                </>
+              );
 
-                {courseModules.length > 0 && (
-                  <>
-                    <hr className="tree-node-divider" />
-                    <ol className="timeline-steps">
-                      {courseModules.map((module, moduleIndex) => {
-                        const moduleComplete = isModuleComplete(module, completedIds);
-                        return (
-                          <li key={module.moduleId} className={`timeline-step${moduleComplete ? " is-complete" : ""}`}>
-                            <span className="timeline-step-type">Module</span>
-                            <span className="timeline-step-preview">{module.seed.title}</span>
-                            {moduleComplete ? (
-                              <span className="timeline-step-check">✓</span>
-                            ) : (
-                              <span className="timeline-step-number">{moduleIndex + 1}</span>
-                            )}
-                          </li>
-                        );
-                      })}
-                    </ol>
-                  </>
-                )}
-              </>
-            );
-
-            return (
-              <li key={course.courseId} className="tree-node" style={{ "--module-accent": accentColor } as CSSProperties}>
-                <span
-                  className={`tree-node-dot${complete ? " is-complete" : ""}`}
-                  style={{ "--progress": pct } as CSSProperties}
-                  aria-hidden="true"
+              return (
+                <li
+                  key={course.courseId}
+                  className={`path-snake-node ${lane}${locked ? " is-locked" : ""}`}
+                  style={{ "--module-accent": accentColor } as CSSProperties}
                 >
-                  {!complete && index + 1}
-                </span>
-                {locked ? (
-                  <div className="tree-node-card is-locked" aria-disabled="true">
-                    {cardContent}
-                  </div>
-                ) : (
-                  <Link to={`/courses/${course.courseId}`} className="tree-node-card">
-                    {cardContent}
-                  </Link>
-                )}
-              </li>
-            );
-          })}
-        </ol>
+                  {locked ? (
+                    <span className="path-snake-link" aria-disabled="true">
+                      {inner}
+                    </span>
+                  ) : (
+                    <Link to={`/courses/${course.courseId}`} className="path-snake-link">
+                      {inner}
+                    </Link>
+                  )}
+                </li>
+              );
+            })}
+          </ol>
+        </div>
       )}
     </main>
   );

@@ -557,6 +557,160 @@ main {
   gap: 2rem;
 }
 
+/* --- Learning path detail: snaking course map --- */
+
+.path-snake-wrap {
+  position: relative;
+  margin-top: 3rem;
+  padding-bottom: 1rem;
+}
+
+.path-snake-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.path-snake-svg path {
+  fill: none;
+  stroke: rgba(0, 0, 0, 0.18);
+  stroke-width: 3;
+  stroke-dasharray: 2 12;
+  stroke-linecap: round;
+}
+
+.path-snake {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3.5rem;
+  position: relative;
+}
+
+.path-snake-node {
+  display: flex;
+  width: 100%;
+}
+
+.path-snake-node.align-start {
+  justify-content: flex-start;
+}
+
+.path-snake-node.align-center {
+  justify-content: center;
+}
+
+.path-snake-node.align-end {
+  justify-content: flex-end;
+}
+
+.path-snake-link {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  text-decoration: none;
+  color: inherit;
+  max-width: 480px;
+}
+
+.path-snake-node.align-end .path-snake-link {
+  flex-direction: row-reverse;
+}
+
+.path-snake-bubble {
+  width: 84px;
+  height: 84px;
+  min-width: 84px;
+  border-radius: 50%;
+  border: 4px solid var(--module-accent, #3e6259);
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Oranienbaum", serif;
+  font-size: 1.75rem;
+  color: var(--module-accent, #3e6259);
+  transition: transform 0.15s ease;
+}
+
+a.path-snake-link:hover .path-snake-bubble {
+  transform: scale(1.06);
+}
+
+.path-snake-bubble.is-complete {
+  background: var(--module-accent, #3e6259);
+  color: #fff;
+}
+
+.path-snake-bubble.is-locked {
+  border-color: #d1d5db;
+  background: #f3f4f6;
+  color: #9ca3af;
+  font-size: 1.4rem;
+}
+
+.path-snake-label {
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-left: 4px solid var(--module-accent, #3e6259);
+  padding: 0.85rem 1.25rem;
+  min-width: 220px;
+}
+
+.path-snake-node.is-locked .path-snake-label {
+  border-left-color: #d1d5db;
+}
+
+.path-snake-label-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.path-snake-label h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #0d0d0d;
+}
+
+.path-snake-node.is-locked .path-snake-label h2 {
+  color: #9ca3af;
+}
+
+.path-snake-label p {
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.path-snake-progress {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--module-accent, #3e6259);
+}
+
+@media (max-width: 640px) {
+  .path-snake-node.align-start,
+  .path-snake-node.align-center,
+  .path-snake-node.align-end {
+    justify-content: flex-start;
+  }
+
+  .path-snake-node.align-end .path-snake-link {
+    flex-direction: row;
+  }
+}
+
 .tree-path::before {
   content: "";
   position: absolute;
