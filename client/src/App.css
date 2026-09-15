@@ -561,7 +561,8 @@ main {
 
 .path-snake-wrap {
   position: relative;
-  margin-top: 3rem;
+  max-width: 900px;
+  margin: 3rem auto 0;
   padding-bottom: 1rem;
 }
 
