@@ -6,7 +6,7 @@ import { Breadcrumb } from "../components/Breadcrumb.js";
 
 const IN_PROGRESS_COLOR = "#e8862f";
 const LOCKED_COLOR = "#9ca3af";
-const LANE_CLASSES = ["align-start", "align-center", "align-end", "align-center"];
+const LANE_OFFSETS = [0, 170];
 
 function isModuleComplete(module: Module, completedIds: Set<string>): boolean {
   return module.lessons.length > 0 && module.lessons.every((l) => completedIds.has(l.lessonId));
@@ -68,8 +68,11 @@ export function LearningPathDetail() {
       for (let i = 1; i < points.length; i++) {
         const prev = points[i - 1];
         const curr = points[i];
-        const midY = (prev.y + curr.y) / 2;
-        d += ` C ${prev.x} ${midY}, ${curr.x} ${midY}, ${curr.x} ${curr.y}`;
+        const dx = curr.x - prev.x;
+        const dy = curr.y - prev.y;
+        const radius = Math.sqrt(dx * dx + dy * dy) / 2;
+        const sweep = i % 2 === 1 ? 1 : 0;
+        d += ` A ${radius} ${radius} 0 0 ${sweep} ${curr.x} ${curr.y}`;
       }
       d += ` L ${last.x} ${last.y + TAIL}`;
       setLinePath(d);
@@ -121,7 +124,7 @@ export function LearningPathDetail() {
                 .every((c) => isCourseComplete(modulesByCourse[c.courseId] ?? [], completedIds));
               const locked = !complete && !priorCoursesComplete;
               const accentColor = complete ? Theme.default().primaryColor : locked ? LOCKED_COLOR : IN_PROGRESS_COLOR;
-              const lane = LANE_CLASSES[index % LANE_CLASSES.length];
+              const laneOffset = LANE_OFFSETS[index % LANE_OFFSETS.length];
 
               const inner = (
                 <>
@@ -152,8 +155,8 @@ export function LearningPathDetail() {
               return (
                 <li
                   key={course.courseId}
-                  className={`path-snake-node ${lane}${locked ? " is-locked" : ""}`}
-                  style={{ "--module-accent": accentColor } as CSSProperties}
+                  className={`path-snake-node${locked ? " is-locked" : ""}`}
+                  style={{ "--module-accent": accentColor, marginLeft: laneOffset } as CSSProperties}
                 >
                   {locked ? (
                     <span className="path-snake-link" aria-disabled="true">

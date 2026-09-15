@@ -593,19 +593,6 @@ main {
 
 .path-snake-node {
   display: flex;
-  width: 100%;
-}
-
-.path-snake-node.align-start {
-  justify-content: flex-start;
-}
-
-.path-snake-node.align-center {
-  justify-content: center;
-}
-
-.path-snake-node.align-end {
-  justify-content: flex-end;
 }
 
 .path-snake-link {
@@ -615,10 +602,6 @@ main {
   text-decoration: none;
   color: inherit;
   max-width: 480px;
-}
-
-.path-snake-node.align-end .path-snake-link {
-  flex-direction: row-reverse;
 }
 
 .path-snake-bubble {
@@ -700,14 +683,8 @@ a.path-snake-link:hover .path-snake-bubble {
 }
 
 @media (max-width: 640px) {
-  .path-snake-node.align-start,
-  .path-snake-node.align-center,
-  .path-snake-node.align-end {
-    justify-content: flex-start;
-  }
-
-  .path-snake-node.align-end .path-snake-link {
-    flex-direction: row;
+  .path-snake-node {
+    margin-left: 0 !important;
   }
 }
 
