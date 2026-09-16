@@ -52,7 +52,6 @@ interface RiseBlock {
   type: string;
   family?: string;
   variant?: string;
-  metadata?: { createdVia?: string };
   items?: unknown[];
   piles?: RiseSortingPile[];
 }
@@ -103,11 +102,15 @@ function stripHtml(html: string | undefined): string {
     .trim();
 }
 
-function authorshipFor(block: RiseBlock): { source: LessonSource; wordingStyle: WordingStyle } {
-  const source: LessonSource = block.metadata?.createdVia === "ai" ? "ai_generated" : "human";
-  const wordingStyle: WordingStyle = source === "ai_generated" ? "shortened" : "official";
-  return { source, wordingStyle };
-}
+// Everything that comes through this importer is machine-converted from a
+// Rise export, regardless of whether a human or AI originally authored it
+// inside Rise - from this app's perspective, no human typed it in here, so
+// it's tagged accordingly rather than trying to infer authorship from Rise's
+// own (unreliable, and no longer read) per-block metadata.
+const RISE_AUTHORSHIP: { source: LessonSource; wordingStyle: WordingStyle } = {
+  source: "ai_generated",
+  wordingStyle: "shortened",
+};
 
 type LessonBase = { lessonId: string; schemaVersion: number; source: LessonSource; wordingStyle: WordingStyle; order: number };
 
@@ -243,8 +246,7 @@ function convertLesson(riseLesson: RiseLesson, skipped: SkippedBlock[]): Convert
   let order = 1;
   let lastWasMergeableText = false;
   for (const block of riseLesson.items ?? []) {
-    const { source, wordingStyle } = authorshipFor(block);
-    const base: LessonBase = { lessonId: `rise-${block.id}`, schemaVersion: 1, source, wordingStyle, order };
+    const base: LessonBase = { lessonId: `rise-${block.id}`, schemaVersion: 1, ...RISE_AUTHORSHIP, order };
     const converted = convertBlock(block, base, skipped);
 
     if (!converted) {

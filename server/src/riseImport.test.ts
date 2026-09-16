@@ -14,6 +14,26 @@ describe("convertRiseCourse", () => {
     expect(() => convertRiseCourse(riseCourse([]))).toThrow(RiseImportError);
   });
 
+  it("always tags converted lessons as ai_generated/shortened, regardless of block metadata", () => {
+    const result = convertRiseCourse(
+      riseCourse([
+        {
+          id: "l1",
+          title: "M",
+          items: [
+            { id: "b1", type: "text", family: "text", items: [{ paragraph: "<p>One</p>" }], metadata: { createdVia: "human" } },
+            { id: "b2", type: "divider", family: "continue", variant: "continue" },
+            { id: "b3", type: "text", family: "text", items: [{ paragraph: "<p>Two</p>" }] },
+          ],
+        },
+      ])
+    );
+    for (const lesson of result.modules[0].lessons) {
+      expect(lesson.source).toBe("ai_generated");
+      expect(lesson.wordingStyle).toBe("shortened");
+    }
+  });
+
   it("converts text blocks (heading+paragraph, plain paragraph, and impact)", () => {
     const result = convertRiseCourse(
       riseCourse([
