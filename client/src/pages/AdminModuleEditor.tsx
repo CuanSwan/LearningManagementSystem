@@ -115,6 +115,7 @@ export function AdminModuleEditor() {
               onRemove={editor.remove}
               onToggleEdit={(id) => setEditingId((current) => (current === id ? null : id))}
               onContentChange={editor.updateContent}
+              onWordingStyleChange={editor.updateWordingStyle}
             />
           ))}
 

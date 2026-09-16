@@ -1,4 +1,4 @@
-import type { Lesson, LessonType } from "../types.js";
+import type { Lesson, LessonType, WordingStyle } from "../types.js";
 import { EXISTING_LESSON_MIME, LIBRARY_LESSON_MIME, NEW_LESSON_MIME, SAVED_LESSON_MIME } from "../dnd.js";
 import { LessonEditorForm } from "./LessonEditorForm.js";
 import { LessonRenderer } from "./LessonRenderer.js";
@@ -13,6 +13,7 @@ export function DraggableLessonBlock({
   onRemove,
   onToggleEdit,
   onContentChange,
+  onWordingStyleChange,
 }: {
   lesson: Lesson;
   isEditing: boolean;
@@ -23,6 +24,7 @@ export function DraggableLessonBlock({
   onRemove: (lessonId: string) => void;
   onToggleEdit: (lessonId: string) => void;
   onContentChange: (lessonId: string, content: Lesson["content"]) => void;
+  onWordingStyleChange: (lessonId: string, wordingStyle: WordingStyle) => void;
 }) {
   return (
     <div
@@ -56,6 +58,18 @@ export function DraggableLessonBlock({
       </div>
       {isEditing ? (
         <div className="lesson-editor">
+          {lesson.type === "text" && (
+            <label className="field wording-style-field">
+              Wording style
+              <select
+                value={lesson.wordingStyle}
+                onChange={(e) => onWordingStyleChange(lesson.lessonId, e.target.value as WordingStyle)}
+              >
+                <option value="official">Official</option>
+                <option value="shortened">Shortened (non-official)</option>
+              </select>
+            </label>
+          )}
           <LessonEditorForm lesson={lesson} onChange={(content) => onContentChange(lesson.lessonId, content)} />
         </div>
       ) : (

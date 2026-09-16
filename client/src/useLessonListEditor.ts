@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Lesson, LessonType } from "./types.js";
+import type { Lesson, LessonType, WordingStyle } from "./types.js";
 import { createBlankLesson } from "./lessonTemplates.js";
 
 // Shared drag/reorder/swap/remove logic for a module's lesson list, used by
@@ -85,6 +85,10 @@ export function useLessonListEditor(initial: Lesson[] = []) {
     );
   }
 
+  function updateWordingStyle(lessonId: string, wordingStyle: WordingStyle) {
+    setLessons((prev) => prev.map((l) => (l.lessonId === lessonId ? { ...l, wordingStyle } : l)));
+  }
+
   return {
     lessons,
     savedLessons,
@@ -99,5 +103,6 @@ export function useLessonListEditor(initial: Lesson[] = []) {
     appendLibrary,
     importLesson,
     updateContent,
+    updateWordingStyle,
   };
 }

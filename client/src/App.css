@@ -1027,12 +1027,29 @@ a.path-snake-link:hover .path-snake-bubble {
   gap: 1rem;
 }
 
+.student-lesson-badges {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
 .student-lesson-type {
   font-weight: 700;
   text-transform: uppercase;
   font-size: 0.75rem;
   letter-spacing: 0.06em;
   color: var(--theme-primary, #3e6259);
+}
+
+.student-lesson-ai-badge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.2rem 0.5rem;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 0;
+  color: #666;
 }
 
 .student-lesson-complete-badge {
