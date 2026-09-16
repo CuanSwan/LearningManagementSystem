@@ -121,12 +121,18 @@ export async function deleteModule(moduleId: string): Promise<boolean> {
   return modules.remove(moduleId);
 }
 
-export function seedCourse(course: Course): Promise<void> {
-  return courses.set(course.courseId, course);
+// Seeding only creates a record the first time it's ever seen - once a
+// course/module/path exists, an admin may have edited it, and a later
+// restart re-running this seed data must not clobber that edit back to the
+// original seed content.
+export async function seedCourse(course: Course): Promise<void> {
+  if (await courses.get(course.courseId)) return;
+  await courses.set(course.courseId, course);
 }
 
-export function seedModule(module: Module): Promise<void> {
-  return modules.set(module.moduleId, module);
+export async function seedModule(module: Module): Promise<void> {
+  if (await modules.get(module.moduleId)) return;
+  await modules.set(module.moduleId, module);
 }
 
 export function listLearningPaths(): Promise<LearningPath[]> {
@@ -154,6 +160,7 @@ export async function patchLearningPath(
   return merged;
 }
 
-export function seedLearningPath(path: LearningPath): Promise<void> {
-  return learningPaths.set(path.pathId, path);
+export async function seedLearningPath(path: LearningPath): Promise<void> {
+  if (await learningPaths.get(path.pathId)) return;
+  await learningPaths.set(path.pathId, path);
 }

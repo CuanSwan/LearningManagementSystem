@@ -441,8 +441,10 @@ const itFoundationsTrack = parseLearningPath({
 });
 
 export async function seedSampleData(): Promise<void> {
-  // seedCourse/seedModule/seedLearningPath are upserts, so re-running this
-  // on every startup is safe - it just re-writes the same sample data in place.
+  // seedCourse/seedModule/seedLearningPath only create a record the first
+  // time it's seen, so re-running this on every startup is safe: it fills in
+  // anything missing without clobbering admin edits made to a course/module
+  // that already exists from a previous seed.
   await Promise.all([
     seedCourse(projectManagementFundamentals),
     seedCourse(agileScrumInPractice),
