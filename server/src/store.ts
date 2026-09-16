@@ -27,7 +27,7 @@ export async function createCourse(data: unknown): Promise<Course> {
 
 export async function patchCourse(
   courseId: string,
-  patch: { title?: string; description?: string; theme?: unknown }
+  patch: { title?: string; description?: string; category?: string; theme?: unknown }
 ): Promise<Course | undefined> {
   const existing = await courses.get(courseId);
   if (!existing) return undefined;

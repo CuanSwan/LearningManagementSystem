@@ -66,6 +66,7 @@ export function getCourse(courseId: string): Promise<Course> {
 export function createCourse(input: {
   title: string;
   description?: string;
+  category?: string;
   theme?: Partial<Course["theme"]>;
 }): Promise<Course> {
   return request("/api/courses", { method: "POST", body: JSON.stringify(input) });
@@ -73,9 +74,31 @@ export function createCourse(input: {
 
 export function patchCourse(
   courseId: string,
-  patch: { title?: string; description?: string; theme?: Partial<Course["theme"]> }
+  patch: { title?: string; description?: string; category?: string; theme?: Partial<Course["theme"]> }
 ): Promise<Course> {
   return request(`/api/courses/${courseId}`, { method: "PATCH", body: JSON.stringify(patch) });
+}
+
+// Uploads a Rise 360 .zip export, which the server decompiles into a new
+// course + its modules/lessons. `category` is optional - left blank, the
+// course is created uncategorized like any other.
+export async function importRiseCourse(
+  file: File,
+  category?: string
+): Promise<{ course: Course; moduleCount: number; skipped: { type: string; family?: string; variant?: string }[] }> {
+  const formData = new FormData();
+  formData.append("file", file);
+  if (category) formData.append("category", category);
+  const res = await fetch(`${API_BASE_URL}/api/courses/import/rise`, {
+    method: "POST",
+    credentials: "include",
+    body: formData,
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(typeof body?.error === "string" ? body.error : `Request failed: ${res.status}`);
+  }
+  return res.json();
 }
 
 export function listModulesByCourse(courseId: string): Promise<Module[]> {

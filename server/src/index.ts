@@ -5,11 +5,14 @@ import { UserRoleSchema, type UserRole } from "./userSchema.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import express, { type NextFunction, type Request, type Response } from "express";
+import multer from "multer";
 import { z } from "zod";
 import { createSession, destroySession, getSessionUserId } from "./auth.js";
 import { connectDb } from "./db/index.js";
 import { getLessonDisplayMode, initPreferencesStore, setLessonDisplayMode } from "./preferencesStore.js";
 import { getCompletedLessons, initProgressStore, setLessonCompletion } from "./progressStore.js";
+import { convertRiseCourse, RiseImportError } from "./riseImport.js";
+import { extractRiseRuntimeData, RiseZipError } from "./riseZip.js";
 import { seedSampleData } from "./sampleData.js";
 import { seedUsers } from "./seedUsers.js";
 import {
@@ -192,12 +195,14 @@ app.patch("/api/users/:userId/role", requireRole("super_admin"), async (req, res
 const CreateCourseInputSchema = z.object({
   title: z.string().min(1),
   description: z.string().optional(),
+  category: z.string().optional(),
   theme: ThemeOverrideSchema.optional(),
 });
 
 const CoursePatchSchema = z.object({
   title: z.string().min(1).optional(),
   description: z.string().optional(),
+  category: z.string().optional(),
   theme: ThemeOverrideSchema.optional(),
 });
 
@@ -226,10 +231,56 @@ app.post("/api/courses", requireRole("admin", "super_admin"), async (req, res) =
     courseId: crypto.randomUUID(),
     title: parsed.data.title,
     description: parsed.data.description,
+    category: parsed.data.category,
     theme: parsed.data.theme ?? {},
   });
   res.status(201).json(course);
 });
+
+const riseUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 200 * 1024 * 1024 },
+});
+
+app.post(
+  "/api/courses/import/rise",
+  requireRole("admin", "super_admin"),
+  riseUpload.single("file"),
+  async (req, res) => {
+    if (!req.file) {
+      res.status(400).json({ error: "No file uploaded - expected a Rise 360 .zip export under field 'file'" });
+      return;
+    }
+
+    let converted;
+    try {
+      const raw = extractRiseRuntimeData(req.file.buffer);
+      converted = convertRiseCourse(raw);
+    } catch (err) {
+      if (err instanceof RiseZipError || err instanceof RiseImportError) {
+        res.status(400).json({ error: err.message });
+        return;
+      }
+      throw err;
+    }
+
+    const category = typeof req.body.category === "string" && req.body.category.trim() ? req.body.category.trim() : undefined;
+
+    const course = await createCourse({
+      courseId: crypto.randomUUID(),
+      title: converted.title,
+      description: converted.description || undefined,
+      category,
+      theme: {},
+    });
+
+    const modules = await Promise.all(
+      converted.modules.map((m) => createModule({ courseId: course.courseId, title: m.title, objective: m.objective, lessons: m.lessons }))
+    );
+
+    res.status(201).json({ course, moduleCount: modules.length, skipped: converted.skipped });
+  }
+);
 
 app.get("/api/courses/:courseId", requireAuth, async (req, res) => {
   const course = await getCourse(req.params.courseId);

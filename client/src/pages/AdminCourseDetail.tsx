@@ -11,6 +11,7 @@ export function AdminCourseDetail() {
   const [course, setCourse] = useState<Course | null>(null);
   const [modules, setModules] = useState<Module[]>([]);
   const [theme, setTheme] = useState<ThemeOverride>({});
+  const [category, setCategory] = useState("");
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [moduleTitle, setModuleTitle] = useState("");
   const [moduleObjective, setModuleObjective] = useState("");
@@ -20,6 +21,7 @@ export function AdminCourseDetail() {
     getCourse(courseId).then((c) => {
       setCourse(c);
       setTheme(c.theme);
+      setCategory(c.category ?? "");
     });
     listModulesByCourse(courseId).then(setModules);
   }, [courseId]);
@@ -28,7 +30,7 @@ export function AdminCourseDetail() {
     if (!courseId) return;
     setSaveStatus("saving");
     try {
-      const updated = await patchCourse(courseId, { theme });
+      const updated = await patchCourse(courseId, { theme, category: category || undefined });
       setCourse(updated);
       setSaveStatus("saved");
     } catch {
@@ -55,6 +57,10 @@ export function AdminCourseDetail() {
 
       <section>
         <h2>Theme</h2>
+        <label className="field">
+          Category
+          <input value={category} onChange={(e) => setCategory(e.target.value)} placeholder="e.g. Core, IT, Business" />
+        </label>
         <button
           type="button"
           className="suggest-theme-btn"
