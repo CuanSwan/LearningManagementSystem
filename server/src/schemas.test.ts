@@ -64,12 +64,63 @@ const validModule = {
       order: 5,
       content: { imageUrl: "https://example.com/batna-diagram.png" },
     },
+    {
+      lessonId: "l6",
+      type: "flashcard",
+      schemaVersion: 1,
+      source: "human",
+      wordingStyle: "official",
+      order: 6,
+      content: { cards: [{ front: "What is BATNA?", back: "Best Alternative To a Negotiated Agreement" }] },
+    },
+    {
+      lessonId: "l7",
+      type: "accordion",
+      schemaVersion: 1,
+      source: "human",
+      wordingStyle: "official",
+      order: 7,
+      content: { sections: [{ title: "Anchoring", body: "Setting the first offer to influence the negotiation range." }] },
+    },
+    {
+      lessonId: "l8",
+      type: "matching",
+      schemaVersion: 1,
+      source: "human",
+      wordingStyle: "official",
+      order: 8,
+      content: {
+        pairs: [
+          { prompt: "BATNA", match: "Best Alternative To a Negotiated Agreement" },
+          { prompt: "ZOPA", match: "Zone Of Possible Agreement" },
+        ],
+      },
+    },
   ],
 };
 
 describe("ModuleSchema", () => {
-  it("accepts a module with all five lesson types", () => {
+  it("accepts a module with all eight lesson types", () => {
     expect(() => parseModule(validModule)).not.toThrow();
+  });
+
+  it("rejects a matching lesson with fewer than 2 pairs", () => {
+    const invalid = {
+      ...validModule,
+      lessons: [
+        {
+          lessonId: "l8",
+          type: "matching",
+          schemaVersion: 1,
+          source: "human",
+          wordingStyle: "official",
+          order: 1,
+          content: { pairs: [{ prompt: "BATNA", match: "Best Alternative To a Negotiated Agreement" }] },
+        },
+      ],
+    };
+    const result = ModuleSchema.safeParse(invalid);
+    expect(result.success).toBe(false);
   });
 
   it("rejects a lesson with an unknown type", () => {

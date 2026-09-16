@@ -42,6 +42,18 @@ const DiagramContentSchema = z.object({
   imageUrl: z.string(),
 });
 
+const FlashcardContentSchema = z.object({
+  cards: z.array(z.object({ front: z.string(), back: z.string() })).min(1),
+});
+
+const AccordionContentSchema = z.object({
+  sections: z.array(z.object({ title: z.string(), body: z.string() })).min(1),
+});
+
+const MatchingContentSchema = z.object({
+  pairs: z.array(z.object({ prompt: z.string(), match: z.string() })).min(2),
+});
+
 const LessonBaseSchema = z.object({
   lessonId: z.string(),
   schemaVersion: z.number().int().positive(),
@@ -75,12 +87,30 @@ export const DiagramLessonSchema = LessonBaseSchema.extend({
   content: DiagramContentSchema,
 });
 
+export const FlashcardLessonSchema = LessonBaseSchema.extend({
+  type: z.literal("flashcard"),
+  content: FlashcardContentSchema,
+});
+
+export const AccordionLessonSchema = LessonBaseSchema.extend({
+  type: z.literal("accordion"),
+  content: AccordionContentSchema,
+});
+
+export const MatchingLessonSchema = LessonBaseSchema.extend({
+  type: z.literal("matching"),
+  content: MatchingContentSchema,
+});
+
 export const LessonSchema = z.discriminatedUnion("type", [
   TextLessonSchema,
   VideoLessonSchema,
   QuizLessonSchema,
   PracticalLessonSchema,
   DiagramLessonSchema,
+  FlashcardLessonSchema,
+  AccordionLessonSchema,
+  MatchingLessonSchema,
 ]);
 
 export type Lesson = z.infer<typeof LessonSchema>;
@@ -89,6 +119,9 @@ export type VideoLesson = z.infer<typeof VideoLessonSchema>;
 export type QuizLesson = z.infer<typeof QuizLessonSchema>;
 export type PracticalLesson = z.infer<typeof PracticalLessonSchema>;
 export type DiagramLesson = z.infer<typeof DiagramLessonSchema>;
+export type FlashcardLesson = z.infer<typeof FlashcardLessonSchema>;
+export type AccordionLesson = z.infer<typeof AccordionLessonSchema>;
+export type MatchingLesson = z.infer<typeof MatchingLessonSchema>;
 export type LessonType = Lesson["type"];
 
 export const ModuleSeedSchema = z.object({

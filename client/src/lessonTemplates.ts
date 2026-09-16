@@ -1,6 +1,15 @@
 import type { Lesson, LessonType } from "./types.js";
 
-export const LESSON_TYPES: LessonType[] = ["text", "video", "quiz", "practical", "diagram"];
+export const LESSON_TYPES: LessonType[] = [
+  "text",
+  "video",
+  "quiz",
+  "practical",
+  "diagram",
+  "flashcard",
+  "accordion",
+  "matching",
+];
 
 const LESSON_TYPE_LABELS: Record<LessonType, string> = {
   text: "Text",
@@ -8,6 +17,9 @@ const LESSON_TYPE_LABELS: Record<LessonType, string> = {
   quiz: "Quiz",
   practical: "Practical",
   diagram: "Diagram",
+  flashcard: "Flashcards",
+  accordion: "Accordion",
+  matching: "Matching",
 };
 
 export function lessonTypeLabel(type: LessonType): string {
@@ -26,6 +38,12 @@ export function describeLesson(lesson: Lesson): string {
       return lesson.content.instructions || "(empty)";
     case "diagram":
       return lesson.content.imageUrl || "(empty)";
+    case "flashcard":
+      return lesson.content.cards[0]?.front || "(empty)";
+    case "accordion":
+      return lesson.content.sections[0]?.title || "(empty)";
+    case "matching":
+      return lesson.content.pairs[0]?.prompt || "(empty)";
   }
 }
 
@@ -52,5 +70,11 @@ export function createBlankLesson(type: LessonType, order: number): Lesson {
       return { ...base, type, content: { instructions: "", steps: [], submissionType: "text" } };
     case "diagram":
       return { ...base, type, content: { imageUrl: "" } };
+    case "flashcard":
+      return { ...base, type, content: { cards: [{ front: "", back: "" }] } };
+    case "accordion":
+      return { ...base, type, content: { sections: [{ title: "", body: "" }] } };
+    case "matching":
+      return { ...base, type, content: { pairs: [{ prompt: "", match: "" }, { prompt: "", match: "" }] } };
   }
 }

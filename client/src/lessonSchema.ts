@@ -41,6 +41,18 @@ const DiagramContentSchema = z.object({
   imageUrl: z.string(),
 });
 
+const FlashcardContentSchema = z.object({
+  cards: z.array(z.object({ front: z.string(), back: z.string() })).min(1),
+});
+
+const AccordionContentSchema = z.object({
+  sections: z.array(z.object({ title: z.string(), body: z.string() })).min(1),
+});
+
+const MatchingContentSchema = z.object({
+  pairs: z.array(z.object({ prompt: z.string(), match: z.string() })).min(2),
+});
+
 const LessonBaseSchema = z.object({
   lessonId: z.string(),
   schemaVersion: z.number().int().positive(),
@@ -55,4 +67,7 @@ export const LessonSchema = z.discriminatedUnion("type", [
   LessonBaseSchema.extend({ type: z.literal("quiz"), content: QuizContentSchema }),
   LessonBaseSchema.extend({ type: z.literal("practical"), content: PracticalContentSchema }),
   LessonBaseSchema.extend({ type: z.literal("diagram"), content: DiagramContentSchema }),
+  LessonBaseSchema.extend({ type: z.literal("flashcard"), content: FlashcardContentSchema }),
+  LessonBaseSchema.extend({ type: z.literal("accordion"), content: AccordionContentSchema }),
+  LessonBaseSchema.extend({ type: z.literal("matching"), content: MatchingContentSchema }),
 ]);

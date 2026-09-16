@@ -1073,6 +1073,103 @@ a.path-snake-link:hover .path-snake-bubble {
   display: block;
 }
 
+.flashcard-lesson {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.flashcard {
+  flex: 1 1 220px;
+  min-height: 120px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 0;
+  padding: 1.25rem;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.flashcard.is-flipped {
+  border-color: var(--theme-primary, #3e6259);
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.accordion-lesson {
+  width: 100%;
+}
+
+.accordion-section {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.accordion-section-title {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  font: inherit;
+  font-weight: 600;
+  color: var(--theme-primary, #3e6259);
+  padding: 0.85rem 0;
+  cursor: pointer;
+}
+
+.accordion-section-body {
+  margin: 0 0 0.85rem;
+  color: #555;
+}
+
+.matching-lesson {
+  width: 100%;
+}
+
+.matching-lesson-columns {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.matching-lesson-column {
+  flex: 1 1 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.matching-item {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 0;
+  padding: 0.7rem 0.9rem;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.matching-item:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.matching-item.is-selected {
+  border-color: var(--theme-primary, #3e6259);
+}
+
+.matching-item.is-matched {
+  border-color: var(--theme-primary, #3e6259);
+  background: rgba(0, 0, 0, 0.03);
+  opacity: 1;
+}
+
+.matching-feedback {
+  margin: 0.85rem 0 0;
+  font-weight: 600;
+}
+
 .progress-summary {
   display: flex;
   align-items: center;

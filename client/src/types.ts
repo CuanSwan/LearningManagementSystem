@@ -46,7 +46,45 @@ export interface DiagramLesson extends LessonBase {
   content: { imageUrl: string };
 }
 
-export type Lesson = TextLesson | VideoLesson | QuizLesson | PracticalLesson | DiagramLesson;
+export interface Flashcard {
+  front: string;
+  back: string;
+}
+
+export interface FlashcardLesson extends LessonBase {
+  type: "flashcard";
+  content: { cards: Flashcard[] };
+}
+
+export interface AccordionSection {
+  title: string;
+  body: string;
+}
+
+export interface AccordionLesson extends LessonBase {
+  type: "accordion";
+  content: { sections: AccordionSection[] };
+}
+
+export interface MatchingPair {
+  prompt: string;
+  match: string;
+}
+
+export interface MatchingLesson extends LessonBase {
+  type: "matching";
+  content: { pairs: MatchingPair[] };
+}
+
+export type Lesson =
+  | TextLesson
+  | VideoLesson
+  | QuizLesson
+  | PracticalLesson
+  | DiagramLesson
+  | FlashcardLesson
+  | AccordionLesson
+  | MatchingLesson;
 export type LessonType = Lesson["type"];
 
 export interface ModuleSeed {

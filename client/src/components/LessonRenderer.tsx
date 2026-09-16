@@ -1,5 +1,8 @@
 import type { Lesson } from "../types.js";
+import { AccordionLesson } from "./AccordionLesson.js";
 import { DiagramLesson } from "./DiagramLesson.js";
+import { FlashcardLesson } from "./FlashcardLesson.js";
+import { MatchingLesson } from "./MatchingLesson.js";
 import { PracticalLesson } from "./PracticalLesson.js";
 import { QuizLesson } from "./QuizLesson.js";
 import { TextLesson } from "./TextLesson.js";
@@ -17,6 +20,12 @@ function renderContent(lesson: Lesson, isComplete: boolean, onComplete: () => vo
       return <PracticalLesson content={lesson.content} isComplete={isComplete} onComplete={onComplete} />;
     case "diagram":
       return <DiagramLesson content={lesson.content} isComplete={isComplete} onComplete={onComplete} />;
+    case "flashcard":
+      return <FlashcardLesson content={lesson.content} isComplete={isComplete} onComplete={onComplete} />;
+    case "accordion":
+      return <AccordionLesson content={lesson.content} isComplete={isComplete} onComplete={onComplete} />;
+    case "matching":
+      return <MatchingLesson content={lesson.content} isComplete={isComplete} onComplete={onComplete} />;
   }
 }
 

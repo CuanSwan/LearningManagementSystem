@@ -3,7 +3,8 @@ import { parseCourse, parseModule } from "./schemas.js";
 // Converted from a real Rise 360 export (SCORM package, runtime-data.js) as a
 // worked example of what an automated Rise -> LMS import can produce. Only the
 // course's first section converted here; most blocks mapped cleanly onto
-// text/quiz lessons, one unsupported "sorting" exercise was dropped. Split
+// text/quiz/flashcard/accordion/matching lessons, one unsupported "sorting"
+// exercise was dropped (no lesson type models freeform reordering). Split
 // into multiple modules along the original section's natural topic breaks.
 export const awsAiPractitionerCourse = parseCourse({
   "courseId": "aws-ai-practitioner",
@@ -82,9 +83,22 @@ export const awsAiWhatIsAiModule = parseModule({
       "source": "ai_generated",
       "wordingStyle": "shortened",
       "order": 6,
-      "type": "text",
+      "type": "flashcard",
       "content": {
-        "body": "[Converted from a flip-card exercise - interactivity lost]\n\nQ: What is Artificial Intelligence?\nA: Systems designed to perform tasks that normally require human intelligence, such as understanding language or recognizing images.\n\nQ: Key capabilities of AI\nA: Language understanding, image recognition, decision-making, problem-solving.\n\nQ: AI enables...\nA: Analysis of data, pattern recognition, predictions, and automated decisions."
+        "cards": [
+          {
+            "front": "What is Artificial Intelligence?",
+            "back": "Systems designed to perform tasks that normally require human intelligence, such as understanding language or recognizing images."
+          },
+          {
+            "front": "Key capabilities of AI",
+            "back": "Language understanding, image recognition, decision-making, problem-solving."
+          },
+          {
+            "front": "AI enables...",
+            "back": "Analysis of data, pattern recognition, predictions, and automated decisions."
+          }
+        ]
       }
     },
     {
@@ -115,9 +129,22 @@ export const awsAiWhatIsAiModule = parseModule({
       "source": "ai_generated",
       "wordingStyle": "shortened",
       "order": 9,
-      "type": "text",
+      "type": "accordion",
       "content": {
-        "body": "[Converted from an accordion - expand/collapse interactivity lost]\n\nArtificial Intelligence (AI)\nAI is the broadest category, covering any system that mimics human intelligence. This includes everything from rule-based systems to advanced learning algorithms.\n\n\n\nExamples: Chess-playing programs, basic chatbots, and modern recommendation engines all fall under AI.\n\nMachine Learning (ML)\nMachine learning is a subset of AI that enables systems to learn from data and improve over time without being explicitly programmed for every scenario.\n\n\n\nExamples: Email spam filters that adapt to new threats, or image classifiers that learn to recognize objects.\n\nDeep Learning (DL)\nDeep learning is a specialized area of machine learning that uses neural networks with many layers to process large amounts of data and identify intricate patterns.\n\n\n\nExamples: Voice assistants that understand natural speech, or systems that can identify faces in photos with high accuracy."
+        "sections": [
+          {
+            "title": "Artificial Intelligence (AI)",
+            "body": "AI is the broadest category, covering any system that mimics human intelligence. This includes everything from rule-based systems to advanced learning algorithms. Examples: Chess-playing programs, basic chatbots, and modern recommendation engines all fall under AI."
+          },
+          {
+            "title": "Machine Learning (ML)",
+            "body": "Machine learning is a subset of AI that enables systems to learn from data and improve over time without being explicitly programmed for every scenario. Examples: Email spam filters that adapt to new threats, or image classifiers that learn to recognize objects."
+          },
+          {
+            "title": "Deep Learning (DL)",
+            "body": "Deep learning is a specialized area of machine learning that uses neural networks with many layers to process large amounts of data and identify intricate patterns. Examples: Voice assistants that understand natural speech, or systems that can identify faces in photos with high accuracy."
+          }
+        ]
       }
     }
   ]
@@ -182,9 +209,22 @@ export const awsAiNarrowVsGeneralModule = parseModule({
       "source": "ai_generated",
       "wordingStyle": "shortened",
       "order": 4,
-      "type": "text",
+      "type": "flashcard",
       "content": {
-        "body": "[Converted from a flip-card exercise - interactivity lost]\n\nQ: Narrow AI\nA: Designed for a specific task (e.g., spam filter, voice assistant)\n\nQ: General AI\nA: A theoretical system that could perform any intellectual task a human can\n\nQ: Which type is in production today?\nA: Narrow AI"
+        "cards": [
+          {
+            "front": "Narrow AI",
+            "back": "Designed for a specific task (e.g., spam filter, voice assistant)"
+          },
+          {
+            "front": "General AI",
+            "back": "A theoretical system that could perform any intellectual task a human can"
+          },
+          {
+            "front": "Which type is in production today?",
+            "back": "Narrow AI"
+          }
+        ]
       }
     },
     {
@@ -260,9 +300,26 @@ export const awsAiRealWorldModule = parseModule({
       "source": "ai_generated",
       "wordingStyle": "shortened",
       "order": 4,
-      "type": "text",
+      "type": "accordion",
       "content": {
-        "body": "[Converted from an accordion - expand/collapse interactivity lost]\n\nProduct Recommendations\nAI analyzes your browsing and purchase history to suggest products you’re likely to want, making shopping more personalized and efficient.\n\n\n\nThis technology is used by major online retailers to increase sales and improve customer satisfaction.\n\nFraud Detection\nFinancial institutions use AI to monitor transactions for unusual patterns that may indicate fraud, helping to protect both businesses and consumers.\n\n\n\nAI systems can flag suspicious activity in real time, allowing for rapid response.\n\nVoice Assistants\nVoice assistants like Alexa or Siri use AI to understand spoken language and carry out tasks, from setting reminders to answering questions.\n\n\n\nThese systems rely on deep learning to continually improve their accuracy and usefulness.\n\nSmart Home Devices\nAI powers smart thermostats, lights, and security systems, enabling automation and remote control based on your habits and preferences.\n\n\n\nThese devices make homes more energy-efficient, secure, and convenient."
+        "sections": [
+          {
+            "title": "Product Recommendations",
+            "body": "AI analyzes your browsing and purchase history to suggest products you're likely to want, making shopping more personalized and efficient. This technology is used by major online retailers to increase sales and improve customer satisfaction."
+          },
+          {
+            "title": "Fraud Detection",
+            "body": "Financial institutions use AI to monitor transactions for unusual patterns that may indicate fraud, helping to protect both businesses and consumers. AI systems can flag suspicious activity in real time, allowing for rapid response."
+          },
+          {
+            "title": "Voice Assistants",
+            "body": "Voice assistants like Alexa or Siri use AI to understand spoken language and carry out tasks, from setting reminders to answering questions. These systems rely on deep learning to continually improve their accuracy and usefulness."
+          },
+          {
+            "title": "Smart Home Devices",
+            "body": "AI powers smart thermostats, lights, and security systems, enabling automation and remote control based on your habits and preferences. These devices make homes more energy-efficient, secure, and convenient."
+          }
+        ]
       }
     },
     {
@@ -271,9 +328,14 @@ export const awsAiRealWorldModule = parseModule({
       "source": "ai_generated",
       "wordingStyle": "shortened",
       "order": 5,
-      "type": "text",
+      "type": "matching",
       "content": {
-        "body": "Match AI Applications to Their Categories\n\nTest your ability to match AI applications to their categories. Drag each example to the correct group."
+        "pairs": [
+          { "prompt": "Product Recommendations", "match": "Consumer Applications" },
+          { "prompt": "Voice Assistants", "match": "Consumer Applications" },
+          { "prompt": "Smart Home Devices", "match": "Consumer Applications" },
+          { "prompt": "Fraud Detection", "match": "Enterprise Solutions" }
+        ]
       }
     },
     {

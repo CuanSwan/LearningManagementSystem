@@ -1,4 +1,4 @@
-import type { Lesson, PracticalLesson, QuizLesson } from "../types.js";
+import type { AccordionLesson, FlashcardLesson, Lesson, MatchingLesson, PracticalLesson, QuizLesson } from "../types.js";
 
 function QuizEditor({
   content,
@@ -134,6 +134,136 @@ function PracticalEditor({
   );
 }
 
+function FlashcardEditor({
+  content,
+  onChange,
+}: {
+  content: FlashcardLesson["content"];
+  onChange: (content: FlashcardLesson["content"]) => void;
+}) {
+  function updateCard(i: number, patch: Partial<FlashcardLesson["content"]["cards"][number]>) {
+    onChange({ cards: content.cards.map((c, idx) => (idx === i ? { ...c, ...patch } : c)) });
+  }
+
+  function addCard() {
+    onChange({ cards: [...content.cards, { front: "", back: "" }] });
+  }
+
+  function removeCard(i: number) {
+    if (content.cards.length <= 1) return;
+    onChange({ cards: content.cards.filter((_, idx) => idx !== i) });
+  }
+
+  return (
+    <div className="field-group">
+      {content.cards.map((card, i) => (
+        <fieldset key={i} className="editor-question">
+          <label className="field">
+            Front
+            <input value={card.front} onChange={(e) => updateCard(i, { front: e.target.value })} />
+          </label>
+          <label className="field">
+            Back
+            <input value={card.back} onChange={(e) => updateCard(i, { back: e.target.value })} />
+          </label>
+          <div className="editor-row-actions">
+            <button type="button" onClick={() => removeCard(i)} disabled={content.cards.length <= 1}>
+              Remove card
+            </button>
+          </div>
+        </fieldset>
+      ))}
+      <button type="button" onClick={addCard}>
+        Add card
+      </button>
+    </div>
+  );
+}
+
+function AccordionEditor({
+  content,
+  onChange,
+}: {
+  content: AccordionLesson["content"];
+  onChange: (content: AccordionLesson["content"]) => void;
+}) {
+  function updateSection(i: number, patch: Partial<AccordionLesson["content"]["sections"][number]>) {
+    onChange({ sections: content.sections.map((s, idx) => (idx === i ? { ...s, ...patch } : s)) });
+  }
+
+  function addSection() {
+    onChange({ sections: [...content.sections, { title: "", body: "" }] });
+  }
+
+  function removeSection(i: number) {
+    if (content.sections.length <= 1) return;
+    onChange({ sections: content.sections.filter((_, idx) => idx !== i) });
+  }
+
+  return (
+    <div className="field-group">
+      {content.sections.map((section, i) => (
+        <fieldset key={i} className="editor-question">
+          <label className="field">
+            Title
+            <input value={section.title} onChange={(e) => updateSection(i, { title: e.target.value })} />
+          </label>
+          <label className="field">
+            Body
+            <textarea rows={3} value={section.body} onChange={(e) => updateSection(i, { body: e.target.value })} />
+          </label>
+          <div className="editor-row-actions">
+            <button type="button" onClick={() => removeSection(i)} disabled={content.sections.length <= 1}>
+              Remove section
+            </button>
+          </div>
+        </fieldset>
+      ))}
+      <button type="button" onClick={addSection}>
+        Add section
+      </button>
+    </div>
+  );
+}
+
+function MatchingEditor({
+  content,
+  onChange,
+}: {
+  content: MatchingLesson["content"];
+  onChange: (content: MatchingLesson["content"]) => void;
+}) {
+  function updatePair(i: number, patch: Partial<MatchingLesson["content"]["pairs"][number]>) {
+    onChange({ pairs: content.pairs.map((p, idx) => (idx === i ? { ...p, ...patch } : p)) });
+  }
+
+  function addPair() {
+    onChange({ pairs: [...content.pairs, { prompt: "", match: "" }] });
+  }
+
+  function removePair(i: number) {
+    if (content.pairs.length <= 2) return;
+    onChange({ pairs: content.pairs.filter((_, idx) => idx !== i) });
+  }
+
+  return (
+    <div className="field-group">
+      {content.pairs.map((pair, i) => (
+        <div key={i} className="editor-option-row">
+          <input placeholder="Prompt" value={pair.prompt} onChange={(e) => updatePair(i, { prompt: e.target.value })} />
+          <input placeholder="Match" value={pair.match} onChange={(e) => updatePair(i, { match: e.target.value })} />
+          <button type="button" onClick={() => removePair(i)} disabled={content.pairs.length <= 2}>
+            ×
+          </button>
+        </div>
+      ))}
+      <button type="button" onClick={addPair}>
+        Add pair
+      </button>
+    </div>
+  );
+}
+
 export function LessonEditorForm({
   lesson,
   onChange,
@@ -183,5 +313,11 @@ export function LessonEditorForm({
           />
         </label>
       );
+    case "flashcard":
+      return <FlashcardEditor content={lesson.content} onChange={onChange} />;
+    case "accordion":
+      return <AccordionEditor content={lesson.content} onChange={onChange} />;
+    case "matching":
+      return <MatchingEditor content={lesson.content} onChange={onChange} />;
   }
 }
