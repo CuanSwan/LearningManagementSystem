@@ -1,10 +1,4 @@
 import { parseCourse, parseLearningPath, parseModule, type Module } from "./schemas.js";
-import {
-  awsAiNarrowVsGeneralModule,
-  awsAiPractitionerCourse,
-  awsAiRealWorldModule,
-  awsAiWhatIsAiModule,
-} from "./riseImportSample.js";
 import { seedCourse, seedLearningPath, seedModule } from "./store.js";
 
 // Temporary demo courses for previewing the course-category label on the
@@ -455,15 +449,9 @@ export async function seedSampleData(): Promise<void> {
     seedCourse(networkingInfrastructure),
     seedCourse(businessAnalysisFoundations),
     seedCourse(cyberSecurityAwareness),
-    seedCourse(awsAiPractitionerCourse),
   ]);
 
-  await Promise.all([
-    ...sampleModules.map(seedModule),
-    seedModule(awsAiWhatIsAiModule),
-    seedModule(awsAiNarrowVsGeneralModule),
-    seedModule(awsAiRealWorldModule),
-  ]);
+  await Promise.all(sampleModules.map(seedModule));
 
   await Promise.all([seedLearningPath(projectDeliveryTrack), seedLearningPath(itFoundationsTrack)]);
 }
