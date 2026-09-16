@@ -55,6 +55,34 @@ export function setUserRole(userId: string, role: UserRole): Promise<User> {
   return request(`/api/users/${userId}/role`, { method: "PATCH", body: JSON.stringify({ role }) });
 }
 
+// Self-service: the caller's own password change, requires their current one.
+export async function changeMyPassword(currentPassword: string, newPassword: string): Promise<void> {
+  const res = await fetch(`${API_BASE_URL}/api/auth/me/password`, {
+    method: "PUT",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ currentPassword, newPassword }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(typeof body?.error === "string" ? body.error : `Request failed: ${res.status}`);
+  }
+}
+
+// super_admin resetting another user's password - no current-password check.
+export async function resetUserPassword(userId: string, newPassword: string): Promise<void> {
+  const res = await fetch(`${API_BASE_URL}/api/users/${userId}/password`, {
+    method: "PATCH",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ newPassword }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(typeof body?.error === "string" ? body.error : `Request failed: ${res.status}`);
+  }
+}
+
 export function listCourses(): Promise<Course[]> {
   return request("/api/courses");
 }

@@ -43,9 +43,9 @@ export function TopBar() {
             </button>
           </div>
         </div>
-        <span className="top-bar-user">
+        <Link to="/account" className="top-bar-user">
           {user.name} &middot; {user.role}
-        </span>
+        </Link>
         <button type="button" className="top-bar-logout" onClick={() => logout()}>
           Log out
         </button>

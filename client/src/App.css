@@ -1348,6 +1348,11 @@ a.path-snake-link:hover .path-snake-bubble {
 .top-bar-user {
   color: #fff;
   font-size: 0.85rem;
+  text-decoration: none;
+}
+
+.top-bar-user:hover {
+  text-decoration: underline;
 }
 
 .top-bar-logout {
@@ -1471,13 +1476,14 @@ a.path-snake-link:hover .path-snake-bubble {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  max-width: 500px;
+  max-width: 640px;
 }
 
 .user-list-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 1rem;
   border: 1px solid #ddd;
   border-radius: 6px;
   padding: 0.5rem 0.75rem;
@@ -1486,6 +1492,26 @@ a.path-snake-link:hover .path-snake-bubble {
 .user-list-item select {
   font: inherit;
   padding: 0.25rem 0.4rem;
+}
+
+.user-list-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.reset-password-form {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.reset-password-form input {
+  font: inherit;
+  padding: 0.25rem 0.4rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
 
 .suggest-theme-btn {
