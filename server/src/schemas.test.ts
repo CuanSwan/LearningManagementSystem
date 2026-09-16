@@ -96,12 +96,67 @@ const validModule = {
         ],
       },
     },
+    {
+      lessonId: "l9",
+      type: "html",
+      schemaVersion: 1,
+      source: "human",
+      wordingStyle: "official",
+      order: 9,
+      content: { html: "<p>A worked example, pasted in directly.</p>" },
+    },
+    {
+      lessonId: "l10",
+      type: "embed",
+      schemaVersion: 1,
+      source: "human",
+      wordingStyle: "official",
+      order: 10,
+      content: { url: "https://example.com/practical-exercise" },
+    },
   ],
 };
 
 describe("ModuleSchema", () => {
-  it("accepts a module with all eight lesson types", () => {
+  it("accepts a module with all ten lesson types", () => {
     expect(() => parseModule(validModule)).not.toThrow();
+  });
+
+  it("rejects an embed lesson with a javascript: URL", () => {
+    const invalid = {
+      ...validModule,
+      lessons: [
+        {
+          lessonId: "l10",
+          type: "embed",
+          schemaVersion: 1,
+          source: "human",
+          wordingStyle: "official",
+          order: 1,
+          content: { url: "javascript:alert(1)" },
+        },
+      ],
+    };
+    const result = ModuleSchema.safeParse(invalid);
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts an embed lesson with a valid https URL", () => {
+    const valid = {
+      ...validModule,
+      lessons: [
+        {
+          lessonId: "l10",
+          type: "embed",
+          schemaVersion: 1,
+          source: "human",
+          wordingStyle: "official",
+          order: 1,
+          content: { url: "https://example.com/exercise" },
+        },
+      ],
+    };
+    expect(ModuleSchema.safeParse(valid).success).toBe(true);
   });
 
   it("rejects a matching lesson with fewer than 2 pairs", () => {

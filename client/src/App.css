@@ -1246,6 +1246,35 @@ a.path-snake-link:hover .path-snake-bubble {
   font-weight: 600;
 }
 
+.html-lesson {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.embed-lesson {
+  width: 100%;
+}
+
+.embed-lesson-frame {
+  width: 100%;
+  height: 480px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 0;
+  display: block;
+}
+
+.embed-lesson-complete-btn {
+  margin-top: 0.85rem;
+}
+
+.field-hint {
+  display: block;
+  font-size: 0.75rem;
+  color: #888;
+  font-weight: 400;
+  margin-top: 0.3rem;
+}
+
 .progress-summary {
   display: flex;
   align-items: center;

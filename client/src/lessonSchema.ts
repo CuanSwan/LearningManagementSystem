@@ -53,6 +53,14 @@ const MatchingContentSchema = z.object({
   pairs: z.array(z.object({ prompt: z.string(), match: z.string() })).min(2),
 });
 
+const CustomHtmlContentSchema = z.object({
+  html: z.string(),
+});
+
+const EmbedContentSchema = z.object({
+  url: z.string().url().refine((u) => /^https?:\/\//i.test(u), "Embed URL must start with http:// or https://"),
+});
+
 const LessonBaseSchema = z.object({
   lessonId: z.string(),
   schemaVersion: z.number().int().positive(),
@@ -70,4 +78,6 @@ export const LessonSchema = z.discriminatedUnion("type", [
   LessonBaseSchema.extend({ type: z.literal("flashcard"), content: FlashcardContentSchema }),
   LessonBaseSchema.extend({ type: z.literal("accordion"), content: AccordionContentSchema }),
   LessonBaseSchema.extend({ type: z.literal("matching"), content: MatchingContentSchema }),
+  LessonBaseSchema.extend({ type: z.literal("html"), content: CustomHtmlContentSchema }),
+  LessonBaseSchema.extend({ type: z.literal("embed"), content: EmbedContentSchema }),
 ]);

@@ -76,6 +76,16 @@ export interface MatchingLesson extends LessonBase {
   content: { pairs: MatchingPair[] };
 }
 
+export interface CustomHtmlLesson extends LessonBase {
+  type: "html";
+  content: { html: string };
+}
+
+export interface EmbedLesson extends LessonBase {
+  type: "embed";
+  content: { url: string };
+}
+
 export type Lesson =
   | TextLesson
   | VideoLesson
@@ -84,7 +94,9 @@ export type Lesson =
   | DiagramLesson
   | FlashcardLesson
   | AccordionLesson
-  | MatchingLesson;
+  | MatchingLesson
+  | CustomHtmlLesson
+  | EmbedLesson;
 export type LessonType = Lesson["type"];
 
 export interface ModuleSeed {

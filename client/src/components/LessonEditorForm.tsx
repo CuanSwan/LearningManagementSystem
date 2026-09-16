@@ -319,5 +319,32 @@ export function LessonEditorForm({
       return <AccordionEditor content={lesson.content} onChange={onChange} />;
     case "matching":
       return <MatchingEditor content={lesson.content} onChange={onChange} />;
+    case "html":
+      return (
+        <label className="field">
+          HTML
+          <textarea
+            rows={8}
+            spellCheck={false}
+            value={lesson.content.html}
+            onChange={(e) => onChange({ html: e.target.value })}
+          />
+          <span className="field-hint">Sanitized before display - scripts and event handlers are stripped.</span>
+        </label>
+      );
+    case "embed":
+      return (
+        <label className="field">
+          Embed URL
+          <input
+            value={lesson.content.url}
+            onChange={(e) => onChange({ url: e.target.value })}
+            placeholder="https://..."
+          />
+          <span className="field-hint">
+            Must be http(s). Some sites block being embedded and won&apos;t load here even with a valid URL.
+          </span>
+        </label>
+      );
   }
 }

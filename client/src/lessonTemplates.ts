@@ -9,6 +9,8 @@ export const LESSON_TYPES: LessonType[] = [
   "flashcard",
   "accordion",
   "matching",
+  "html",
+  "embed",
 ];
 
 const LESSON_TYPE_LABELS: Record<LessonType, string> = {
@@ -20,6 +22,8 @@ const LESSON_TYPE_LABELS: Record<LessonType, string> = {
   flashcard: "Flashcards",
   accordion: "Accordion",
   matching: "Matching",
+  html: "Custom HTML",
+  embed: "Embed (iframe)",
 };
 
 export function lessonTypeLabel(type: LessonType): string {
@@ -44,6 +48,10 @@ export function describeLesson(lesson: Lesson): string {
       return lesson.content.sections[0]?.title || "(empty)";
     case "matching":
       return lesson.content.pairs[0]?.prompt || "(empty)";
+    case "html":
+      return lesson.content.html || "(empty)";
+    case "embed":
+      return lesson.content.url || "(empty)";
   }
 }
 
@@ -84,5 +92,9 @@ export function createBlankLesson(type: LessonType, order: number): Lesson {
       return { ...base, type, content: { sections: [{ title: "", body: "" }] } };
     case "matching":
       return { ...base, type, content: { pairs: [{ prompt: "", match: "" }, { prompt: "", match: "" }] } };
+    case "html":
+      return { ...base, type, content: { html: "" } };
+    case "embed":
+      return { ...base, type, content: { url: "" } };
   }
 }

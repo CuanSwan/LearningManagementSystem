@@ -54,6 +54,16 @@ const MatchingContentSchema = z.object({
   pairs: z.array(z.object({ prompt: z.string(), match: z.string() })).min(2),
 });
 
+const CustomHtmlContentSchema = z.object({
+  html: z.string(),
+});
+
+const EmbedContentSchema = z.object({
+  // http(s) only - anything else (javascript:, data:) is a known iframe-src
+  // XSS vector, not just an unsanitized-content problem.
+  url: z.string().url().refine((u) => /^https?:\/\//i.test(u), "Embed URL must start with http:// or https://"),
+});
+
 const LessonBaseSchema = z.object({
   lessonId: z.string(),
   schemaVersion: z.number().int().positive(),
@@ -102,6 +112,16 @@ export const MatchingLessonSchema = LessonBaseSchema.extend({
   content: MatchingContentSchema,
 });
 
+export const CustomHtmlLessonSchema = LessonBaseSchema.extend({
+  type: z.literal("html"),
+  content: CustomHtmlContentSchema,
+});
+
+export const EmbedLessonSchema = LessonBaseSchema.extend({
+  type: z.literal("embed"),
+  content: EmbedContentSchema,
+});
+
 export const LessonSchema = z.discriminatedUnion("type", [
   TextLessonSchema,
   VideoLessonSchema,
@@ -111,6 +131,8 @@ export const LessonSchema = z.discriminatedUnion("type", [
   FlashcardLessonSchema,
   AccordionLessonSchema,
   MatchingLessonSchema,
+  CustomHtmlLessonSchema,
+  EmbedLessonSchema,
 ]);
 
 export type Lesson = z.infer<typeof LessonSchema>;
@@ -122,6 +144,8 @@ export type DiagramLesson = z.infer<typeof DiagramLessonSchema>;
 export type FlashcardLesson = z.infer<typeof FlashcardLessonSchema>;
 export type AccordionLesson = z.infer<typeof AccordionLessonSchema>;
 export type MatchingLesson = z.infer<typeof MatchingLessonSchema>;
+export type CustomHtmlLesson = z.infer<typeof CustomHtmlLessonSchema>;
+export type EmbedLesson = z.infer<typeof EmbedLessonSchema>;
 export type LessonType = Lesson["type"];
 
 export const ModuleSeedSchema = z.object({
