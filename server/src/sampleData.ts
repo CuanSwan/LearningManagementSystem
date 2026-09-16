@@ -1,5 +1,6 @@
 import { parseCourse, parseLearningPath, parseModule, type Module } from "./schemas.js";
 import { seedCourse, seedLearningPath, seedModule } from "./store.js";
+import { aiEngineeringCourse, aiEngineeringModules } from "./riseImportedCourses.js";
 
 // Temporary demo courses for previewing the course-category label on the
 // catalog grid - no modules, just enough to see the category/color styling.
@@ -449,9 +450,10 @@ export async function seedSampleData(): Promise<void> {
     seedCourse(networkingInfrastructure),
     seedCourse(businessAnalysisFoundations),
     seedCourse(cyberSecurityAwareness),
+    seedCourse(aiEngineeringCourse),
   ]);
 
-  await Promise.all(sampleModules.map(seedModule));
+  await Promise.all([...sampleModules, ...aiEngineeringModules].map(seedModule));
 
   await Promise.all([seedLearningPath(projectDeliveryTrack), seedLearningPath(itFoundationsTrack)]);
 }
