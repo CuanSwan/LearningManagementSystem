@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { suggestTheme } from "../themeSuggestion.js";
 import type { Course, Module, ThemeOverride } from "../types.js";
-import { createModule, getCourse, listModulesByCourse, patchCourse } from "../api.js";
+import { createModule, deleteCourse, getCourse, listModulesByCourse, patchCourse } from "../api.js";
 import { ThemeOverrideFields } from "../components/ThemeOverrideFields.js";
 
 export function AdminCourseDetail() {
@@ -15,6 +15,7 @@ export function AdminCourseDetail() {
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [moduleTitle, setModuleTitle] = useState("");
   const [moduleObjective, setModuleObjective] = useState("");
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!courseId) return;
@@ -43,6 +44,23 @@ export function AdminCourseDetail() {
     if (!courseId) return;
     const module = await createModule({ courseId, title: moduleTitle, objective: moduleObjective });
     navigate(`/admin/modules/${module.moduleId}`);
+  }
+
+  async function handleDeleteCourse() {
+    if (!courseId || !course) return;
+    const confirmed = confirm(
+      `Delete "${course.title}"? This is permanent and cannot be undone.\n\n` +
+        "This course's modules are not deleted with it - they'll move to the unassigned library " +
+        "(Component Library panel, in any module editor). To use them again, you'll need to add them to a new, separate course."
+    );
+    if (!confirmed) return;
+    setDeleting(true);
+    try {
+      await deleteCourse(courseId);
+      navigate("/admin");
+    } catch {
+      setDeleting(false);
+    }
   }
 
   if (!course) return <p>Loading...</p>;
@@ -101,6 +119,17 @@ export function AdminCourseDetail() {
           </label>
           <button type="submit">Add module</button>
         </form>
+      </section>
+
+      <section className="danger-zone">
+        <h2>Delete course</h2>
+        <p>
+          Permanent and cannot be undone. This course&apos;s modules move to the unassigned library instead of being
+          deleted with it - you&apos;ll need to add them to a new, separate course to use them again.
+        </p>
+        <button type="button" className="danger-btn" onClick={handleDeleteCourse} disabled={deleting}>
+          {deleting ? "Deleting..." : "Delete course"}
+        </button>
       </section>
     </main>
   );

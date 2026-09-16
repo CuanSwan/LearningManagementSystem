@@ -19,6 +19,7 @@ import {
   createCourse,
   createLearningPath,
   createModule,
+  deleteCourse,
   deleteModule,
   getCourse,
   getLearningPath,
@@ -303,6 +304,11 @@ app.patch("/api/courses/:courseId", requireRole("admin", "super_admin"), async (
     return;
   }
   res.json(updated);
+});
+
+app.delete("/api/courses/:courseId", requireRole("admin", "super_admin"), async (req, res) => {
+  await deleteCourse(req.params.courseId);
+  res.status(204).end();
 });
 
 app.get("/api/courses/:courseId/modules", requireAuth, async (req, res) => {

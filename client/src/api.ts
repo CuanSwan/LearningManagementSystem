@@ -79,6 +79,13 @@ export function patchCourse(
   return request(`/api/courses/${courseId}`, { method: "PATCH", body: JSON.stringify(patch) });
 }
 
+// Permanent - cannot be undone. The course's modules aren't deleted with it:
+// each becomes an unassigned library entry (or is dropped if it had no
+// lessons yet), so they need to be added to a new course to be used again.
+export async function deleteCourse(courseId: string): Promise<void> {
+  await fetch(`${API_BASE_URL}/api/courses/${courseId}`, { method: "DELETE", credentials: "include" });
+}
+
 // Uploads a Rise 360 .zip export, which the server decompiles into a new
 // course + its modules/lessons. `category` is optional - left blank, the
 // course is created uncategorized like any other.

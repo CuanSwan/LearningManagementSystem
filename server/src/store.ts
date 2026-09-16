@@ -40,6 +40,27 @@ export function listModulesByCourse(courseId: string): Promise<Module[]> {
   return modules.list({ courseId });
 }
 
+// Deletes a course. Its modules are never silently destroyed with it - each
+// one goes through the same unassign path as removing a single module (kept
+// as a reusable library entry if it has content, deleted outright if it
+// doesn't), and any learning path that included this course has it dropped
+// so it doesn't end up pointing at a course that no longer exists.
+export async function deleteCourse(courseId: string): Promise<boolean> {
+  const courseModules = await modules.list({ courseId });
+  await Promise.all(courseModules.map((m) => unassignModule(m.moduleId)));
+
+  const paths = await learningPaths.list();
+  await Promise.all(
+    paths
+      .filter((p) => p.courseIds.includes(courseId))
+      .map((p) =>
+        learningPaths.set(p.pathId, parseLearningPath({ ...p, courseIds: p.courseIds.filter((id) => id !== courseId) }))
+      )
+  );
+
+  return courses.remove(courseId);
+}
+
 export function listAllModules(): Promise<Module[]> {
   return modules.list();
 }

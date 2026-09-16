@@ -338,6 +338,32 @@ main {
   color: #b23b3b;
 }
 
+.danger-zone {
+  margin-top: 2rem;
+  padding: 1rem;
+  border: 1px solid #e3b3b3;
+  border-radius: 6px;
+}
+
+.danger-zone h2 {
+  margin-top: 0;
+  color: #b23b3b;
+}
+
+.danger-btn {
+  background: #b23b3b;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+
+.danger-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
 .course-list {
   list-style: none;
   padding: 0;
