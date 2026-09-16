@@ -48,18 +48,22 @@ export function CourseLibraryTree() {
           {categoryCourses.map((course) => (
             <details key={course.courseId} className="library-tree-node library-tree-course">
               <summary>{course.title}</summary>
-              {(modulesByCourse.get(course.courseId) ?? []).map((module) => (
-                <details key={module.moduleId} className="library-tree-node library-tree-module">
-                  <summary>{module.seed.title}</summary>
-                  {module.lessons.length === 0 ? (
-                    <p className="library-tree-empty">No lessons yet</p>
-                  ) : (
-                    [...module.lessons]
-                      .sort((a, b) => a.order - b.order)
-                      .map((lesson) => <LibraryLessonItem key={lesson.lessonId} lesson={lesson} />)
-                  )}
-                </details>
-              ))}
+              {(() => {
+                const courseModules = modulesByCourse.get(course.courseId) ?? [];
+                if (courseModules.length === 0) return <p className="library-tree-empty">No modules yet</p>;
+                return courseModules.map((module) => (
+                  <details key={module.moduleId} className="library-tree-node library-tree-module">
+                    <summary>{module.seed.title}</summary>
+                    {module.lessons.length === 0 ? (
+                      <p className="library-tree-empty">No lessons yet</p>
+                    ) : (
+                      [...module.lessons]
+                        .sort((a, b) => a.order - b.order)
+                        .map((lesson) => <LibraryLessonItem key={lesson.lessonId} lesson={lesson} />)
+                    )}
+                  </details>
+                ));
+              })()}
             </details>
           ))}
         </details>
