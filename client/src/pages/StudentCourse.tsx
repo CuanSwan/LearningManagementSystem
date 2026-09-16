@@ -2,6 +2,7 @@ import { useEffect, useState, type CSSProperties } from "react";
 import { Link, useParams } from "react-router-dom";
 import type { Course, Module } from "../types.js";
 import { getCourse, getProgress, listModulesByCourse } from "../api.js";
+import { BackButton } from "../components/BackButton.js";
 import { Breadcrumb } from "../components/Breadcrumb.js";
 import { describeLesson, lessonTypeLabel } from "../lessonTemplates.js";
 import { Theme, themeStyle } from "../theme.js";
@@ -48,6 +49,7 @@ export function StudentCourse() {
   return (
     <main className="student-view course-page" style={themeStyle(resolved)}>
       <Breadcrumb items={[{ label: "Courses", to: "/courses" }, { label: course.title }]} />
+      <BackButton to="/courses" label="Back to courses" />
       <h1>{course.title}</h1>
       {course.description && <p className="course-description">{course.description}</p>}
 

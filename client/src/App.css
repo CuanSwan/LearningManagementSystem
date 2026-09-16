@@ -1665,3 +1665,94 @@ a.path-snake-link:hover .path-snake-bubble {
   opacity: 0.35;
   cursor: not-allowed;
 }
+
+/* --- Back button (student pages) --- */
+
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: -0.5rem 0 1.25rem;
+  padding: 0.4rem 0.85rem;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--theme-primary, #3e6259);
+  background: #fff;
+  text-decoration: none;
+}
+
+.back-button:hover {
+  border-color: var(--theme-primary, #3e6259);
+}
+
+.accessible-mode .back-button {
+  font-size: 1.4rem;
+  padding: 0.75rem 1.5rem;
+}
+
+/* --- Module completion popup --- */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  z-index: 100;
+}
+
+.modal-panel {
+  background: #fff;
+  border-radius: 8px;
+  padding: 2rem;
+  max-width: 28rem;
+  width: 100%;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+}
+
+.modal-panel h2 {
+  margin-top: 0;
+  color: var(--theme-primary, #3e6259);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.modal-secondary,
+.modal-primary {
+  padding: 0.6rem 1.25rem;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.modal-secondary {
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  background: #fff;
+  color: #333;
+}
+
+.modal-primary {
+  border: none;
+  background: var(--theme-primary, #3e6259);
+  color: #fff;
+}
+
+.accessible-mode .modal-panel {
+  max-width: 40rem;
+  padding: 2.5rem;
+}
+
+.accessible-mode .modal-secondary,
+.accessible-mode .modal-primary {
+  font-size: 1.5rem;
+  padding: 1rem 1.75rem;
+}
