@@ -1,5 +1,5 @@
 import type { Lesson, LessonType } from "../types.js";
-import { EXISTING_LESSON_MIME, NEW_LESSON_MIME, SAVED_LESSON_MIME } from "../dnd.js";
+import { EXISTING_LESSON_MIME, LIBRARY_LESSON_MIME, NEW_LESSON_MIME, SAVED_LESSON_MIME } from "../dnd.js";
 import { LessonEditorForm } from "./LessonEditorForm.js";
 import { LessonRenderer } from "./LessonRenderer.js";
 
@@ -9,6 +9,7 @@ export function DraggableLessonBlock({
   onReorder,
   onSwapBlank,
   onSwapSaved,
+  onSwapLibrary,
   onRemove,
   onToggleEdit,
   onContentChange,
@@ -18,6 +19,7 @@ export function DraggableLessonBlock({
   onReorder: (draggedId: string, targetId: string) => void;
   onSwapBlank: (targetId: string, newType: LessonType) => void;
   onSwapSaved: (targetId: string, savedLessonId: string) => void;
+  onSwapLibrary: (targetId: string, lesson: Lesson) => void;
   onRemove: (lessonId: string) => void;
   onToggleEdit: (lessonId: string) => void;
   onContentChange: (lessonId: string, content: Lesson["content"]) => void;
@@ -33,9 +35,11 @@ export function DraggableLessonBlock({
         e.stopPropagation();
         const newType = e.dataTransfer.getData(NEW_LESSON_MIME) as LessonType | "";
         const savedId = e.dataTransfer.getData(SAVED_LESSON_MIME);
+        const libraryJson = e.dataTransfer.getData(LIBRARY_LESSON_MIME);
         const draggedId = e.dataTransfer.getData(EXISTING_LESSON_MIME);
         if (newType) onSwapBlank(lesson.lessonId, newType);
         else if (savedId) onSwapSaved(lesson.lessonId, savedId);
+        else if (libraryJson) onSwapLibrary(lesson.lessonId, JSON.parse(libraryJson) as Lesson);
         else if (draggedId && draggedId !== lesson.lessonId) onReorder(draggedId, lesson.lessonId);
       }}
     >

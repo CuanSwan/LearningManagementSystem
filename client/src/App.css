@@ -156,6 +156,35 @@ main {
   margin: 0 0 0.4rem;
 }
 
+.library-tree-node {
+  margin-bottom: 0.35rem;
+}
+
+.library-tree-node > summary {
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.3rem 0;
+}
+
+.library-tree-node .library-tree-node {
+  margin-left: 0.75rem;
+  border-left: 1px solid #e2e2e2;
+  padding-left: 0.6rem;
+}
+
+.library-tree-course > summary,
+.library-tree-module > summary {
+  font-weight: 400;
+  font-size: 0.8rem;
+}
+
+.library-tree-empty {
+  font-size: 0.75rem;
+  color: #999;
+  margin: 0.2rem 0 0.4rem;
+}
+
 .import-error {
   color: #b23b3b;
   font-size: 0.78rem;

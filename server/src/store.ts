@@ -40,6 +40,10 @@ export function listModulesByCourse(courseId: string): Promise<Module[]> {
   return modules.list({ courseId });
 }
 
+export function listAllModules(): Promise<Module[]> {
+  return modules.list();
+}
+
 export async function getModule(moduleId: string): Promise<Module | undefined> {
   return (await modules.get(moduleId)) ?? undefined;
 }

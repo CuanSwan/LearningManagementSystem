@@ -1,6 +1,7 @@
 import { LessonSchema } from "../lessonSchema.js";
 import type { Lesson } from "../types.js";
 import { useState } from "react";
+import { CourseLibraryTree } from "./CourseLibraryTree.js";
 import { EXISTING_LESSON_MIME, NEW_LESSON_MIME, SAVED_LESSON_MIME } from "../dnd.js";
 import { describeLesson, LESSON_TYPES, lessonTypeLabel } from "../lessonTemplates.js";
 
@@ -76,6 +77,8 @@ export function ComponentLibrary({
           {lessonTypeLabel(type)}
         </div>
       ))}
+
+      <CourseLibraryTree />
 
       <div className="library-section">
         <h3>Import lesson JSON</h3>

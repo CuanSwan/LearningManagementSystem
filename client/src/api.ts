@@ -82,6 +82,10 @@ export function listModulesByCourse(courseId: string): Promise<Module[]> {
   return request(`/api/courses/${courseId}/modules`);
 }
 
+export function listAllModules(): Promise<Module[]> {
+  return request("/api/modules");
+}
+
 export function getModule(moduleId: string): Promise<Module> {
   return request(`/api/modules/${moduleId}`);
 }

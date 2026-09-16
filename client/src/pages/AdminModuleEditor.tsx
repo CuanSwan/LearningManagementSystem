@@ -4,7 +4,7 @@ import type { Lesson, LessonType, Module, ModuleStatus } from "../types.js";
 import { getModule, saveModule } from "../api.js";
 import { ComponentLibrary } from "../components/ComponentLibrary.js";
 import { DraggableLessonBlock } from "../components/DraggableLessonBlock.js";
-import { NEW_LESSON_MIME, SAVED_LESSON_MIME } from "../dnd.js";
+import { LIBRARY_LESSON_MIME, NEW_LESSON_MIME, SAVED_LESSON_MIME } from "../dnd.js";
 import { createBlankLesson } from "../lessonTemplates.js";
 
 export function AdminModuleEditor() {
@@ -65,6 +65,14 @@ export function AdminModuleEditor() {
     setSavedLessons((prev) => [...prev, removed]);
   }
 
+  function swapLibrary(targetId: string, libraryLesson: Lesson) {
+    const displaced = lessons.find((l) => l.lessonId === targetId);
+    if (!displaced) return;
+    const copy = { ...libraryLesson, lessonId: crypto.randomUUID(), order: displaced.order } as Lesson;
+    setLessons((prev) => prev.map((l) => (l.lessonId === targetId ? copy : l)));
+    setSavedLessons((prev) => [...prev, displaced]);
+  }
+
   function appendBlank(type: LessonType) {
     setLessons((prev) => [...prev, createBlankLesson(type, prev.length + 1)]);
   }
@@ -74,6 +82,10 @@ export function AdminModuleEditor() {
     if (!saved) return;
     setLessons((prev) => [...prev, { ...saved, order: prev.length + 1 }]);
     setSavedLessons((prev) => prev.filter((l) => l.lessonId !== savedLessonId));
+  }
+
+  function appendLibrary(libraryLesson: Lesson) {
+    setLessons((prev) => [...prev, { ...libraryLesson, lessonId: crypto.randomUUID(), order: prev.length + 1 }]);
   }
 
   function importLesson(lesson: Lesson) {
@@ -140,6 +152,7 @@ export function AdminModuleEditor() {
               onReorder={reorder}
               onSwapBlank={swapBlank}
               onSwapSaved={swapSaved}
+              onSwapLibrary={swapLibrary}
               onRemove={remove}
               onToggleEdit={(id) => setEditingId((current) => (current === id ? null : id))}
               onContentChange={updateContent}
@@ -152,8 +165,10 @@ export function AdminModuleEditor() {
             onDrop={(e) => {
               const newType = e.dataTransfer.getData(NEW_LESSON_MIME) as LessonType | "";
               const savedId = e.dataTransfer.getData(SAVED_LESSON_MIME);
+              const libraryJson = e.dataTransfer.getData(LIBRARY_LESSON_MIME);
               if (newType) appendBlank(newType);
               else if (savedId) appendSaved(savedId);
+              else if (libraryJson) appendLibrary(JSON.parse(libraryJson) as Lesson);
             }}
           >
             Drop a library block here to add it to the end

@@ -20,6 +20,7 @@ import {
   getLearningPath,
   getModule,
   initStore,
+  listAllModules,
   listCourses,
   listLearningPaths,
   listModulesByCourse,
@@ -248,6 +249,10 @@ app.patch("/api/courses/:courseId", requireRole("admin", "super_admin"), async (
 
 app.get("/api/courses/:courseId/modules", requireAuth, async (req, res) => {
   res.json(await listModulesByCourse(req.params.courseId));
+});
+
+app.get("/api/modules", requireRole("admin", "super_admin"), async (_req, res) => {
+  res.json(await listAllModules());
 });
 
 app.post("/api/modules", requireRole("admin", "super_admin"), async (req, res) => {
