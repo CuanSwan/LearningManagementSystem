@@ -1,4 +1,4 @@
-import type { Lesson, LessonType } from "./types.js";
+import type { Lesson, LessonType, Module } from "./types.js";
 
 export const LESSON_TYPES: LessonType[] = [
   "text",
@@ -45,6 +45,14 @@ export function describeLesson(lesson: Lesson): string {
     case "matching":
       return lesson.content.pairs[0]?.prompt || "(empty)";
   }
+}
+
+// A lesson has no name of its own in the schema - just content. This is a
+// display-only label (never persisted) for contexts where a lesson needs to
+// be identified on its own, detached from the module list it normally sits
+// in (e.g. the unassigned library tree).
+export function moduleLessonLabel(module: Module, lesson: Lesson): string {
+  return `${module.seed.title} — Lesson ${lesson.order}`;
 }
 
 export function createBlankLesson(type: LessonType, order: number): Lesson {

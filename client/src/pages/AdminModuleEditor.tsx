@@ -1,114 +1,64 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import type { Lesson, LessonType, Module, ModuleStatus } from "../types.js";
-import { getModule, saveModule } from "../api.js";
+import { getModule, saveModule, unassignModule } from "../api.js";
 import { ComponentLibrary } from "../components/ComponentLibrary.js";
 import { DraggableLessonBlock } from "../components/DraggableLessonBlock.js";
 import { LIBRARY_LESSON_MIME, NEW_LESSON_MIME, SAVED_LESSON_MIME } from "../dnd.js";
-import { createBlankLesson } from "../lessonTemplates.js";
+import { useLessonListEditor } from "../useLessonListEditor.js";
 
 export function AdminModuleEditor() {
   const { moduleId } = useParams<{ moduleId: string }>();
+  const navigate = useNavigate();
   const [foundModule, setModule] = useState<Module | null>(null);
-  const [lessons, setLessons] = useState<Lesson[]>([]);
-  const [savedLessons, setSavedLessons] = useState<Lesson[]>([]);
+  const editor = useLessonListEditor();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [status, setStatus] = useState<ModuleStatus>("draft");
+  const [unassigning, setUnassigning] = useState(false);
 
   useEffect(() => {
     if (!moduleId) return;
     getModule(moduleId)
       .then((data) => {
         setModule(data);
-        setLessons([...data.lessons].sort((a, b) => a.order - b.order));
+        editor.reset(data.lessons);
         setStatus(data.status);
       })
       .catch((err) => setError(err.message));
+    // editor's identity is stable across renders (its setters don't change) -
+    // only re-fetch when the route's moduleId actually changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [moduleId]);
-
-  function reorder(draggedId: string, targetId: string) {
-    setLessons((prev) => {
-      const dragged = prev.find((l) => l.lessonId === draggedId);
-      if (!dragged) return prev;
-      const without = prev.filter((l) => l.lessonId !== draggedId);
-      const targetIndex = without.findIndex((l) => l.lessonId === targetId);
-      without.splice(targetIndex, 0, dragged);
-      return without.map((l, i) => ({ ...l, order: i + 1 }));
-    });
-  }
-
-  function swapBlank(targetId: string, newType: LessonType) {
-    const displaced = lessons.find((l) => l.lessonId === targetId);
-    if (!displaced) return;
-    const blank = createBlankLesson(newType, displaced.order);
-    setLessons((prev) => prev.map((l) => (l.lessonId === targetId ? blank : l)));
-    setSavedLessons((prev) => [...prev, displaced]);
-  }
-
-  function swapSaved(targetId: string, savedLessonId: string) {
-    const saved = savedLessons.find((l) => l.lessonId === savedLessonId);
-    const displaced = lessons.find((l) => l.lessonId === targetId);
-    if (!saved || !displaced) return;
-    const restored = { ...saved, order: displaced.order };
-    setLessons((prev) => prev.map((l) => (l.lessonId === targetId ? restored : l)));
-    setSavedLessons((prev) => [...prev.filter((l) => l.lessonId !== savedLessonId), displaced]);
-  }
-
-  function remove(lessonId: string) {
-    const removed = lessons.find((l) => l.lessonId === lessonId);
-    if (!removed) return;
-    setLessons((prev) =>
-      prev.filter((l) => l.lessonId !== lessonId).map((l, i) => ({ ...l, order: i + 1 }))
-    );
-    setSavedLessons((prev) => [...prev, removed]);
-  }
-
-  function swapLibrary(targetId: string, libraryLesson: Lesson) {
-    const displaced = lessons.find((l) => l.lessonId === targetId);
-    if (!displaced) return;
-    const copy = { ...libraryLesson, lessonId: crypto.randomUUID(), order: displaced.order } as Lesson;
-    setLessons((prev) => prev.map((l) => (l.lessonId === targetId ? copy : l)));
-    setSavedLessons((prev) => [...prev, displaced]);
-  }
-
-  function appendBlank(type: LessonType) {
-    setLessons((prev) => [...prev, createBlankLesson(type, prev.length + 1)]);
-  }
-
-  function appendSaved(savedLessonId: string) {
-    const saved = savedLessons.find((l) => l.lessonId === savedLessonId);
-    if (!saved) return;
-    setLessons((prev) => [...prev, { ...saved, order: prev.length + 1 }]);
-    setSavedLessons((prev) => prev.filter((l) => l.lessonId !== savedLessonId));
-  }
-
-  function appendLibrary(libraryLesson: Lesson) {
-    setLessons((prev) => [...prev, { ...libraryLesson, lessonId: crypto.randomUUID(), order: prev.length + 1 }]);
-  }
-
-  function importLesson(lesson: Lesson) {
-    setSavedLessons((prev) => [...prev, lesson]);
-  }
-
-  function updateContent(lessonId: string, content: Lesson["content"]) {
-    setLessons((prev) =>
-      // The editor form only ever produces a content shape matching the lesson's
-      // own type, but TypeScript can't correlate that through the union - assert it.
-      prev.map((l) => (l.lessonId === lessonId ? ({ ...l, content } as Lesson) : l))
-    );
-  }
 
   async function handleSave() {
     if (!foundModule) return;
     setSaveStatus("saving");
     try {
-      const saved = await saveModule(foundModule.moduleId, { ...foundModule, lessons, status });
+      const saved = await saveModule(foundModule.moduleId, { ...foundModule, lessons: editor.lessons, status });
       setModule(saved);
       setSaveStatus("saved");
     } catch {
       setSaveStatus("error");
+    }
+  }
+
+  async function handleUnassign() {
+    if (!foundModule) return;
+    if (!confirm("Remove this module from its course? It'll move to the unassigned library, reusable from any course.")) return;
+    setUnassigning(true);
+    try {
+      const updated = await unassignModule(foundModule.moduleId);
+      if (updated) {
+        setModule(updated);
+      } else {
+        // No lessons yet - the server deletes an empty unassigned module
+        // rather than keeping it as clutter, so there's nothing left to edit.
+        navigate("/admin");
+      }
+    } finally {
+      setUnassigning(false);
     }
   }
 
@@ -118,7 +68,11 @@ export function AdminModuleEditor() {
   return (
     <main>
       <p className="breadcrumb">
-        <Link to={`/admin/courses/${foundModule.courseId}`}>&larr; Back to course</Link>
+        {foundModule.courseId ? (
+          <Link to={`/admin/courses/${foundModule.courseId}`}>&larr; Back to course</Link>
+        ) : (
+          <Link to="/admin">&larr; Back to courses (unassigned module)</Link>
+        )}
       </p>
       <div className="page-header">
         <div>
@@ -137,6 +91,11 @@ export function AdminModuleEditor() {
           <button type="button" onClick={handleSave} disabled={saveStatus === "saving"}>
             {saveStatus === "saving" ? "Saving..." : "Save"}
           </button>
+          {foundModule.courseId && (
+            <button type="button" onClick={handleUnassign} disabled={unassigning}>
+              {unassigning ? "Unassigning..." : "Unassign from course"}
+            </button>
+          )}
           {saveStatus === "saved" && <span className="save-status save-status-ok">Saved</span>}
           {saveStatus === "error" && <span className="save-status save-status-error">Save failed</span>}
         </div>
@@ -144,18 +103,18 @@ export function AdminModuleEditor() {
 
       <div className="workspace">
         <div className="lesson-list">
-          {lessons.map((lesson) => (
+          {editor.lessons.map((lesson) => (
             <DraggableLessonBlock
               key={lesson.lessonId}
               lesson={lesson}
               isEditing={editingId === lesson.lessonId}
-              onReorder={reorder}
-              onSwapBlank={swapBlank}
-              onSwapSaved={swapSaved}
-              onSwapLibrary={swapLibrary}
-              onRemove={remove}
+              onReorder={editor.reorder}
+              onSwapBlank={editor.swapBlank}
+              onSwapSaved={editor.swapSaved}
+              onSwapLibrary={editor.swapLibrary}
+              onRemove={editor.remove}
               onToggleEdit={(id) => setEditingId((current) => (current === id ? null : id))}
-              onContentChange={updateContent}
+              onContentChange={editor.updateContent}
             />
           ))}
 
@@ -166,16 +125,16 @@ export function AdminModuleEditor() {
               const newType = e.dataTransfer.getData(NEW_LESSON_MIME) as LessonType | "";
               const savedId = e.dataTransfer.getData(SAVED_LESSON_MIME);
               const libraryJson = e.dataTransfer.getData(LIBRARY_LESSON_MIME);
-              if (newType) appendBlank(newType);
-              else if (savedId) appendSaved(savedId);
-              else if (libraryJson) appendLibrary(JSON.parse(libraryJson) as Lesson);
+              if (newType) editor.appendBlank(newType);
+              else if (savedId) editor.appendSaved(savedId);
+              else if (libraryJson) editor.appendLibrary(JSON.parse(libraryJson) as Lesson);
             }}
           >
             Drop a library block here to add it to the end
           </div>
         </div>
 
-        <ComponentLibrary savedLessons={savedLessons} onDropRemove={remove} onImportLesson={importLesson} />
+        <ComponentLibrary savedLessons={editor.savedLessons} onDropRemove={editor.remove} onImportLesson={editor.importLesson} />
       </div>
     </main>
   );

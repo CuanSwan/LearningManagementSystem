@@ -125,6 +125,11 @@ main {
   gap: 0.15rem;
 }
 
+.library-item-name {
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
 .library-item-type {
   font-size: 0.68rem;
   text-transform: uppercase;
@@ -183,6 +188,22 @@ main {
   font-size: 0.75rem;
   color: #999;
   margin: 0.2rem 0 0.4rem;
+}
+
+.library-unassigned {
+  border-top: 1px solid #ddd;
+}
+
+.library-new-module-link {
+  display: inline-block;
+  font-size: 0.78rem;
+  margin-bottom: 0.6rem;
+}
+
+.library-tree-edit-link {
+  display: inline-block;
+  font-size: 0.72rem;
+  margin-bottom: 0.4rem;
 }
 
 .import-error {

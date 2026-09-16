@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import type { Course, Lesson, Module } from "../types.js";
 import { listAllModules, listCourses } from "../api.js";
 import { LIBRARY_LESSON_MIME } from "../dnd.js";
-import { describeLesson, lessonTypeLabel } from "../lessonTemplates.js";
+import { describeLesson, lessonTypeLabel, moduleLessonLabel } from "../lessonTemplates.js";
 
 const UNCATEGORIZED = "Uncategorized";
 
@@ -21,11 +22,15 @@ export function CourseLibraryTree() {
   }, []);
 
   if (error) return <p className="import-error">Failed to load course library: {error}</p>;
-  if (courses.length === 0) return null;
+  if (courses.length === 0 && modules.length === 0) return null;
 
   const modulesByCourse = new Map<string, Module[]>();
+  const unassignedModules: Module[] = [];
   for (const module of modules) {
-    if (!module.courseId) continue;
+    if (!module.courseId) {
+      unassignedModules.push(module);
+      continue;
+    }
     const list = modulesByCourse.get(module.courseId) ?? [];
     list.push(module);
     modulesByCourse.set(module.courseId, list);
@@ -37,6 +42,14 @@ export function CourseLibraryTree() {
     const list = coursesByCategory.get(category) ?? [];
     list.push(course);
     coursesByCategory.set(category, list);
+  }
+
+  const unassignedByCategory = new Map<string, Module[]>();
+  for (const module of unassignedModules) {
+    const category = module.category || UNCATEGORIZED;
+    const list = unassignedByCategory.get(category) ?? [];
+    list.push(module);
+    unassignedByCategory.set(category, list);
   }
 
   return (
@@ -69,17 +82,52 @@ export function CourseLibraryTree() {
           ))}
         </details>
       ))}
+
+      <div className="library-section library-unassigned">
+        <h3>Unassigned</h3>
+        <p className="library-section-hint">Reusable modules not attached to any course.</p>
+        <Link to="/admin/modules/new" className="library-new-module-link">
+          + New module
+        </Link>
+        {unassignedByCategory.size === 0 ? (
+          <p className="library-tree-empty">Nothing unassigned yet</p>
+        ) : (
+          [...unassignedByCategory.entries()].map(([category, categoryModules]) => (
+            <details key={category} className="library-tree-node">
+              <summary>{category}</summary>
+              {categoryModules.map((module) => (
+                <details key={module.moduleId} className="library-tree-node library-tree-module">
+                  <summary>{module.seed.title}</summary>
+                  <Link to={`/admin/modules/${module.moduleId}`} className="library-tree-edit-link">
+                    Edit module &rarr;
+                  </Link>
+                  {module.lessons.length === 0 ? (
+                    <p className="library-tree-empty">No lessons yet</p>
+                  ) : (
+                    [...module.lessons]
+                      .sort((a, b) => a.order - b.order)
+                      .map((lesson) => (
+                        <LibraryLessonItem key={lesson.lessonId} lesson={lesson} name={moduleLessonLabel(module, lesson)} />
+                      ))
+                  )}
+                </details>
+              ))}
+            </details>
+          ))
+        )}
+      </div>
     </div>
   );
 }
 
-function LibraryLessonItem({ lesson }: { lesson: Lesson }) {
+function LibraryLessonItem({ lesson, name }: { lesson: Lesson; name?: string }) {
   return (
     <div
       className="library-item library-item-saved"
       draggable
       onDragStart={(e) => e.dataTransfer.setData(LIBRARY_LESSON_MIME, JSON.stringify(lesson))}
     >
+      {name && <span className="library-item-name">{name}</span>}
       <span className="library-item-type">{lessonTypeLabel(lesson.type)}</span>
       <span className="library-item-preview">{describeLesson(lesson)}</span>
     </div>

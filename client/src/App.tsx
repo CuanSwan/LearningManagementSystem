@@ -8,6 +8,7 @@ import { DisplayPreferenceProvider, useDisplayPreference } from "./displayPrefer
 import { AdminCourseDetail } from "./pages/AdminCourseDetail.js";
 import { AdminCourseList } from "./pages/AdminCourseList.js";
 import { AdminModuleEditor } from "./pages/AdminModuleEditor.js";
+import { AdminNewModule } from "./pages/AdminNewModule.js";
 import { AdminLearningPathDetail } from "./pages/AdminLearningPathDetail.js";
 import { AdminLearningPathList } from "./pages/AdminLearningPathList.js";
 import { AdminUsers } from "./pages/AdminUsers.js";
@@ -65,6 +66,7 @@ export function App() {
             <Route element={<RequireRole roles={["admin", "super_admin"]} />}>
               <Route path="/admin" element={<AdminCourseList />} />
               <Route path="/admin/courses/:courseId" element={<AdminCourseDetail />} />
+              <Route path="/admin/modules/new" element={<AdminNewModule />} />
               <Route path="/admin/modules/:moduleId" element={<AdminModuleEditor />} />
               <Route path="/admin/learning-paths" element={<AdminLearningPathList />} />
               <Route path="/admin/learning-paths/:pathId" element={<AdminLearningPathDetail />} />
