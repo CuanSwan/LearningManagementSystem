@@ -36,9 +36,11 @@ describe("convertRiseCourse", () => {
     expect(result.modules).toHaveLength(1);
     expect(result.modules[0].title).toBe("Module One");
     expect(result.modules[0].objective).toBe("Objective one.");
+    // Directly adjacent text blocks (no divider/interactive block between
+    // them) merge into a single fuller lesson - see the dedicated merging
+    // tests below for cases with something between them.
     expect(result.modules[0].lessons).toEqual([
-      expect.objectContaining({ type: "text", content: { body: "Hi\n\nBody text." } }),
-      expect.objectContaining({ type: "text", content: { body: "Impact line." } }),
+      expect.objectContaining({ type: "text", content: { body: "Hi\n\nBody text.\n\nImpact line." } }),
     ]);
   });
 
@@ -65,7 +67,7 @@ describe("convertRiseCourse", () => {
     expect(result.modules[0].lessons[0]).toMatchObject({ type: "text", content: { body: "1. First\n2. Second" } });
   });
 
-  it("skips divider blocks without producing a lesson or bumping order", () => {
+  it("a divider between two text blocks breaks the merge, not just skips itself", () => {
     const result = convertRiseCourse(
       riseCourse([
         {
@@ -80,7 +82,69 @@ describe("convertRiseCourse", () => {
       ])
     );
     expect(result.modules[0].lessons).toHaveLength(2);
-    expect(result.modules[0].lessons[1].order).toBe(2);
+    expect(result.modules[0].lessons[0]).toMatchObject({ content: { body: "One" } });
+    expect(result.modules[0].lessons[1]).toMatchObject({ content: { body: "Two" }, order: 2 });
+  });
+
+  it("merges three directly-adjacent text/list blocks into one lesson", () => {
+    const result = convertRiseCourse(
+      riseCourse([
+        {
+          id: "l1",
+          title: "M",
+          items: [
+            { id: "b1", type: "text", family: "text", items: [{ paragraph: "<p>One</p>" }] },
+            { id: "b2", type: "list", family: "list", items: [{ number: "1", paragraph: "<p>Two</p>" }] },
+            { id: "b3", type: "text", family: "impact", variant: "b", items: [{ paragraph: "<p>Three</p>" }] },
+          ],
+        },
+      ])
+    );
+    expect(result.modules[0].lessons).toEqual([
+      expect.objectContaining({ type: "text", content: { body: "One\n\n1. Two\n\nThree" }, order: 1 }),
+    ]);
+  });
+
+  it("a quiz between two text blocks breaks the merge and keeps its own order", () => {
+    const result = convertRiseCourse(
+      riseCourse([
+        {
+          id: "l1",
+          title: "M",
+          items: [
+            { id: "b1", type: "text", family: "text", items: [{ paragraph: "<p>One</p>" }] },
+            {
+              id: "b2",
+              type: "knowledgeCheck",
+              family: "knowledgeCheck",
+              variant: "multiple choice",
+              items: [{ type: "MULTIPLE_CHOICE", title: "Q?", answers: [{ title: "A", correct: true }, { title: "B" }] }],
+            },
+            { id: "b3", type: "text", family: "text", items: [{ paragraph: "<p>Two</p>" }] },
+          ],
+        },
+      ])
+    );
+    expect(result.modules[0].lessons.map((l) => l.type)).toEqual(["text", "quiz", "text"]);
+    expect(result.modules[0].lessons.map((l) => l.order)).toEqual([1, 2, 3]);
+  });
+
+  it("a skipped/unsupported block between two text blocks breaks the merge", () => {
+    const result = convertRiseCourse(
+      riseCourse([
+        {
+          id: "l1",
+          title: "M",
+          items: [
+            { id: "b1", type: "text", family: "text", items: [{ paragraph: "<p>One</p>" }] },
+            { id: "b2", type: "video", family: "video" },
+            { id: "b3", type: "text", family: "text", items: [{ paragraph: "<p>Two</p>" }] },
+          ],
+        },
+      ])
+    );
+    expect(result.modules[0].lessons).toHaveLength(2);
+    expect(result.skipped).toEqual([{ type: "video", family: "video", variant: undefined }]);
   });
 
   it("converts a flashcard block", () => {

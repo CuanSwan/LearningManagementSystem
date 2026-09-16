@@ -229,21 +229,43 @@ function convertBlock(block: RiseBlock, base: LessonBase, skipped: SkippedBlock[
 }
 
 function convertLesson(riseLesson: RiseLesson, skipped: SkippedBlock[]): ConvertedModule {
+  // Rise deliberately splits content into short, single-idea text blocks
+  // (its authoring pattern, not a conversion artifact - see the "why are
+  // lessons so short" conversation). That reads as choppy once flattened
+  // into a plain lesson list, so raw blocks that are both text AND directly
+  // adjacent in the original block order are merged into one fuller lesson.
+  // A divider or an unsupported/skipped block still breaks the run even
+  // though it produces no lesson itself - it represents a deliberate pacing
+  // break (or at least "something else was here") in the original course,
+  // and merging across it would splice together text that was never meant
+  // to read as one continuous passage.
   const lessons: Lesson[] = [];
   let order = 1;
+  let lastWasMergeableText = false;
   for (const block of riseLesson.items ?? []) {
     const { source, wordingStyle } = authorshipFor(block);
     const base: LessonBase = { lessonId: `rise-${block.id}`, schemaVersion: 1, source, wordingStyle, order };
     const converted = convertBlock(block, base, skipped);
-    if (converted) {
+
+    if (!converted) {
+      lastWasMergeableText = false;
+      continue;
+    }
+
+    if (converted.type === "text" && lastWasMergeableText) {
+      const last = lessons[lessons.length - 1] as Extract<Lesson, { type: "text" }>;
+      last.content = { body: [last.content.body, converted.content.body].filter(Boolean).join("\n\n") };
+    } else {
       lessons.push(converted);
       order++;
     }
+    lastWasMergeableText = converted.type === "text";
   }
+
   return {
     title: riseLesson.title ?? "Untitled module",
     objective: stripHtml(riseLesson.description) || "Imported from Rise 360.",
-    lessons,
+    lessons: lessons.map((lesson, i) => ({ ...lesson, order: i + 1 })),
   };
 }
 
