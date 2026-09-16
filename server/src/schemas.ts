@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { sanitizeHtml } from "./sanitizeHtml.js";
 import { ThemeOverrideSchema } from "./theme.js";
 
 export const LessonSourceSchema = z.enum(["human", "ai_generated"]);
@@ -55,7 +56,11 @@ const MatchingContentSchema = z.object({
 });
 
 const CustomHtmlContentSchema = z.object({
-  html: z.string(),
+  // Sanitized as part of parsing itself, not in a separate step someone
+  // could forget to call - every write path (create, save, seed, the Rise
+  // importer) goes through parseModule/LessonSchema, so every one of them
+  // gets this for free.
+  html: z.string().transform((html) => sanitizeHtml(html)),
 });
 
 const EmbedContentSchema = z.object({

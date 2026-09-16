@@ -122,6 +122,32 @@ describe("ModuleSchema", () => {
     expect(() => parseModule(validModule)).not.toThrow();
   });
 
+  it("sanitizes an html lesson's content on parse, not just at render time", () => {
+    const withScript = {
+      ...validModule,
+      lessons: [
+        {
+          lessonId: "l9",
+          type: "html",
+          schemaVersion: 1,
+          source: "human",
+          wordingStyle: "official",
+          order: 1,
+          content: {
+            html: '<h3>Worked example</h3><p onclick="steal()">Click me</p><script>evil()</script><img src=x onerror="evil2()">',
+          },
+        },
+      ],
+    };
+    const parsed = parseModule(withScript);
+    const lesson = parsed.lessons[0];
+    if (lesson.type !== "html") throw new Error("expected an html lesson");
+    expect(lesson.content.html).not.toContain("<script>");
+    expect(lesson.content.html).not.toContain("onclick");
+    expect(lesson.content.html).not.toContain("onerror");
+    expect(lesson.content.html).toContain("<h3>Worked example</h3>");
+  });
+
   it("rejects an embed lesson with a javascript: URL", () => {
     const invalid = {
       ...validModule,
