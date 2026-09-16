@@ -25,6 +25,7 @@ export function CourseLibraryTree() {
 
   const modulesByCourse = new Map<string, Module[]>();
   for (const module of modules) {
+    if (!module.courseId) continue;
     const list = modulesByCourse.get(module.courseId) ?? [];
     list.push(module);
     modulesByCourse.set(module.courseId, list);

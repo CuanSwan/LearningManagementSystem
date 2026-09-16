@@ -1,5 +1,5 @@
 import { LessonDisplayModeSchema } from "./displayPreference.js";
-import { ModuleSchema } from "./schemas.js";
+import { LessonSchema, ModuleSchema } from "./schemas.js";
 import { ThemeOverrideSchema } from "./theme.js";
 import { UserRoleSchema, type UserRole } from "./userSchema.js";
 import cookieParser from "cookie-parser";
@@ -16,6 +16,7 @@ import {
   createCourse,
   createLearningPath,
   createModule,
+  deleteModule,
   getCourse,
   getLearningPath,
   getModule,
@@ -27,6 +28,7 @@ import {
   patchCourse,
   patchLearningPath,
   saveModule,
+  unassignModule,
 } from "./store.js";
 import { createUser, getUserById, initUserStore, listUsers, setUserRole, verifyCredentials } from "./userStore.js";
 
@@ -200,9 +202,14 @@ const CoursePatchSchema = z.object({
 });
 
 const CreateModuleInputSchema = z.object({
-  courseId: z.string().min(1),
+  courseId: z.string().min(1).optional(),
+  category: z.string().min(1).optional(),
   title: z.string().min(1),
   objective: z.string().min(1),
+  // Only meaningful (and required, enforced below) when creating a
+  // standalone library module - an empty unassigned module is clutter, not
+  // a reusable component, so creation is refused rather than persisting one.
+  lessons: z.array(LessonSchema).optional(),
 });
 
 app.get("/api/courses", requireAuth, async (_req, res) => {
@@ -261,6 +268,10 @@ app.post("/api/modules", requireRole("admin", "super_admin"), async (req, res) =
     res.status(400).json({ error: parsed.error.issues });
     return;
   }
+  if (!parsed.data.courseId && (parsed.data.lessons ?? []).length === 0) {
+    res.status(400).json({ error: "A standalone library module needs at least one lesson to be worth saving" });
+    return;
+  }
   const module = await createModule(parsed.data);
   res.status(201).json(module);
 });
@@ -282,6 +293,19 @@ app.put("/api/modules/:moduleId", requireRole("admin", "super_admin"), async (re
   }
   const saved = await saveModule(req.params.moduleId, parsed.data);
   res.json(saved);
+});
+
+app.patch("/api/modules/:moduleId/unassign", requireRole("admin", "super_admin"), async (req, res) => {
+  const updated = await unassignModule(req.params.moduleId);
+  // A module that ends up with no content is deleted rather than kept as an
+  // empty library entry - a 204 here means "gone", not "not found".
+  if (updated) res.json(updated);
+  else res.status(204).end();
+});
+
+app.delete("/api/modules/:moduleId", requireRole("admin", "super_admin"), async (req, res) => {
+  await deleteModule(req.params.moduleId);
+  res.status(204).end();
 });
 
 // --- Learning paths ---

@@ -133,7 +133,14 @@ export const ModuleSeedSchema = z.object({
 
 export const ModuleSchema = z.object({
   moduleId: z.string(),
-  courseId: z.string(),
+  // Absent when the module isn't (or is no longer) part of any course - see
+  // `category` below, which is how such a module still gets placed in the
+  // admin library tree.
+  courseId: z.string().optional(),
+  // Only meaningful when courseId is absent: the category the module was
+  // removed from (or created under) via the library, so it still has a home
+  // in the tree without a course to look the category up from.
+  category: z.string().optional(),
   status: ModuleStatusSchema,
   seed: ModuleSeedSchema,
   lessons: z.array(LessonSchema),

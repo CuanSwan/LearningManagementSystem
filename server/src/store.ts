@@ -48,13 +48,20 @@ export async function getModule(moduleId: string): Promise<Module | undefined> {
   return (await modules.get(moduleId)) ?? undefined;
 }
 
-export async function createModule(input: { courseId: string; title: string; objective: string }): Promise<Module> {
+export async function createModule(input: {
+  courseId?: string;
+  category?: string;
+  title: string;
+  objective: string;
+  lessons?: unknown[];
+}): Promise<Module> {
   const module = parseModule({
     moduleId: crypto.randomUUID(),
     courseId: input.courseId,
+    category: input.courseId ? undefined : (input.category ?? "Uncategorized"),
     status: "draft",
     seed: { title: input.title, objective: input.objective },
-    lessons: [],
+    lessons: input.lessons ?? [],
   });
   await modules.set(module.moduleId, module);
   return module;
@@ -64,6 +71,33 @@ export async function saveModule(moduleId: string, data: unknown): Promise<Modul
   const module = parseModule({ ...(data as object), moduleId });
   await modules.set(moduleId, module);
   return module;
+}
+
+// Removes a module from its course, turning it into a reusable library entry
+// (see ModuleSchema's `category`). A module with no content yet is just
+// deleted outright instead - an empty unassigned module is clutter, not a
+// reusable component, so it isn't worth keeping around.
+export async function unassignModule(moduleId: string): Promise<Module | null> {
+  const existing = await modules.get(moduleId);
+  if (!existing) return null;
+
+  if (existing.lessons.length === 0) {
+    await modules.remove(moduleId);
+    return null;
+  }
+
+  const course = existing.courseId ? await courses.get(existing.courseId) : null;
+  const updated = parseModule({
+    ...existing,
+    courseId: undefined,
+    category: course?.category ?? existing.category ?? "Uncategorized",
+  });
+  await modules.set(moduleId, updated);
+  return updated;
+}
+
+export async function deleteModule(moduleId: string): Promise<boolean> {
+  return modules.remove(moduleId);
 }
 
 export function seedCourse(course: Course): Promise<void> {

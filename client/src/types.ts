@@ -96,7 +96,12 @@ export interface ModuleSeed {
 
 export interface Module {
   moduleId: string;
-  courseId: string;
+  // Absent when the module isn't (or is no longer) part of any course - see
+  // `category`, which places such a module in the admin library tree instead.
+  courseId?: string;
+  // Only meaningful when courseId is absent: the category the module was
+  // removed from (or created under) via the library.
+  category?: string;
   status: ModuleStatus;
   seed: ModuleSeed;
   lessons: Lesson[];

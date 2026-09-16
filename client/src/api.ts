@@ -1,4 +1,4 @@
-import type { Course, LearningPath, LessonDisplayMode, Module, User, UserRole } from "./types.js";
+import type { Course, LearningPath, Lesson, LessonDisplayMode, Module, User, UserRole } from "./types.js";
 
 // In production this points at the deployed API (e.g. Render); in local
 // dev it's left empty and vite.config.ts's proxy forwards /api requests
@@ -90,12 +90,35 @@ export function getModule(moduleId: string): Promise<Module> {
   return request(`/api/modules/${moduleId}`);
 }
 
-export function createModule(input: { courseId: string; title: string; objective: string }): Promise<Module> {
+export function createModule(input: {
+  courseId?: string;
+  category?: string;
+  title: string;
+  objective: string;
+  lessons?: Lesson[];
+}): Promise<Module> {
   return request("/api/modules", { method: "POST", body: JSON.stringify(input) });
 }
 
 export function saveModule(moduleId: string, module: Module): Promise<Module> {
   return request(`/api/modules/${moduleId}`, { method: "PUT", body: JSON.stringify(module) });
+}
+
+// Removes a module from its course, turning it into a reusable library entry.
+// A module with no lessons yet is deleted outright instead (returns null) -
+// see server/src/store.ts's unassignModule for why.
+export async function unassignModule(moduleId: string): Promise<Module | null> {
+  const res = await fetch(`${API_BASE_URL}/api/modules/${moduleId}/unassign`, {
+    method: "PATCH",
+    credentials: "include",
+  });
+  if (res.status === 204) return null;
+  if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+  return res.json();
+}
+
+export async function deleteModule(moduleId: string): Promise<void> {
+  await fetch(`${API_BASE_URL}/api/modules/${moduleId}`, { method: "DELETE", credentials: "include" });
 }
 
 export function listLearningPaths(): Promise<LearningPath[]> {
