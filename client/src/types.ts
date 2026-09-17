@@ -86,6 +86,11 @@ export interface EmbedLesson extends LessonBase {
   content: { url: string };
 }
 
+export interface ExamBreakdownLesson extends LessonBase {
+  type: "examBreakdown";
+  content: { passMarkPercent: number; timeLimitMinutes: number; questionCount: number; openBook: boolean };
+}
+
 export type Lesson =
   | TextLesson
   | VideoLesson
@@ -96,7 +101,8 @@ export type Lesson =
   | AccordionLesson
   | MatchingLesson
   | CustomHtmlLesson
-  | EmbedLesson;
+  | EmbedLesson
+  | ExamBreakdownLesson;
 export type LessonType = Lesson["type"];
 
 export interface ModuleSeed {

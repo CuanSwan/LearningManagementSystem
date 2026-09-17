@@ -1248,6 +1248,34 @@ a.path-snake-link:hover .path-snake-bubble {
   opacity: 0.55;
 }
 
+.exam-breakdown-lesson {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+  margin: 0;
+  width: 100%;
+}
+
+.exam-breakdown-stat {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  padding: 0.9rem 1rem;
+}
+
+.exam-breakdown-stat dt {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: #555;
+  margin: 0 0 0.35rem;
+}
+
+.exam-breakdown-stat dd {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--theme-primary, #3e6259);
+}
+
 .matching-item.is-selected {
   border-color: var(--theme-primary, #3e6259);
 }

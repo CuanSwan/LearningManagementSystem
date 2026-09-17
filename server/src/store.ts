@@ -23,20 +23,23 @@ export async function getCourse(courseId: string): Promise<Course | undefined> {
 
 // Every course, however it's created (the admin "Create a course" form or a
 // Rise import), starts with these required lessons - orientation video,
-// study plan, additional resources - as a mandatory first module. They're
-// blank for the admin to fill in, not shared boilerplate text: each
-// course's orientation content is its own.
-//
-// Exam breakdown is deliberately NOT included here yet - it needs its own
-// design (not just a generic text lesson) that's still being researched.
-// Add it back to the lessons array below once that's settled.
+// exam breakdown, study plan, additional resources - as a mandatory first
+// module. They're blank for the admin to fill in, not shared boilerplate
+// text: each course's orientation content is its own. The exam breakdown's
+// defaults describe a placeholder exam, not "no exam" - an admin who leaves
+// it untouched still sees a plausible, editable structure rather than zeros.
 const ORIENTATION_MODULE_TITLE = "Course Orientation";
 const ORIENTATION_MODULE_OBJECTIVE =
-  "Watch the orientation video and review the study plan and additional resources before starting the course.";
+  "Watch the orientation video and review the exam breakdown, study plan, and additional resources before starting the course.";
 
 function orientationLesson(order: number, type: "video", content: { videoUrl: string }): unknown;
 function orientationLesson(order: number, type: "text", content: { body: string }): unknown;
-function orientationLesson(order: number, type: "video" | "text", content: unknown): unknown {
+function orientationLesson(
+  order: number,
+  type: "examBreakdown",
+  content: { passMarkPercent: number; timeLimitMinutes: number; questionCount: number; openBook: boolean }
+): unknown;
+function orientationLesson(order: number, type: "video" | "text" | "examBreakdown", content: unknown): unknown {
   return {
     lessonId: crypto.randomUUID(),
     schemaVersion: 1,
@@ -56,8 +59,14 @@ async function createOrientationModule(courseId: string): Promise<void> {
     seed: { title: ORIENTATION_MODULE_TITLE, objective: ORIENTATION_MODULE_OBJECTIVE },
     lessons: [
       orientationLesson(1, "video", { videoUrl: "" }),
-      orientationLesson(2, "text", { body: "<h2>Study Plan</h2>" }),
-      orientationLesson(3, "text", { body: "<h2>Additional Resources</h2>" }),
+      orientationLesson(2, "examBreakdown", {
+        passMarkPercent: 50,
+        timeLimitMinutes: 60,
+        questionCount: 20,
+        openBook: false,
+      }),
+      orientationLesson(3, "text", { body: "<h2>Study Plan</h2>" }),
+      orientationLesson(4, "text", { body: "<h2>Additional Resources</h2>" }),
     ],
   });
   await modules.set(module.moduleId, module);

@@ -11,6 +11,7 @@ export const LESSON_TYPES: LessonType[] = [
   "matching",
   "html",
   "embed",
+  "examBreakdown",
 ];
 
 const LESSON_TYPE_LABELS: Record<LessonType, string> = {
@@ -24,6 +25,7 @@ const LESSON_TYPE_LABELS: Record<LessonType, string> = {
   matching: "Matching",
   html: "Custom HTML",
   embed: "Embed (iframe)",
+  examBreakdown: "Exam Breakdown",
 };
 
 export function lessonTypeLabel(type: LessonType): string {
@@ -52,6 +54,10 @@ export function describeLesson(lesson: Lesson): string {
       return lesson.content.html || "(empty)";
     case "embed":
       return lesson.content.url || "(empty)";
+    case "examBreakdown": {
+      const { questionCount, timeLimitMinutes, passMarkPercent, openBook } = lesson.content;
+      return `${questionCount} questions, ${timeLimitMinutes} min, ${passMarkPercent}% to pass, ${openBook ? "open book" : "closed book"}`;
+    }
   }
 }
 
@@ -96,5 +102,11 @@ export function createBlankLesson(type: LessonType, order: number): Lesson {
       return { ...base, type, content: { html: "" } };
     case "embed":
       return { ...base, type, content: { url: "" } };
+    case "examBreakdown":
+      return {
+        ...base,
+        type,
+        content: { passMarkPercent: 50, timeLimitMinutes: 60, questionCount: 20, openBook: false },
+      };
   }
 }

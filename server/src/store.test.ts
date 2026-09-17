@@ -44,10 +44,8 @@ describe("createCourse", () => {
     const orientation = modules[0];
     expect(orientation.seed.title).toBe("Course Orientation");
     expect(orientation.status).toBe("draft");
-    // Exam breakdown is deliberately not part of this yet - see the comment
-    // above createOrientationModule in store.ts.
-    expect(orientation.lessons.map((l) => l.type)).toEqual(["video", "text", "text"]);
-    expect(orientation.lessons.map((l) => l.order)).toEqual([1, 2, 3]);
+    expect(orientation.lessons.map((l) => l.type)).toEqual(["video", "examBreakdown", "text", "text"]);
+    expect(orientation.lessons.map((l) => l.order)).toEqual([1, 2, 3, 4]);
   });
 
   it("gives each new course its own independent orientation module and content", async () => {
