@@ -44,7 +44,7 @@ describe("createCourse", () => {
     const orientation = modules[0];
     expect(orientation.seed.title).toBe("Course Orientation");
     expect(orientation.status).toBe("draft");
-    expect(orientation.lessons.map((l) => l.type)).toEqual(["video", "examBreakdown", "text", "text"]);
+    expect(orientation.lessons.map((l) => l.type)).toEqual(["examBreakdown", "video", "text", "text"]);
     expect(orientation.lessons.map((l) => l.order)).toEqual([1, 2, 3, 4]);
   });
 
