@@ -1,21 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { hasAtLeastRole, UserSchema } from "./userSchema.js";
-
-describe("hasAtLeastRole", () => {
-  it("a role satisfies its own minimum", () => {
-    expect(hasAtLeastRole("admin", "admin")).toBe(true);
-  });
-
-  it("a higher role satisfies a lower minimum", () => {
-    expect(hasAtLeastRole("super_admin", "admin")).toBe(true);
-    expect(hasAtLeastRole("admin", "student")).toBe(true);
-  });
-
-  it("a lower role does not satisfy a higher minimum", () => {
-    expect(hasAtLeastRole("student", "admin")).toBe(false);
-    expect(hasAtLeastRole("admin", "super_admin")).toBe(false);
-  });
-});
+import { UserSchema } from "./userSchema.js";
 
 describe("UserSchema", () => {
   it("rejects an invalid email", () => {

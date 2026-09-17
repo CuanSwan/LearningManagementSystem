@@ -11,13 +11,3 @@ export const UserSchema = z.object({
   role: UserRoleSchema,
 });
 export type User = z.infer<typeof UserSchema>;
-
-const ROLE_RANK: Record<UserRole, number> = {
-  student: 0,
-  admin: 1,
-  super_admin: 2,
-};
-
-export function hasAtLeastRole(role: UserRole, minimum: UserRole): boolean {
-  return ROLE_RANK[role] >= ROLE_RANK[minimum];
-}
