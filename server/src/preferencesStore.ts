@@ -8,8 +8,8 @@ interface PreferenceDoc extends Record<string, unknown> {
 
 let preferences: DocumentStore<PreferenceDoc>;
 
-export function initPreferencesStore(db: Database): void {
-  preferences = db.createStore<PreferenceDoc>("preferences", "userId");
+export async function initPreferencesStore(db: Database): Promise<void> {
+  preferences = await db.createStore<PreferenceDoc>("preferences", "userId");
 }
 
 export async function getLessonDisplayMode(userId: string): Promise<LessonDisplayMode | null> {

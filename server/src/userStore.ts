@@ -12,8 +12,11 @@ interface StoredUser extends Record<string, unknown> {
 
 let users: DocumentStore<StoredUser>;
 
-export function initUserStore(db: Database): void {
-  users = db.createStore<StoredUser>("users", "userId");
+export async function initUserStore(db: Database): Promise<void> {
+  // Unique because login/registration key off email, not userId - without
+  // this, two concurrent registrations for the same address could both pass
+  // createUser's own "does this exist" check before either write lands.
+  users = await db.createStore<StoredUser>("users", "userId", [{ fields: { email: 1 }, unique: true }]);
 }
 
 function toPublicUser(stored: StoredUser): User {
@@ -43,7 +46,20 @@ export async function createUser(input: {
     role: input.role,
     passwordHash: hashPassword(input.password),
   };
-  await users.set(stored.userId, stored);
+  try {
+    await users.set(stored.userId, stored);
+  } catch (err) {
+    // The list() check above has a narrow race window between two
+    // concurrent registrations for the same email; the unique index this
+    // store is created with (see initUserStore) is what actually closes it,
+    // surfacing here as a duplicate-key error instead. Translate it to the
+    // same message as the check above so callers see one consistent error
+    // either way.
+    if ((err as { code?: number }).code === 11000) {
+      throw new Error("A user with that email already exists");
+    }
+    throw err;
+  }
   return toPublicUser(stored);
 }
 

@@ -60,7 +60,10 @@ describe("convertRiseCourse", () => {
     // them) merge into a single fuller lesson - see the dedicated merging
     // tests below for cases with something between them.
     expect(result.modules[0].lessons).toEqual([
-      expect.objectContaining({ type: "text", content: { body: "Hi\n\nBody text.\n\nImpact line." } }),
+      expect.objectContaining({
+        type: "text",
+        content: { body: "<h2>Hi</h2><p>Body text.</p>\n\n<p>Impact line.</p>" },
+      }),
     ]);
   });
 
@@ -84,7 +87,96 @@ describe("convertRiseCourse", () => {
         },
       ])
     );
-    expect(result.modules[0].lessons[0]).toMatchObject({ type: "text", content: { body: "1. First\n2. Second" } });
+    expect(result.modules[0].lessons[0]).toMatchObject({
+      type: "text",
+      content: { body: "<ol><li>First</li><li>Second</li></ol>" },
+    });
+  });
+
+  it("demotes every heading after the first, within one merged lesson, to a subheading", () => {
+    const result = convertRiseCourse(
+      riseCourse([
+        {
+          id: "l1",
+          title: "M",
+          items: [
+            { id: "b1", type: "text", family: "text", items: [{ heading: "First", paragraph: "<p>A</p>" }] },
+            { id: "b2", type: "text", family: "text", items: [{ heading: "Second", paragraph: "<p>B</p>" }] },
+            { id: "b3", type: "text", family: "text", items: [{ heading: "Third", paragraph: "<p>C</p>" }] },
+          ],
+        },
+      ])
+    );
+    const body = (result.modules[0].lessons[0].content as { body: string }).body;
+    expect(body).toContain("<h2>First</h2>");
+    expect(body).toContain("<h3>Second</h3>");
+    expect(body).toContain("<h3>Third</h3>");
+    expect(body).not.toContain("<h2>Second</h2>");
+  });
+
+  it("gives each merged lesson its own fresh first-heading, not a running count across lessons", () => {
+    const result = convertRiseCourse(
+      riseCourse([
+        {
+          id: "l1",
+          title: "M",
+          items: [
+            { id: "b1", type: "text", family: "text", items: [{ heading: "Lesson 1 heading", paragraph: "<p>A</p>" }] },
+            { id: "b2", type: "knowledgeCheck", family: "knowledgeCheck", variant: "multiple choice", items: [] },
+            { id: "b3", type: "text", family: "text", items: [{ heading: "Lesson 2 heading", paragraph: "<p>B</p>" }] },
+          ],
+        },
+      ])
+    );
+    expect(result.modules[0].lessons).toHaveLength(2);
+    const secondLessonBody = (result.modules[0].lessons[1].content as { body: string }).body;
+    expect(secondLessonBody).toContain("<h2>Lesson 2 heading</h2>");
+  });
+
+  it("HTML-escapes a heading and a plain-text paragraph", () => {
+    const result = convertRiseCourse(
+      riseCourse([
+        {
+          id: "l1",
+          title: "M",
+          items: [
+            {
+              id: "b1",
+              type: "text",
+              family: "text",
+              items: [{ heading: "A < B & C", paragraph: "Plain <not-a-tag> text" }],
+            },
+          ],
+        },
+      ])
+    );
+    const body = (result.modules[0].lessons[0].content as { body: string }).body;
+    expect(body).toContain("<h2>A &lt; B &amp; C</h2>");
+    expect(body).toContain("<p>Plain &lt;not-a-tag&gt; text</p>");
+  });
+
+  it("converts a bulleted list into a <ul>", () => {
+    const result = convertRiseCourse(
+      riseCourse([
+        {
+          id: "l1",
+          title: "M",
+          items: [
+            {
+              id: "b1",
+              type: "list",
+              family: "list",
+              variant: "bulleted",
+              items: [{ paragraph: "<p>First</p>" }, { paragraph: "<p>Second</p>" }],
+            },
+          ],
+        },
+      ])
+    );
+    expect(result.modules[0].lessons[0]).toMatchObject({
+      type: "text",
+      content: { body: "<ul><li>First</li><li>Second</li></ul>" },
+    });
   });
 
   it("a divider between two text blocks breaks the merge, not just skips itself", () => {
@@ -102,8 +194,8 @@ describe("convertRiseCourse", () => {
       ])
     );
     expect(result.modules[0].lessons).toHaveLength(2);
-    expect(result.modules[0].lessons[0]).toMatchObject({ content: { body: "One" } });
-    expect(result.modules[0].lessons[1]).toMatchObject({ content: { body: "Two" }, order: 2 });
+    expect(result.modules[0].lessons[0]).toMatchObject({ content: { body: "<p>One</p>" } });
+    expect(result.modules[0].lessons[1]).toMatchObject({ content: { body: "<p>Two</p>" }, order: 2 });
   });
 
   it("merges three directly-adjacent text/list blocks into one lesson", () => {
@@ -121,7 +213,11 @@ describe("convertRiseCourse", () => {
       ])
     );
     expect(result.modules[0].lessons).toEqual([
-      expect.objectContaining({ type: "text", content: { body: "One\n\n1. Two\n\nThree" }, order: 1 }),
+      expect.objectContaining({
+        type: "text",
+        content: { body: "<p>One</p>\n\n<ol><li>Two</li></ol>\n\n<p>Three</p>" },
+        order: 1,
+      }),
     ]);
   });
 

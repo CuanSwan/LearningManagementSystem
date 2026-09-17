@@ -1,4 +1,10 @@
+import { lazy, Suspense } from "react";
 import type { AccordionLesson, FlashcardLesson, Lesson, MatchingLesson, PracticalLesson, QuizLesson } from "../types.js";
+
+// TipTap/ProseMirror are the single largest dependency in this app's bundle
+// - lazy-loaded so students (who never open this editor) never pay for it,
+// only admins the moment they actually edit a text lesson.
+const RichTextEditor = lazy(() => import("./RichTextEditor.js").then((m) => ({ default: m.RichTextEditor })));
 
 function QuizEditor({
   content,
@@ -276,7 +282,9 @@ export function LessonEditorForm({
       return (
         <label className="field">
           Body
-          <textarea rows={4} value={lesson.content.body} onChange={(e) => onChange({ body: e.target.value })} />
+          <Suspense fallback={<p className="field-hint">Loading editor...</p>}>
+            <RichTextEditor value={lesson.content.body} onChange={(body) => onChange({ body })} />
+          </Suspense>
         </label>
       );
     case "video":

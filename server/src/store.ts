@@ -5,10 +5,12 @@ let courses: DocumentStore<Course>;
 let modules: DocumentStore<Module>;
 let learningPaths: DocumentStore<LearningPath>;
 
-export function initStore(db: Database): void {
-  courses = db.createStore<Course>("courses", "courseId");
-  modules = db.createStore<Module>("modules", "moduleId");
-  learningPaths = db.createStore<LearningPath>("learningPaths", "pathId");
+export async function initStore(db: Database): Promise<void> {
+  [courses, modules, learningPaths] = await Promise.all([
+    db.createStore<Course>("courses", "courseId"),
+    db.createStore<Module>("modules", "moduleId"),
+    db.createStore<LearningPath>("learningPaths", "pathId"),
+  ]);
 }
 
 export function listCourses(): Promise<Course[]> {

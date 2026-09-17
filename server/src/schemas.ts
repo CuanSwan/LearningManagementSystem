@@ -12,7 +12,11 @@ export const ModuleStatusSchema = z.enum(["draft", "ai_generated", "published"])
 export type ModuleStatus = z.infer<typeof ModuleStatusSchema>;
 
 const TextContentSchema = z.object({
-  body: z.string(),
+  // Rich markup from the admin's text editor (headings, lists, emphasis,
+  // etc.), sanitized on parse for the same reason CustomHtmlContentSchema
+  // below is - every write path (API, seed data, the Rise importer) goes
+  // through this schema, so none of them can forget to sanitize.
+  body: z.string().transform((html) => sanitizeHtml(html)),
 });
 
 const VideoContentSchema = z.object({

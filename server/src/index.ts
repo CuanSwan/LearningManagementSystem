@@ -498,10 +498,7 @@ app.put("/api/preferences", requireAuth, async (req, res) => {
 
 async function main() {
   const db = await connectDb();
-  initStore(db);
-  initUserStore(db);
-  initProgressStore(db);
-  initPreferencesStore(db);
+  await Promise.all([initStore(db), initUserStore(db), initProgressStore(db), initPreferencesStore(db)]);
 
   await seedUsers();
   await seedSampleData();

@@ -1268,6 +1268,92 @@ a.path-snake-link:hover .path-snake-bubble {
   overflow-x: auto;
 }
 
+.text-lesson-body {
+  /* white-space:pre-line keeps old plain-text lessons (authored before the
+     markup editor existed, no <p> tags of their own) showing paragraph
+     breaks from their \n\n the way they always visually appeared - it has
+     no effect on new content, which uses real block tags instead. */
+  white-space: pre-line;
+}
+
+.text-lesson-body :first-child {
+  margin-top: 0;
+}
+
+.text-lesson-body :last-child {
+  margin-bottom: 0;
+}
+
+.text-lesson-body h2 {
+  font-size: 1.4rem;
+  color: var(--theme-primary, #3e6259);
+}
+
+.text-lesson-body h3 {
+  font-size: 1.15rem;
+  color: var(--theme-primary, #3e6259);
+}
+
+.text-lesson-body blockquote {
+  margin: 1rem 0;
+  padding-left: 1rem;
+  border-left: 3px solid rgba(0, 0, 0, 0.15);
+  color: #555;
+}
+
+/* --- Rich text (markup) editor for the text lesson type --- */
+
+.rich-text-editor {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.rich-text-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  padding: 0.4rem;
+  background: #f4f4f4;
+  border-bottom: 1px solid #ccc;
+}
+
+.rich-text-toolbar select,
+.rich-text-toolbar button {
+  font: inherit;
+  font-size: 0.82rem;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.rich-text-toolbar button.active {
+  background: var(--theme-primary, #3e6259);
+  color: #fff;
+  border-color: var(--theme-primary, #3e6259);
+}
+
+.rich-text-content {
+  padding: 0.75rem;
+  min-height: 6rem;
+}
+
+.rich-text-content .ProseMirror {
+  outline: none;
+}
+
+.rich-text-source {
+  width: 100%;
+  box-sizing: border-box;
+  border: none;
+  border-top: 1px solid #ccc;
+  padding: 0.75rem;
+  font-family: monospace;
+  font-size: 0.85rem;
+}
+
 .embed-lesson {
   width: 100%;
 }

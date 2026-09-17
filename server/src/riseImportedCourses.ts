@@ -31,7 +31,7 @@ export const aiEngineeringModules: Module[] = [
         "order": 1,
         "type": "text",
         "content": {
-          "body": "Welcome to the AI Engineering Programme\n\nWelcome to your journey into AI engineering! The world is experiencing an AI revolution, and you’re about to become a creator, not just a spectator. Whether you’re new to programming or looking to upskill, this course will equip you to build real AI systems that solve real problems. The skills you gain here are in high demand, and you’ll be ready to make a real impact in one of the fastest-growing fields in technology.\n\nIn this lesson, you’ll get a clear overview of what to expect from the programme. Here’s what you’ll learn as you get started:\n\n1. Programme Structure Overview\n2. How You’ll Learn and Practise\n3. Habits for Success\n4. Where to Find Support\n\nThis programme is practical and portfolio-driven. You’ll build real projects, not just study theory.\n\nYour AI Engineering Journey\n\nExplore the full path you’ll take through this programme. Each phase builds your skills and confidence, leading up to a professional portfolio and final assessment. Click each phase to see what you’ll cover and the projects you’ll build."
+          "body": "<h2>Welcome to the AI Engineering Programme</h2><p>Welcome to your journey into AI engineering! The world is experiencing an AI revolution, and you’re about to become a creator, not just a spectator. Whether you’re new to programming or looking to upskill, this course will equip you to build real AI systems that solve real problems. The skills you gain here are in high demand, and you’ll be ready to make a real impact in one of the fastest-growing fields in technology.</p>\n\n<p>In this lesson, you’ll get a clear overview of what to expect from the programme. Here’s what you’ll learn as you get started:</p>\n\n<ol><li>Programme Structure Overview</li><li>How You’ll Learn and Practise</li><li>Habits for Success</li><li>Where to Find Support</li></ol>\n\n<p>This programme is practical and portfolio-driven. You’ll build real projects, not just study theory.</p>\n\n<h3>Your AI Engineering Journey</h3><p>Explore the full path you’ll take through this programme. Each phase builds your skills and confidence, leading up to a professional portfolio and final assessment. Click each phase to see what you’ll cover and the projects you’ll build.</p>"
         }
       },
       {
@@ -102,7 +102,7 @@ export const aiEngineeringModules: Module[] = [
         "order": 4,
         "type": "text",
         "content": {
-          "body": "Which Stage is This?\n\nTest your understanding of the four-stage learning method. Sort each activity into the correct stage to see how different tasks fit into your learning journey."
+          "body": "<h2>Which Stage is This?</h2><p>Test your understanding of the four-stage learning method. Sort each activity into the correct stage to see how different tasks fit into your learning journey.</p>"
         }
       },
       {
@@ -141,7 +141,7 @@ export const aiEngineeringModules: Module[] = [
         "order": 6,
         "type": "text",
         "content": {
-          "body": "Success Habits for AI Engineering Learners\n\nDeveloping the right habits will help you get the most out of this programme. Expand each tip to see practical advice for staying on track and building your skills."
+          "body": "<h2>Success Habits for AI Engineering Learners</h2><p>Developing the right habits will help you get the most out of this programme. Expand each tip to see practical advice for staying on track and building your skills.</p>"
         }
       },
       {
@@ -184,7 +184,7 @@ export const aiEngineeringModules: Module[] = [
         "order": 8,
         "type": "text",
         "content": {
-          "body": "Where to Find Support\n\nSupport is always available to help you succeed. Expand each tab to learn about the different resources and how to use them."
+          "body": "<h2>Where to Find Support</h2><p>Support is always available to help you succeed. Expand each tab to learn about the different resources and how to use them.</p>"
         }
       },
       {
@@ -231,7 +231,7 @@ export const aiEngineeringModules: Module[] = [
         "order": 10,
         "type": "text",
         "content": {
-          "body": "You’re never alone on this journey. Every expert started as a beginner—support is always here when you need it."
+          "body": "<p>You’re never alone on this journey. Every expert started as a beginner—support is always here when you need it.</p>"
         }
       },
       {
@@ -275,7 +275,7 @@ export const aiEngineeringModules: Module[] = [
         "order": 1,
         "type": "text",
         "content": {
-          "body": "Why AI Matters Today\n\nArtificial intelligence is transforming the way we live, work, and interact with the world. From the shows we watch to the routes we drive and the products we buy, AI is quietly shaping our daily experiences. Understanding how AI works isn’t just for tech experts—it’s essential for anyone who wants to help shape the future, not just watch it unfold.\n\nIn this lesson, you’ll gain a clear understanding of what AI really is and how it operates in the real world. By the end, you’ll be able to recognise AI systems around you and understand the basics of how they’re built.\n\n1. Define artificial intelligence in plain terms.\n2. Apply the input–process–output model to real-world AI systems.\n3. Recognise AI in everyday examples.\n4. Identify the core building blocks of AI systems.\n5. Understand the high-level lifecycle of building an AI system.\n\nWhat Is Artificial Intelligence?\n\nForget the science fiction robots—artificial intelligence is all about teaching computers to recognise patterns in data and make decisions based on those patterns. At its core, AI is about using data and algorithms to mimic certain aspects of human thinking, but at a scale and speed that humans can’t match. Most AI systems aren’t trying to become conscious or sentient—they’re designed to solve specific, practical problems.\n\nAI – Common Misconceptions vs. Reality\n\nReview each flashcard to separate the myths from the facts about AI."
+          "body": "<h2>Why AI Matters Today</h2><p>Artificial intelligence is transforming the way we live, work, and interact with the world. From the shows we watch to the routes we drive and the products we buy, AI is quietly shaping our daily experiences. Understanding how AI works isn’t just for tech experts—it’s essential for anyone who wants to help shape the future, not just watch it unfold.</p>\n\n<p>In this lesson, you’ll gain a clear understanding of what AI really is and how it operates in the real world. By the end, you’ll be able to recognise AI systems around you and understand the basics of how they’re built.</p>\n\n<ol><li>Define artificial intelligence in plain terms.</li><li>Apply the input–process–output model to real-world AI systems.</li><li>Recognise AI in everyday examples.</li><li>Identify the core building blocks of AI systems.</li><li>Understand the high-level lifecycle of building an AI system.</li></ol>\n\n<h3>What Is Artificial Intelligence?</h3><p>Forget the science fiction robots—artificial intelligence is all about teaching computers to recognise patterns in data and make decisions based on those patterns. At its core, AI is about using data and algorithms to mimic certain aspects of human thinking, but at a scale and speed that humans can’t match. Most AI systems aren’t trying to become conscious or sentient—they’re designed to solve specific, practical problems.</p>\n\n<h3>AI – Common Misconceptions vs. Reality</h3><p>Review each flashcard to separate the myths from the facts about AI.</p>"
         }
       },
       {
@@ -318,7 +318,7 @@ export const aiEngineeringModules: Module[] = [
         "order": 3,
         "type": "text",
         "content": {
-          "body": "The Input–Process–Output Model\n\nNearly every AI system can be understood using a simple model: input, process, and output. First, data comes in as input. Next, the system uses algorithms to analyse the data and recognise patterns—this is the process. Finally, the system produces an output, such as a recommendation, prediction, or action. This mental model is the foundation for understanding how AI works in practice.\n\nVisualising Input–Process–Output\n\nThe input–process–output model in AI systems works as follows:Input: This refers to the data that enters the system, such as user behaviour, sensor readings, or search queries. For example, your recent purchases on Amazon.Process: The algorithm analyses the input data to find patterns or make decisions. For instance, the system compares your purchases to millions of others to find similarities.Output: This is the result or action produced by the system. For example, Amazon suggests products you might also like.\n\nAI is already powering many things you use every day—even if you don’t notice it.\n\nAI in Action—Everyday Examples\n\nExpand each tab to see how AI is used in familiar apps and services, following the input–process–output model."
+          "body": "<h2>The Input–Process–Output Model</h2><p>Nearly every AI system can be understood using a simple model: input, process, and output. First, data comes in as input. Next, the system uses algorithms to analyse the data and recognise patterns—this is the process. Finally, the system produces an output, such as a recommendation, prediction, or action. This mental model is the foundation for understanding how AI works in practice.</p>\n\n<h3>Visualising Input–Process–Output</h3><p>The input–process–output model in AI systems works as follows:</p><ul><li><strong>Input:</strong> This refers to the data that enters the system, such as user behaviour, sensor readings, or search queries. For example, your recent purchases on Amazon.</li><li><strong>Process:</strong> The algorithm analyses the input data to find patterns or make decisions. For instance, the system compares your purchases to millions of others to find similarities.</li><li><strong>Output:</strong> This is the result or action produced by the system. For example, Amazon suggests products you might also like.</li></ul>\n\n<p>AI is already powering many things you use every day—even if you don’t notice it.</p>\n\n<h3>AI in Action—Everyday Examples</h3><p>Expand each tab to see how AI is used in familiar apps and services, following the input–process–output model.</p>"
         }
       },
       {
@@ -361,7 +361,7 @@ export const aiEngineeringModules: Module[] = [
         "order": 5,
         "type": "text",
         "content": {
-          "body": "Match the Data to the AI System\n\nSort each type of input data into the correct AI system. This will help you see how different kinds of information power different AI applications."
+          "body": "<h2>Match the Data to the AI System</h2><p>Sort each type of input data into the correct AI system. This will help you see how different kinds of information power different AI applications.</p>"
         }
       },
       {
@@ -422,7 +422,7 @@ export const aiEngineeringModules: Module[] = [
         "order": 8,
         "type": "text",
         "content": {
-          "body": "The Building Blocks of AI Systems\n\nEvery AI system is built from four essential components: data, algorithms, computational power, and models. You can think of these like the parts of a kitchen: data is the raw ingredients, algorithms are the recipes, computational power is the kitchen itself, and the model is the trained chef who prepares the final dish. Each part is crucial for creating effective AI solutions."
+          "body": "<h2>The Building Blocks of AI Systems</h2><p>Every AI system is built from four essential components: data, algorithms, computational power, and models. You can think of these like the parts of a kitchen: data is the raw ingredients, algorithms are the recipes, computational power is the kitchen itself, and the model is the trained chef who prepares the final dish. Each part is crucial for creating effective AI solutions.</p>"
         }
       },
       {
@@ -491,7 +491,7 @@ export const aiEngineeringModules: Module[] = [
         "order": 11,
         "type": "text",
         "content": {
-          "body": "Demand for AI engineering roles has grown over 340% in the past five years, across every industry.\n\nHow an AI System Gets Built—Start to Finish\n\nBuilding an AI system is like running a factory that manufactures intelligent decisions instead of physical products. Each stage in the process is essential for creating a robust, reliable system that delivers real value. Understanding this lifecycle will help you see how all the pieces fit together in practice.\n\nThe AI System Development Lifecycle\n\nExplore each step in the AI development process to see how an idea becomes a working system."
+          "body": "<p>Demand for AI engineering roles has grown over 340% in the past five years, across every industry.</p>\n\n<h2>How an AI System Gets Built—Start to Finish</h2><p>Building an AI system is like running a factory that manufactures intelligent decisions instead of physical products. Each stage in the process is essential for creating a robust, reliable system that delivers real value. Understanding this lifecycle will help you see how all the pieces fit together in practice.</p>\n\n<h3>The AI System Development Lifecycle</h3><p>Explore each step in the AI development process to see how an idea becomes a working system.</p>"
         }
       },
       {
@@ -564,7 +564,7 @@ export const aiEngineeringModules: Module[] = [
         "order": 14,
         "type": "text",
         "content": {
-          "body": "AI systems aren’t built by one person—they rely on collaboration between data scientists, engineers, domain experts, and more."
+          "body": "<p>AI systems aren’t built by one person—they rely on collaboration between data scientists, engineers, domain experts, and more.</p>"
         }
       }
     ]
@@ -586,7 +586,7 @@ export const aiEngineeringModules: Module[] = [
         "order": 1,
         "type": "text",
         "content": {
-          "body": "Why Engineering Matters in AI\n\nAI breakthroughs in research are only the beginning. It’s the engineering that transforms these discoveries into reliable, scalable, and valuable products that millions of people use every day. AI engineering bridges the gap between cutting-edge research and real-world impact, ensuring that AI systems are not just impressive in theory, but actually work in practice.\n\nIn this lesson, you’ll gain a clear understanding of what makes AI engineering unique and essential. You’ll explore the main responsibilities of AI engineers and see how their work brings AI to life in real-world systems.\n\n1. Distinguish AI engineering from AI research\n2. Summarise the core responsibilities of AI engineers\n3. Explore the four pillars of AI engineering\n4. Apply real-world examples to each area\n\nHaving a great AI model is only 20% of the solution. The other 80% is engineering it to actually work.\n\nAI research focuses on inventing and improving new models and algorithms, often in academic or laboratory settings. These researchers push the boundaries of what’s possible, creating the engines that power AI. In contrast, AI engineering is about making those engines work in the real world—ensuring they are reliable, efficient, and scalable for millions of users.\n\nThink of it like this: researchers invent the engine, but engineers build the car that people actually drive. AI engineers take the latest breakthroughs and turn them into practical, robust systems that solve real problems, from powering recommendation engines to enabling real-time language translation.\n\nAI Engineering vs. AI Research – Key Differences\n\nReview each flashcard to see how responsibilities and skills differ between AI research and AI engineering. This will help you quickly spot the distinction in real-world scenarios."
+          "body": "<h2>Why Engineering Matters in AI</h2><p>AI breakthroughs in research are only the beginning. It’s the engineering that transforms these discoveries into reliable, scalable, and valuable products that millions of people use every day. AI engineering bridges the gap between cutting-edge research and real-world impact, ensuring that AI systems are not just impressive in theory, but actually work in practice.</p>\n\n<p>In this lesson, you’ll gain a clear understanding of what makes AI engineering unique and essential. You’ll explore the main responsibilities of AI engineers and see how their work brings AI to life in real-world systems.</p>\n\n<ol><li>Distinguish AI engineering from AI research</li><li>Summarise the core responsibilities of AI engineers</li><li>Explore the four pillars of AI engineering</li><li>Apply real-world examples to each area</li></ol>\n\n<p>Having a great AI model is only 20% of the solution. The other 80% is engineering it to actually work.</p>\n\n<p>AI research focuses on inventing and improving new models and algorithms, often in academic or laboratory settings. These researchers push the boundaries of what’s possible, creating the engines that power AI. In contrast, AI engineering is about making those engines work in the real world—ensuring they are reliable, efficient, and scalable for millions of users.</p><p>Think of it like this: researchers invent the engine, but engineers build the car that people actually drive. AI engineers take the latest breakthroughs and turn them into practical, robust systems that solve real problems, from powering recommendation engines to enabling real-time language translation.</p>\n\n<h3>AI Engineering vs. AI Research – Key Differences</h3><p>Review each flashcard to see how responsibilities and skills differ between AI research and AI engineering. This will help you quickly spot the distinction in real-world scenarios.</p>"
         }
       },
       {
@@ -629,7 +629,7 @@ export const aiEngineeringModules: Module[] = [
         "order": 3,
         "type": "text",
         "content": {
-          "body": "What Does an AI Engineer Actually Do?\n\nAI engineers work across four core areas that bring AI systems to life: system design and architecture, model development and integration, data pipeline management, and end-to-end solution building. Most AI engineers spend their time moving between these pillars, ensuring that AI is not just smart, but also practical, scalable, and robust in real-world products.\n\nThe Four Pillars of AI Engineering\n\nExpand each tab to explore the main areas of AI engineering, each illustrated with a real-world example. See how these pillars work together to turn research into products millions rely on."
+          "body": "<h2>What Does an AI Engineer Actually Do?</h2><p>AI engineers work across four core areas that bring AI systems to life: system design and architecture, model development and integration, data pipeline management, and end-to-end solution building. Most AI engineers spend their time moving between these pillars, ensuring that AI is not just smart, but also practical, scalable, and robust in real-world products.</p>\n\n<h3>The Four Pillars of AI Engineering</h3><p>Expand each tab to explore the main areas of AI engineering, each illustrated with a real-world example. See how these pillars work together to turn research into products millions rely on.</p>"
         }
       },
       {
@@ -668,7 +668,7 @@ export const aiEngineeringModules: Module[] = [
         "order": 5,
         "type": "text",
         "content": {
-          "body": "Skills and Knowledge Every AI Engineer Needs\n\nAI engineering is a multidisciplinary field. Expand each section to see what you’ll need to know to succeed as an AI engineer."
+          "body": "<h2>Skills and Knowledge Every AI Engineer Needs</h2><p>AI engineering is a multidisciplinary field. Expand each section to see what you’ll need to know to succeed as an AI engineer.</p>"
         }
       },
       {
@@ -711,7 +711,7 @@ export const aiEngineeringModules: Module[] = [
         "order": 7,
         "type": "text",
         "content": {
-          "body": "Every recommendation you see on Netflix is the result of an entire engineered system—not just a single AI model.\n\n[Converted from a multi-select knowledge check - interactivity lost]\n\nRead each scenario and select which pillar of AI engineering it best fits.\n\n1. Ensuring an AI system updates recommendations instantly for millions of users\n2. Building a pipeline to clean and validate incoming sensor data\n3. Integrating a new language model into a customer support chatbot\n4. Bringing together data collection, model testing, and app integration for a streaming service\n\nCorrect: 1. System Design & Architecture; 2. Data Pipeline Management; 3. Model Development & Integration; 4. End-to-End Solution Building\n\nResearch or Engineering? – Real-World Tasks\n\nSort each task into the correct category. This will help you practise distinguishing between AI research and AI engineering in practical scenarios."
+          "body": "<p>Every recommendation you see on Netflix is the result of an entire engineered system—not just a single AI model.</p>\n\n<p>[Converted from a multi-select knowledge check - interactivity lost]</p>\n\n<p>Read each scenario and select which pillar of AI engineering it best fits.\n\n1. Ensuring an AI system updates recommendations instantly for millions of users\n2. Building a pipeline to clean and validate incoming sensor data\n3. Integrating a new language model into a customer support chatbot\n4. Bringing together data collection, model testing, and app integration for a streaming service</p>\n\n<p>Correct: 1. System Design &amp; Architecture; 2. Data Pipeline Management; 3. Model Development &amp; Integration; 4. End-to-End Solution Building</p>\n\n<h2>Research or Engineering? – Real-World Tasks</h2><p>Sort each task into the correct category. This will help you practise distinguishing between AI research and AI engineering in practical scenarios.</p>"
         }
       },
       {
@@ -776,7 +776,7 @@ export const aiEngineeringModules: Module[] = [
         "order": 10,
         "type": "text",
         "content": {
-          "body": "In the next lesson, you’ll explore the different roles that contribute to building AI systems—like ML engineers, AI engineers, software engineers, and data engineers—and see how they work together to turn ideas into working products. Get ready to discover how these roles collaborate to bring AI to life."
+          "body": "<p>In the next lesson, you’ll explore the different roles that contribute to building AI systems—like ML engineers, AI engineers, software engineers, and data engineers—and see how they work together to turn ideas into working products. Get ready to discover how these roles collaborate to bring AI to life.</p>"
         }
       }
     ]
@@ -798,7 +798,7 @@ export const aiEngineeringModules: Module[] = [
         "order": 1,
         "type": "text",
         "content": {
-          "body": "The Many Hats in AI Engineering\n\nBuilding an AI system is never a solo mission. Just as a smart car factory relies on a team of designers, engineers, and supply chain experts to bring a vehicle to life, AI projects require a diverse set of specialists working together. Each role brings unique expertise to the table, ensuring that AI systems are not only intelligent but also reliable, scalable, and ready for the real world.\n\nIn this lesson, you’ll discover how these different roles fit together, why collaboration is essential, and how you might find your place in the AI engineering ecosystem.\n\nIn this lesson, you’ll gain a clear understanding of the different roles that make up an AI engineering team. By the end, you’ll be able to identify who does what, how they work together, and why each role matters.\n\n1. Identify Key AI Roles\n2. Describe Role Responsibilities\n3. Understand Role Collaboration\n4. Explore Real-World Examples\n\nThink of building an AI application like running a Smart Car Factory.\n\nMeet the Key Roles in AI Engineering\n\nExpand each tab to explore the main roles involved in building AI systems. Each role is essential, with its own responsibilities, challenges, and real-world examples.\n\nSee how the Smart Car Factory analogy helps make sense of each specialist’s contribution to the AI project."
+          "body": "<h2>The Many Hats in AI Engineering</h2><p>Building an AI system is never a solo mission. Just as a smart car factory relies on a team of designers, engineers, and supply chain experts to bring a vehicle to life, AI projects require a diverse set of specialists working together. Each role brings unique expertise to the table, ensuring that AI systems are not only intelligent but also reliable, scalable, and ready for the real world.</p><p>In this lesson, you’ll discover how these different roles fit together, why collaboration is essential, and how you might find your place in the AI engineering ecosystem.</p>\n\n<p>In this lesson, you’ll gain a clear understanding of the different roles that make up an AI engineering team. By the end, you’ll be able to identify who does what, how they work together, and why each role matters.</p>\n\n<ol><li>Identify Key AI Roles</li><li>Describe Role Responsibilities</li><li>Understand Role Collaboration</li><li>Explore Real-World Examples</li></ol>\n\n<p>Think of building an AI application like running a Smart Car Factory.</p>\n\n<h3>Meet the Key Roles in AI Engineering</h3><p>Expand each tab to explore the main roles involved in building AI systems. Each role is essential, with its own responsibilities, challenges, and real-world examples.</p><p>See how the Smart Car Factory analogy helps make sense of each specialist’s contribution to the AI project.</p>"
         }
       },
       {
@@ -837,7 +837,7 @@ export const aiEngineeringModules: Module[] = [
         "order": 3,
         "type": "text",
         "content": {
-          "body": "What Each Role Does (and Doesn’t Do)\n\nExpand each section to see what each role focuses on—and what they typically don’t handle. Understanding these boundaries helps clarify how teams work together and where responsibilities lie."
+          "body": "<h2>What Each Role Does (and Doesn’t Do)</h2><p>Expand each section to see what each role focuses on—and what they typically don’t handle. Understanding these boundaries helps clarify how teams work together and where responsibilities lie.</p>"
         }
       },
       {
@@ -876,7 +876,7 @@ export const aiEngineeringModules: Module[] = [
         "order": 5,
         "type": "text",
         "content": {
-          "body": "Who Would Handle This?\n\nReview each flashcard to see which role would typically handle the task described. This will help you remember the boundaries between roles in real AI projects."
+          "body": "<h2>Who Would Handle This?</h2><p>Review each flashcard to see which role would typically handle the task described. This will help you remember the boundaries between roles in real AI projects.</p>"
         }
       },
       {
@@ -915,7 +915,7 @@ export const aiEngineeringModules: Module[] = [
         "order": 7,
         "type": "text",
         "content": {
-          "body": "Who Does What? – Sorting AI Project Tasks\n\nSort each task into the correct role. This activity will challenge you to apply what you’ve learned about the boundaries and responsibilities of each specialist in an AI project."
+          "body": "<h2>Who Does What? – Sorting AI Project Tasks</h2><p>Sort each task into the correct role. This activity will challenge you to apply what you’ve learned about the boundaries and responsibilities of each specialist in an AI project.</p>"
         }
       },
       {
@@ -958,7 +958,7 @@ export const aiEngineeringModules: Module[] = [
         "order": 9,
         "type": "text",
         "content": {
-          "body": "Roles in the AI Project Pipeline\n\nThe AI project pipeline involves several roles working together throughout the project lifecycle:Data Engineer: Responsible for sourcing, cleaning, and organizing data to prepare it for analysis and model training.Machine Learning Engineer/Data Scientist: Experiments with algorithms and builds and tests models using the prepared data.AI Engineer: Integrates models into production systems, optimizes their performance, and ensures reliability, often collaborating with other roles.Software Engineer: Develops the application infrastructure, user interfaces, and connections that allow the AI system to interact with users and other software.\n\nWhat Collaboration Looks Like in Practice\n\nExpand each section to see how collaboration happens at different stages of an AI project. Real teamwork is essential for success, with each role contributing their expertise at the right time."
+          "body": "<h2>Roles in the AI Project Pipeline</h2><p>The AI project pipeline involves several roles working together throughout the project lifecycle:</p><ul><li><strong>Data Engineer:</strong> Responsible for sourcing, cleaning, and organizing data to prepare it for analysis and model training.</li><li><strong>Machine Learning Engineer/Data Scientist:</strong> Experiments with algorithms and builds and tests models using the prepared data.</li><li><strong>AI Engineer:</strong> Integrates models into production systems, optimizes their performance, and ensures reliability, often collaborating with other roles.</li><li><strong>Software Engineer:</strong> Develops the application infrastructure, user interfaces, and connections that allow the AI system to interact with users and other software.</li></ul>\n\n<h3>What Collaboration Looks Like in Practice</h3><p>Expand each section to see how collaboration happens at different stages of an AI project. Real teamwork is essential for success, with each role contributing their expertise at the right time.</p>"
         }
       },
       {
@@ -1019,7 +1019,7 @@ export const aiEngineeringModules: Module[] = [
         "order": 12,
         "type": "text",
         "content": {
-          "body": "AI engineering is a young, evolving field—sometimes you’ll specialise, sometimes you’ll wear several hats."
+          "body": "<p>AI engineering is a young, evolving field—sometimes you’ll specialise, sometimes you’ll wear several hats.</p>"
         }
       },
       {
@@ -1052,7 +1052,7 @@ export const aiEngineeringModules: Module[] = [
         "order": 14,
         "type": "text",
         "content": {
-          "body": "What’s Next? – AI Engineering Techniques\n\nNext, you’ll explore the practical techniques that AI engineers use every day—prompt engineering, fine-tuning, and retrieval-augmented generation (RAG)—and the tools that power real AI systems. Get ready to dive into the hands-on skills that turn AI concepts into working solutions."
+          "body": "<h2>What’s Next? – AI Engineering Techniques</h2><p>Next, you’ll explore the practical techniques that AI engineers use every day—prompt engineering, fine-tuning, and retrieval-augmented generation (RAG)—and the tools that power real AI systems. Get ready to dive into the hands-on skills that turn AI concepts into working solutions.</p>"
         }
       }
     ]
@@ -1074,7 +1074,7 @@ export const aiEngineeringModules: Module[] = [
         "order": 1,
         "type": "text",
         "content": {
-          "body": "Why Practical Techniques Matter in AI Engineering\n\nAI engineering isn’t just about using powerful models—it’s about adapting them to solve real business problems. Techniques like prompt engineering, fine-tuning, and retrieval-augmented generation (RAG) are the tools that turn generic AI into tailored, high-impact solutions. Mastering these skills is essential for anyone who wants to build AI systems that actually work in the real world.\n\nIn this lesson, you'll explore the core practical techniques that every AI engineer needs. These methods are the foundation for building, adapting, and deploying intelligent systems that meet specific needs.\n\n1. Define Key Techniques\n2. Compare Strengths and Limitations\n3. Real-World Examples\n4. Essential Tools and Technologies\n\nAll AI engineers are ultimately prompt engineers too.\n\nPrompt engineering is the practice of crafting clear, effective instructions for AI models—especially large language models—to control their responses and outputs. It goes far beyond simply asking questions. Effective prompt engineering involves structuring requests, providing context, and anticipating how the model might interpret or even be manipulated by prompts. This skill is crucial for getting reliable, high-quality results from AI in real applications.\n\nHow Prompt Engineering Works\n\nUser input and hidden instructions are combined and sent to a language model, which then generates an output.User Prompt: These are the visible instructions or questions provided by the user.System Prompt: These are hidden instructions added by the developer to guide the model’s behavior or format.Combined Prompt: Both the user and system prompts are merged before being sent to the language model.LLM Output: The model processes the combined prompt and generates a response based on all instructions.\n\nCreative Techniques in Prompt Engineering\n\nExpand each section to learn about advanced prompt engineering methods. These sub-techniques help you get more precise, reliable, and secure results from AI models."
+          "body": "<h2>Why Practical Techniques Matter in AI Engineering</h2><p>AI engineering isn’t just about using powerful models—it’s about adapting them to solve real business problems. Techniques like prompt engineering, fine-tuning, and retrieval-augmented generation (RAG) are the tools that turn generic AI into tailored, high-impact solutions. Mastering these skills is essential for anyone who wants to build AI systems that actually work in the real world.</p>\n\n<p>In this lesson, you'll explore the core practical techniques that every AI engineer needs. These methods are the foundation for building, adapting, and deploying intelligent systems that meet specific needs.</p>\n\n<ol><li>Define Key Techniques</li><li>Compare Strengths and Limitations</li><li>Real-World Examples</li><li>Essential Tools and Technologies</li></ol>\n\n<p>All AI engineers are ultimately prompt engineers too.</p>\n\n<p>Prompt engineering is the practice of crafting clear, effective instructions for AI models—especially large language models—to control their responses and outputs. It goes far beyond simply asking questions. Effective prompt engineering involves structuring requests, providing context, and anticipating how the model might interpret or even be manipulated by prompts. This skill is crucial for getting reliable, high-quality results from AI in real applications.</p>\n\n<h3>How Prompt Engineering Works</h3><p>User input and hidden instructions are combined and sent to a language model, which then generates an output.</p><ul><li><strong>User Prompt:</strong> These are the visible instructions or questions provided by the user.</li><li><strong>System Prompt:</strong> These are hidden instructions added by the developer to guide the model’s behavior or format.</li><li><strong>Combined Prompt:</strong> Both the user and system prompts are merged before being sent to the language model.</li><li><strong>LLM Output:</strong> The model processes the combined prompt and generates a response based on all instructions.</li></ul>\n\n<h3>Creative Techniques in Prompt Engineering</h3><p>Expand each section to learn about advanced prompt engineering methods. These sub-techniques help you get more precise, reliable, and secure results from AI models.</p>"
         }
       },
       {
@@ -1113,7 +1113,7 @@ export const aiEngineeringModules: Module[] = [
         "order": 3,
         "type": "text",
         "content": {
-          "body": "Prompt Engineering in Different Applications\n\nExplore each tab to see how prompt engineering adapts to different real-world domains. Each example highlights how prompts are tailored for specific tasks and users."
+          "body": "<h2>Prompt Engineering in Different Applications</h2><p>Explore each tab to see how prompt engineering adapts to different real-world domains. Each example highlights how prompts are tailored for specific tasks and users.</p>"
         }
       },
       {
@@ -1174,7 +1174,7 @@ export const aiEngineeringModules: Module[] = [
         "order": 6,
         "type": "text",
         "content": {
-          "body": "What Is Fine-Tuning?\n\nFine-tuning is the process of taking a pretrained AI model and further training it on a specific, labelled dataset to specialise its abilities for a particular task or domain. Think of it like a general physician who trains further to become a cardiologist—fine-tuning adapts a broad model to excel in a focused area."
+          "body": "<h2>What Is Fine-Tuning?</h2><p>Fine-tuning is the process of taking a pretrained AI model and further training it on a specific, labelled dataset to specialise its abilities for a particular task or domain. Think of it like a general physician who trains further to become a cardiologist—fine-tuning adapts a broad model to excel in a focused area.</p>"
         }
       },
       {
@@ -1221,7 +1221,7 @@ export const aiEngineeringModules: Module[] = [
         "order": 8,
         "type": "text",
         "content": {
-          "body": "Garbage in, garbage out: the quality of your training data determines the quality of your fine-tuned model.\n\nFine-Tuning in Practice – Use Cases & Challenges\n\nExpand each section to see where fine-tuning excels and what challenges you might face. Each domain has its own requirements and risks."
+          "body": "<p>Garbage in, garbage out: the quality of your training data determines the quality of your fine-tuned model.</p>\n\n<h2>Fine-Tuning in Practice – Use Cases &amp; Challenges</h2><p>Expand each section to see where fine-tuning excels and what challenges you might face. Each domain has its own requirements and risks.</p>"
         }
       },
       {
@@ -1286,7 +1286,7 @@ export const aiEngineeringModules: Module[] = [
         "order": 11,
         "type": "text",
         "content": {
-          "body": "What Is Retrieval-Augmented Generation (RAG)?\n\nRetrieval-augmented generation (RAG) is a technique that gives an AI model access to an external knowledge base at the moment it generates a response. This allows the model to provide up-to-date, context-specific answers that go beyond its original training data."
+          "body": "<h2>What Is Retrieval-Augmented Generation (RAG)?</h2><p>Retrieval-augmented generation (RAG) is a technique that gives an AI model access to an external knowledge base at the moment it generates a response. This allows the model to provide up-to-date, context-specific answers that go beyond its original training data.</p>"
         }
       },
       {
@@ -1333,7 +1333,7 @@ export const aiEngineeringModules: Module[] = [
         "order": 13,
         "type": "text",
         "content": {
-          "body": "RAG in Real-World Applications\n\nExpand each tab to see how RAG is used across different industries. Each example shows how external knowledge bases enhance AI responses."
+          "body": "<h2>RAG in Real-World Applications</h2><p>Expand each tab to see how RAG is used across different industries. Each example shows how external knowledge bases enhance AI responses.</p>"
         }
       },
       {
@@ -1372,7 +1372,7 @@ export const aiEngineeringModules: Module[] = [
         "order": 15,
         "type": "text",
         "content": {
-          "body": "RAG – Strengths, Challenges, and Best Practices\n\nExpand each section to learn about the benefits and complexities of RAG systems. Understanding these factors helps you build more effective solutions."
+          "body": "<h2>RAG – Strengths, Challenges, and Best Practices</h2><p>Expand each section to learn about the benefits and complexities of RAG systems. Understanding these factors helps you build more effective solutions.</p>"
         }
       },
       {
@@ -1407,7 +1407,7 @@ export const aiEngineeringModules: Module[] = [
         "order": 17,
         "type": "text",
         "content": {
-          "body": "When to Use Prompt Engineering, Fine-Tuning, or RAG?\n\nCompare these three techniques across key criteria to help you choose the right approach for your project. Expand each tab to see the details."
+          "body": "<h2>When to Use Prompt Engineering, Fine-Tuning, or RAG?</h2><p>Compare these three techniques across key criteria to help you choose the right approach for your project. Expand each tab to see the details.</p>"
         }
       },
       {
@@ -1442,7 +1442,7 @@ export const aiEngineeringModules: Module[] = [
         "order": 19,
         "type": "text",
         "content": {
-          "body": "Which Technique? – Scenario Sorting\n\nSort each scenario into the best-fit technique. Consider the requirements and context for each situation."
+          "body": "<h2>Which Technique? – Scenario Sorting</h2><p>Sort each scenario into the best-fit technique. Consider the requirements and context for each situation.</p>"
         }
       },
       {
@@ -1485,7 +1485,7 @@ export const aiEngineeringModules: Module[] = [
         "order": 21,
         "type": "text",
         "content": {
-          "body": "The AI Engineer’s Toolkit – Core Tools & Technologies\n\nTo apply these techniques, AI engineers rely on a range of tools and technologies. Python is the industry standard, but you’ll also need to know about machine learning libraries, data management tools, and deployment technologies. Building a strong foundation in these areas will help you succeed in real-world AI projects.\n\nTool Categories Every AI Engineer Should Know\n\nExpand each section to see the core tools and technologies in each category. Familiarity with these tools will help you build, adapt, and deploy AI systems effectively."
+          "body": "<h2>The AI Engineer’s Toolkit – Core Tools &amp; Technologies</h2><p>To apply these techniques, AI engineers rely on a range of tools and technologies. Python is the industry standard, but you’ll also need to know about machine learning libraries, data management tools, and deployment technologies. Building a strong foundation in these areas will help you succeed in real-world AI projects.</p>\n\n<h3>Tool Categories Every AI Engineer Should Know</h3><p>Expand each section to see the core tools and technologies in each category. Familiarity with these tools will help you build, adapt, and deploy AI systems effectively.</p>"
         }
       },
       {
@@ -1524,7 +1524,7 @@ export const aiEngineeringModules: Module[] = [
         "order": 23,
         "type": "text",
         "content": {
-          "body": "Tool Recognition Practice\n\nReview each flashcard to test your knowledge of common AI engineering tools and their uses."
+          "body": "<h2>Tool Recognition Practice</h2><p>Review each flashcard to test your knowledge of common AI engineering tools and their uses.</p>"
         }
       },
       {
@@ -1592,7 +1592,7 @@ export const aiEngineeringModules: Module[] = [
         "order": 26,
         "type": "text",
         "content": {
-          "body": "You don’t need to master everything at once—Python is the one to prioritise."
+          "body": "<p>You don’t need to master everything at once—Python is the one to prioritise.</p>"
         }
       },
       {
@@ -1625,7 +1625,7 @@ export const aiEngineeringModules: Module[] = [
         "order": 28,
         "type": "text",
         "content": {
-          "body": "What’s Next? – Foundation Models & Training Data\n\nNext, you’ll explore how foundation models are built, how they differ from task-specific models, and why training data is the bedrock of every intelligent system. Get ready to dive deeper into the core of modern AI."
+          "body": "<h2>What’s Next? – Foundation Models &amp; Training Data</h2><p>Next, you’ll explore how foundation models are built, how they differ from task-specific models, and why training data is the bedrock of every intelligent system. Get ready to dive deeper into the core of modern AI.</p>"
         }
       }
     ]
@@ -1647,7 +1647,7 @@ export const aiEngineeringModules: Module[] = [
         "order": 1,
         "type": "text",
         "content": {
-          "body": "The New Era of AI—Why Foundation Models Matter\n\nWe are living through a major shift in artificial intelligence. Foundation models have transformed what AI can do, moving us from narrow, single-purpose systems to broad, adaptable intelligence. These models are the engines behind today’s most powerful AI applications, making it possible to build systems that can understand language, generate creative content, and solve a wide range of problems—all from a single starting point.\n\nThis new era means that, as an AI engineer, you’re no longer limited to building models for just one task at a time. Instead, you can leverage these versatile models as the backbone for countless applications, unlocking new possibilities for innovation and impact.\n\nIn this lesson, you’ll explore the building blocks of modern AI and the crucial role of data in shaping intelligent systems. By the end, you’ll have a clear understanding of what foundation models are, how they differ from traditional models, and why data quality is so important.\n\n1. Define Foundation Models\n2. Compare with Traditional Models\n3. Understand the Role of Training Data\n4. Explain Why Data Quality Matters\n\nFoundation models are the starting point for almost every modern AI application.\n\nA foundation model is a large-scale AI model trained on vast and varied datasets, designed to handle a wide range of tasks rather than just one. These models learn general patterns from huge amounts of data, making them flexible and adaptable for many different applications. Well-known examples include GPT, Claude, Gemini, and BERT—each serving as a base for everything from chatbots to advanced analytics.\n\nUnlike traditional models, which are built for a single, specific purpose, foundation models can be fine-tuned or prompted to perform new tasks, making them the backbone of today’s AI systems.\n\nFoundation Model or Task-Specific Model?\n\nReview each flashcard to decide whether the example describes a foundation model or a traditional, task-specific model. Flip to see the answer and a brief explanation."
+          "body": "<h2>The New Era of AI—Why Foundation Models Matter</h2><p>We are living through a major shift in artificial intelligence. Foundation models have transformed what AI can do, moving us from narrow, single-purpose systems to broad, adaptable intelligence. These models are the engines behind today’s most powerful AI applications, making it possible to build systems that can understand language, generate creative content, and solve a wide range of problems—all from a single starting point.</p><p>This new era means that, as an AI engineer, you’re no longer limited to building models for just one task at a time. Instead, you can leverage these versatile models as the backbone for countless applications, unlocking new possibilities for innovation and impact.</p>\n\n<p>In this lesson, you’ll explore the building blocks of modern AI and the crucial role of data in shaping intelligent systems. By the end, you’ll have a clear understanding of what foundation models are, how they differ from traditional models, and why data quality is so important.</p>\n\n<ol><li>Define Foundation Models</li><li>Compare with Traditional Models</li><li>Understand the Role of Training Data</li><li>Explain Why Data Quality Matters</li></ol>\n\n<p>Foundation models are the starting point for almost every modern AI application.</p>\n\n<p>A foundation model is a large-scale AI model trained on vast and varied datasets, designed to handle a wide range of tasks rather than just one. These models learn general patterns from huge amounts of data, making them flexible and adaptable for many different applications. Well-known examples include GPT, Claude, Gemini, and BERT—each serving as a base for everything from chatbots to advanced analytics.</p><p>Unlike traditional models, which are built for a single, specific purpose, foundation models can be fine-tuned or prompted to perform new tasks, making them the backbone of today’s AI systems.</p>\n\n<h3>Foundation Model or Task-Specific Model?</h3><p>Review each flashcard to decide whether the example describes a foundation model or a traditional, task-specific model. Flip to see the answer and a brief explanation.</p>"
         }
       },
       {
@@ -1686,7 +1686,7 @@ export const aiEngineeringModules: Module[] = [
         "order": 3,
         "type": "text",
         "content": {
-          "body": "Foundation Model vs. Traditional Model—Side-by-Side\n\nExpand each tab to compare the main features and uses of traditional task-specific models and foundation models."
+          "body": "<h2>Foundation Model vs. Traditional Model—Side-by-Side</h2><p>Expand each tab to compare the main features and uses of traditional task-specific models and foundation models.</p>"
         }
       },
       {
@@ -1717,7 +1717,7 @@ export const aiEngineeringModules: Module[] = [
         "order": 5,
         "type": "text",
         "content": {
-          "body": "The Two Main Stages of an AI Engineer's Work with Foundation Models\n\nThe work of an AI engineer with foundation models involves two main stages. First, the engineer selects and adapts a foundation model using methods such as prompt engineering or fine-tuning. This step customizes the model’s behavior for specific needs.\n\nSecond, the adapted model is integrated into a real system so it can provide value in practical situations. Both stages are crucial for creating effective AI solutions.\n\nYou don’t need to build a foundation model from scratch—but you do need to know how to adapt and deploy one.\n\nWhy Training Data Is the Foundation’s Foundation\n\nEvery AI model, no matter how advanced, is only as good as the data it learns from. Training data is the raw material that shapes what a model can understand, predict, or create. Just as people learn from the information and experiences they’re exposed to, AI models learn from the digital data they’re trained on.\n\nUnderstanding the types and quality of training data is crucial for any AI engineer, because it directly determines what your models can (and can’t) do.\n\nTypes of Training Data—What Models Learn From\n\nExpand each section to see the main types of data used to train AI models."
+          "body": "<h2>The Two Main Stages of an AI Engineer's Work with Foundation Models</h2><p>The work of an AI engineer with foundation models involves two main stages. First, the engineer selects and adapts a foundation model using methods such as prompt engineering or fine-tuning. This step customizes the model’s behavior for specific needs.</p><p>Second, the adapted model is integrated into a real system so it can provide value in practical situations. Both stages are crucial for creating effective AI solutions.</p>\n\n<p>You don’t need to build a foundation model from scratch—but you do need to know how to adapt and deploy one.</p>\n\n<h3>Why Training Data Is the Foundation’s Foundation</h3><p>Every AI model, no matter how advanced, is only as good as the data it learns from. Training data is the raw material that shapes what a model can understand, predict, or create. Just as people learn from the information and experiences they’re exposed to, AI models learn from the digital data they’re trained on.</p><p>Understanding the types and quality of training data is crucial for any AI engineer, because it directly determines what your models can (and can’t) do.</p>\n\n<h3>Types of Training Data—What Models Learn From</h3><p>Expand each section to see the main types of data used to train AI models.</p>"
         }
       },
       {
@@ -1756,7 +1756,7 @@ export const aiEngineeringModules: Module[] = [
         "order": 7,
         "type": "text",
         "content": {
-          "body": "Data in Action—Real-World Examples\n\nExplore each tab to see how different types of data power real AI systems."
+          "body": "<h2>Data in Action—Real-World Examples</h2><p>Explore each tab to see how different types of data power real AI systems.</p>"
         }
       },
       {
@@ -1831,7 +1831,7 @@ export const aiEngineeringModules: Module[] = [
         "order": 10,
         "type": "text",
         "content": {
-          "body": "Garbage in, garbage out: model quality depends on data quality.\n\nData Quality—What Can Go Wrong?\n\nExpand each section to learn about common data quality challenges in AI projects."
+          "body": "<p>Garbage in, garbage out: model quality depends on data quality.</p>\n\n<h2>Data Quality—What Can Go Wrong?</h2><p>Expand each section to learn about common data quality challenges in AI projects.</p>"
         }
       },
       {
@@ -1870,7 +1870,7 @@ export const aiEngineeringModules: Module[] = [
         "order": 12,
         "type": "text",
         "content": {
-          "body": "Spot the Data Quality Problem\n\nReview each flashcard to identify the underlying data quality issue in each scenario. Flip to see the answer and explanation."
+          "body": "<h2>Spot the Data Quality Problem</h2><p>Review each flashcard to identify the underlying data quality issue in each scenario. Flip to see the answer and explanation.</p>"
         }
       },
       {
@@ -1909,7 +1909,7 @@ export const aiEngineeringModules: Module[] = [
         "order": 14,
         "type": "text",
         "content": {
-          "body": "Adapting Foundation Models—Prompting and Fine-Tuning\n\nFoundation models are rarely used exactly as they come. To make them work for your specific needs, you’ll typically adapt them using two main techniques: prompt engineering and fine-tuning. Prompt engineering means giving the model clear, structured instructions to guide its output. Fine-tuning involves training the model further on your own labelled data, so it learns to specialise in your domain or task.\n\nBy mastering these adaptation methods, you can unlock the full potential of foundation models for any application you want to build.\n\nHow Foundation Models Are Used in Practice\n\nExplore each tab to see how engineers adapt foundation models for real-world applications."
+          "body": "<h2>Adapting Foundation Models—Prompting and Fine-Tuning</h2><p>Foundation models are rarely used exactly as they come. To make them work for your specific needs, you’ll typically adapt them using two main techniques: prompt engineering and fine-tuning. Prompt engineering means giving the model clear, structured instructions to guide its output. Fine-tuning involves training the model further on your own labelled data, so it learns to specialise in your domain or task.</p><p>By mastering these adaptation methods, you can unlock the full potential of foundation models for any application you want to build.</p>\n\n<h3>How Foundation Models Are Used in Practice</h3><p>Explore each tab to see how engineers adapt foundation models for real-world applications.</p>"
         }
       },
       {
