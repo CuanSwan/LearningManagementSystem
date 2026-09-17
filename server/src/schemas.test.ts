@@ -148,6 +148,31 @@ describe("ModuleSchema", () => {
     expect(lesson.content.html).toContain("<h3>Worked example</h3>");
   });
 
+  it("sanitizes a text lesson's markup on parse, not just at render time", () => {
+    const withScript = {
+      ...validModule,
+      lessons: [
+        {
+          lessonId: "l1",
+          type: "text",
+          schemaVersion: 1,
+          source: "human",
+          wordingStyle: "official",
+          order: 1,
+          content: {
+            body: '<h2>Heading</h2><p onclick="steal()">Click me</p><script>evil()</script>',
+          },
+        },
+      ],
+    };
+    const parsed = parseModule(withScript);
+    const lesson = parsed.lessons[0];
+    if (lesson.type !== "text") throw new Error("expected a text lesson");
+    expect(lesson.content.body).not.toContain("<script>");
+    expect(lesson.content.body).not.toContain("onclick");
+    expect(lesson.content.body).toContain("<h2>Heading</h2>");
+  });
+
   it("rejects an embed lesson with a javascript: URL", () => {
     const invalid = {
       ...validModule,

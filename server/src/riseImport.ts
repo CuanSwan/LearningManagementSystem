@@ -102,6 +102,53 @@ function stripHtml(html: string | undefined): string {
     .trim();
 }
 
+function escapeHtml(text: string): string {
+  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+// Rise's `paragraph` fields are sometimes already `<p>...</p>`-wrapped HTML
+// and sometimes plain text, inconsistently, even within the same course -
+// pass the former through untouched (it'll still go through sanitizeHtml
+// downstream) and escape+wrap the latter so it renders as its own block
+// instead of a stray line with no paragraph boundary.
+function asParagraphHtml(raw: string | undefined): string {
+  if (!raw) return "";
+  const trimmed = raw.trim();
+  if (!trimmed) return "";
+  return /^<p[\s>]/i.test(trimmed) ? trimmed : `<p>${escapeHtml(trimmed)}</p>`;
+}
+
+// A list item's `paragraph` is typically `<p>text</p>` - unwrap it for use
+// inside an <li>, which is already block-level and doesn't need a nested <p>.
+function innerListItemHtml(raw: string | undefined): string {
+  if (!raw) return "";
+  const trimmed = raw.trim();
+  const match = /^<p[^>]*>([\s\S]*)<\/p>$/i.exec(trimmed);
+  if (match) return match[1];
+  return escapeHtml(trimmed);
+}
+
+// Rise only tells us "this block has a heading or not" - no heading level.
+// Every heading block-conversion emits <h2> uniformly; once a lesson's
+// merged blocks are all assembled, demoteExtraHeadings (below) downgrades
+// every heading after the first to <h3>, so a merged run of several
+// Rise blocks reads as one heading with subheadings rather than a wall of
+// same-level headings.
+function headingHtml(text: string): string {
+  return `<h2>${escapeHtml(text)}</h2>`;
+}
+
+function demoteExtraHeadings(html: string): string {
+  let seenFirst = false;
+  return html.replace(/<h2>([\s\S]*?)<\/h2>/g, (match, inner: string) => {
+    if (!seenFirst) {
+      seenFirst = true;
+      return match;
+    }
+    return `<h3>${inner}</h3>`;
+  });
+}
+
 // Everything that comes through this importer is machine-converted from a
 // Rise export, regardless of whether a human or AI originally authored it
 // inside Rise - from this app's perspective, no human typed it in here, so
@@ -121,7 +168,7 @@ function convertBlock(block: RiseBlock, base: LessonBase, skipped: SkippedBlock[
   if (block.type === "text" && block.family === "text") {
     const items = (block.items ?? []) as RiseTextItem[];
     const body = items
-      .map((sub) => [sub.heading, stripHtml(sub.paragraph)].filter(Boolean).join("\n\n"))
+      .map((sub) => [sub.heading ? headingHtml(sub.heading) : "", asParagraphHtml(sub.paragraph)].join(""))
       .filter(Boolean)
       .join("\n\n");
     if (!body) return null;
@@ -131,7 +178,7 @@ function convertBlock(block: RiseBlock, base: LessonBase, skipped: SkippedBlock[
   if (block.type === "text" && block.family === "impact") {
     const items = (block.items ?? []) as RiseTextItem[];
     const body = items
-      .map((sub) => stripHtml(sub.paragraph))
+      .map((sub) => asParagraphHtml(sub.paragraph))
       .filter(Boolean)
       .join("\n\n");
     if (!body) return null;
@@ -140,8 +187,10 @@ function convertBlock(block: RiseBlock, base: LessonBase, skipped: SkippedBlock[
 
   if (block.type === "list") {
     const items = (block.items ?? []) as RiseListItem[];
-    const body = items.map((sub) => `${sub.number ?? ""}. ${stripHtml(sub.paragraph)}`).join("\n");
-    if (!body) return null;
+    const listItems = items.map((sub) => innerListItemHtml(sub.paragraph)).filter(Boolean);
+    if (listItems.length === 0) return null;
+    const tag = block.variant === "bulleted" ? "ul" : "ol";
+    const body = `<${tag}>${listItems.map((li) => `<li>${li}</li>`).join("")}</${tag}>`;
     return { ...base, type: "text", content: { body } };
   }
 
@@ -217,9 +266,9 @@ function convertBlock(block: RiseBlock, base: LessonBase, skipped: SkippedBlock[
     if (first?.type === "MULTIPLE_RESPONSE" && first.title) {
       const correct = (first.answers ?? []).filter((a) => a.correct).map((a) => a.title);
       const body = [
-        "[Converted from a multi-select knowledge check - interactivity lost]",
-        first.title,
-        correct.length ? `Correct: ${correct.join("; ")}` : "",
+        asParagraphHtml("[Converted from a multi-select knowledge check - interactivity lost]"),
+        asParagraphHtml(first.title),
+        correct.length ? asParagraphHtml(`Correct: ${correct.join("; ")}`) : "",
       ]
         .filter(Boolean)
         .join("\n\n");
@@ -267,7 +316,15 @@ function convertLesson(riseLesson: RiseLesson, skipped: SkippedBlock[]): Convert
   return {
     title: riseLesson.title ?? "Untitled module",
     objective: stripHtml(riseLesson.description) || "Imported from Rise 360.",
-    lessons: lessons.map((lesson, i) => ({ ...lesson, order: i + 1 })),
+    lessons: lessons.map((lesson, i) => {
+      const positioned = { ...lesson, order: i + 1 };
+      // Only demote after all merging is done - a merge run's later blocks'
+      // headings should read as subheadings under the run's first heading,
+      // not as same-level headings scattered through one lesson.
+      return positioned.type === "text"
+        ? { ...positioned, content: { body: demoteExtraHeadings(positioned.content.body) } }
+        : positioned;
+    }),
   };
 }
 
