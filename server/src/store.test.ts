@@ -23,10 +23,10 @@ let dir: string;
 beforeEach(async () => {
   dir = await mkdtemp(path.join(tmpdir(), "store-test-"));
   const db: Database = {
-    createStore: (collectionName, idField) => createFileStore(dir, collectionName, idField),
+    createStore: async (collectionName, idField) => createFileStore(dir, collectionName, idField),
     close: async () => {},
   };
-  initStore(db);
+  await initStore(db);
 });
 
 afterEach(async () => {

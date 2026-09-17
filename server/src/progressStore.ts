@@ -7,8 +7,8 @@ interface ProgressDoc extends Record<string, unknown> {
 
 let progress: DocumentStore<ProgressDoc>;
 
-export function initProgressStore(db: Database): void {
-  progress = db.createStore<ProgressDoc>("progress", "userId");
+export async function initProgressStore(db: Database): Promise<void> {
+  progress = await db.createStore<ProgressDoc>("progress", "userId");
 }
 
 export async function getCompletedLessons(userId: string): Promise<string[]> {
