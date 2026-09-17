@@ -36,7 +36,7 @@ afterEach(async () => {
 });
 
 describe("createCourse", () => {
-  it("automatically creates a mandatory orientation module with the 4 required lessons", async () => {
+  it("automatically creates a mandatory orientation module with the required lessons", async () => {
     const course = await createCourse({ courseId: "c1", title: "New Course" });
     const modules = await listModulesByCourse(course.courseId);
 
@@ -44,8 +44,10 @@ describe("createCourse", () => {
     const orientation = modules[0];
     expect(orientation.seed.title).toBe("Course Orientation");
     expect(orientation.status).toBe("draft");
-    expect(orientation.lessons.map((l) => l.type)).toEqual(["video", "text", "text", "text"]);
-    expect(orientation.lessons.map((l) => l.order)).toEqual([1, 2, 3, 4]);
+    // Exam breakdown is deliberately not part of this yet - see the comment
+    // above createOrientationModule in store.ts.
+    expect(orientation.lessons.map((l) => l.type)).toEqual(["video", "text", "text"]);
+    expect(orientation.lessons.map((l) => l.order)).toEqual([1, 2, 3]);
   });
 
   it("gives each new course its own independent orientation module and content", async () => {
