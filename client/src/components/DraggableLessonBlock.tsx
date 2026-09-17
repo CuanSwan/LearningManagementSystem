@@ -46,14 +46,20 @@ export function DraggableLessonBlock({
       }}
     >
       <div className="admin-lesson-toolbar">
-        <span aria-hidden="true">⠿ drag to move or drop a library block here to swap</span>
+        <span aria-hidden="true">
+          {lesson.type === "examBreakdown"
+            ? "⠿ drag to move - required, can't be removed or swapped out"
+            : "⠿ drag to move or drop a library block here to swap"}
+        </span>
         <div className="admin-lesson-actions">
           <button type="button" onClick={() => onToggleEdit(lesson.lessonId)}>
             {isEditing ? "Done" : "Edit"}
           </button>
-          <button type="button" onClick={() => onRemove(lesson.lessonId)}>
-            Remove
-          </button>
+          {lesson.type !== "examBreakdown" && (
+            <button type="button" onClick={() => onRemove(lesson.lessonId)}>
+              Remove
+            </button>
+          )}
         </div>
       </div>
       {isEditing ? (

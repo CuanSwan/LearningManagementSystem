@@ -28,7 +28,7 @@ export function useLessonListEditor(initial: Lesson[] = []) {
 
   function swapBlank(targetId: string, newType: LessonType) {
     const displaced = lessons.find((l) => l.lessonId === targetId);
-    if (!displaced) return;
+    if (!displaced || displaced.type === "examBreakdown") return;
     const blank = createBlankLesson(newType, displaced.order);
     setLessons((prev) => prev.map((l) => (l.lessonId === targetId ? blank : l)));
     setSavedLessons((prev) => [...prev, displaced]);
@@ -37,23 +37,27 @@ export function useLessonListEditor(initial: Lesson[] = []) {
   function swapSaved(targetId: string, savedLessonId: string) {
     const saved = savedLessons.find((l) => l.lessonId === savedLessonId);
     const displaced = lessons.find((l) => l.lessonId === targetId);
-    if (!saved || !displaced) return;
+    if (!saved || !displaced || displaced.type === "examBreakdown") return;
     const restored = { ...saved, order: displaced.order };
     setLessons((prev) => prev.map((l) => (l.lessonId === targetId ? restored : l)));
     setSavedLessons((prev) => [...prev.filter((l) => l.lessonId !== savedLessonId), displaced]);
   }
 
   function swapLibrary(targetId: string, libraryLesson: Lesson) {
+    if (libraryLesson.type === "examBreakdown") return;
     const displaced = lessons.find((l) => l.lessonId === targetId);
-    if (!displaced) return;
+    if (!displaced || displaced.type === "examBreakdown") return;
     const copy = { ...libraryLesson, lessonId: crypto.randomUUID(), order: displaced.order } as Lesson;
     setLessons((prev) => prev.map((l) => (l.lessonId === targetId ? copy : l)));
     setSavedLessons((prev) => [...prev, displaced]);
   }
 
+  // Exam breakdown is a permanent fixture of the module it's created in
+  // (the Course Orientation module) - it must always exist, so removing or
+  // swapping it out (above) is refused rather than silently allowed.
   function remove(lessonId: string) {
     const removed = lessons.find((l) => l.lessonId === lessonId);
-    if (!removed) return;
+    if (!removed || removed.type === "examBreakdown") return;
     setLessons((prev) => prev.filter((l) => l.lessonId !== lessonId).map((l, i) => ({ ...l, order: i + 1 })));
     setSavedLessons((prev) => [...prev, removed]);
   }
@@ -69,7 +73,12 @@ export function useLessonListEditor(initial: Lesson[] = []) {
     setSavedLessons((prev) => prev.filter((l) => l.lessonId !== savedLessonId));
   }
 
+  // Reused from another module's library entry via drag - exam breakdown is
+  // excluded here too, for the same reason it's excluded from the component
+  // palette: it's a fixture of the module it was created in, not something
+  // to duplicate into others.
   function appendLibrary(libraryLesson: Lesson) {
+    if (libraryLesson.type === "examBreakdown") return;
     setLessons((prev) => [...prev, { ...libraryLesson, lessonId: crypto.randomUUID(), order: prev.length + 1 }]);
   }
 

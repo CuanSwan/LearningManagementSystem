@@ -1,5 +1,9 @@
 import type { Lesson, LessonType, Module } from "./types.js";
 
+// Exam breakdown is deliberately excluded here - it's not a general-purpose
+// block an admin can drag into any module. It's a permanent fixture of the
+// Course Orientation module (see createOrientationModule in the server's
+// store.ts), never freely addable elsewhere.
 export const LESSON_TYPES: LessonType[] = [
   "text",
   "video",
@@ -11,7 +15,6 @@ export const LESSON_TYPES: LessonType[] = [
   "matching",
   "html",
   "embed",
-  "examBreakdown",
 ];
 
 const LESSON_TYPE_LABELS: Record<LessonType, string> = {
