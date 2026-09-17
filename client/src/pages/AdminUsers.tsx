@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import type { User, UserRole } from "../types.js";
-import { createUser, listUsers, setUserRole } from "../api.js";
+import { createUser, listUsers, resetUserPassword, setUserRole } from "../api.js";
 
 export function AdminUsers() {
   const [users, setUsers] = useState<User[]>([]);
@@ -9,10 +9,34 @@ export function AdminUsers() {
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<UserRole>("admin");
   const [error, setError] = useState<string | null>(null);
+  const [resettingUserId, setResettingUserId] = useState<string | null>(null);
+  const [resetPassword, setResetPassword] = useState("");
+  const [resetError, setResetError] = useState<string | null>(null);
+  const [resetDoneUserId, setResetDoneUserId] = useState<string | null>(null);
 
   useEffect(() => {
     listUsers().then(setUsers);
   }, []);
+
+  function startReset(userId: string) {
+    setResettingUserId(userId);
+    setResetPassword("");
+    setResetError(null);
+    setResetDoneUserId(null);
+  }
+
+  async function handleResetSubmit(e: FormEvent, userId: string) {
+    e.preventDefault();
+    setResetError(null);
+    try {
+      await resetUserPassword(userId, resetPassword);
+      setResettingUserId(null);
+      setResetPassword("");
+      setResetDoneUserId(userId);
+    } catch (err) {
+      setResetError(err instanceof Error ? err.message : "Could not reset password.");
+    }
+  }
 
   async function handleCreate(e: FormEvent) {
     e.preventDefault();
@@ -45,14 +69,39 @@ export function AdminUsers() {
               <strong>{u.name}</strong>
               <span className="module-status"> {u.email}</span>
             </div>
-            <select value={u.role} onChange={(e) => handleRoleChange(u.userId, e.target.value as UserRole)}>
-              <option value="student">Student</option>
-              <option value="admin">Admin</option>
-              <option value="super_admin">Super admin</option>
-            </select>
+            <div className="user-list-item-actions">
+              <select value={u.role} onChange={(e) => handleRoleChange(u.userId, e.target.value as UserRole)}>
+                <option value="student">Student</option>
+                <option value="admin">Admin</option>
+                <option value="super_admin">Super admin</option>
+              </select>
+              {resettingUserId === u.userId ? (
+                <form className="reset-password-form" onSubmit={(e) => handleResetSubmit(e, u.userId)}>
+                  <input
+                    type="password"
+                    placeholder="New password"
+                    value={resetPassword}
+                    onChange={(e) => setResetPassword(e.target.value)}
+                    minLength={8}
+                    required
+                    autoFocus
+                  />
+                  <button type="submit">Set</button>
+                  <button type="button" onClick={() => setResettingUserId(null)}>
+                    Cancel
+                  </button>
+                </form>
+              ) : (
+                <button type="button" onClick={() => startReset(u.userId)}>
+                  Reset password
+                </button>
+              )}
+              {resetDoneUserId === u.userId && <span className="save-status save-status-ok">Password reset</span>}
+            </div>
           </li>
         ))}
       </ul>
+      {resettingUserId && resetError && <p className="import-error">{resetError}</p>}
 
       <form className="course-form" onSubmit={handleCreate}>
         <h2>Create an admin or super admin account</h2>

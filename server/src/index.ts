@@ -34,7 +34,16 @@ import {
   saveModule,
   unassignModule,
 } from "./store.js";
-import { createUser, getUserById, initUserStore, listUsers, setUserRole, verifyCredentials } from "./userStore.js";
+import {
+  createUser,
+  getUserById,
+  initUserStore,
+  listUsers,
+  setUserRole,
+  updatePassword,
+  verifyCredentials,
+  verifyCurrentPassword,
+} from "./userStore.js";
 
 const app = express();
 const port = process.env.PORT ?? 4000;
@@ -151,6 +160,26 @@ app.get("/api/auth/me", (req, res) => {
   res.json(req.user);
 });
 
+const ChangePasswordSchema = z.object({
+  currentPassword: z.string(),
+  newPassword: z.string().min(8),
+});
+
+app.put("/api/auth/me/password", requireAuth, async (req, res) => {
+  const parsed = ChangePasswordSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.issues });
+    return;
+  }
+  const currentIsValid = await verifyCurrentPassword(req.user!.userId, parsed.data.currentPassword);
+  if (!currentIsValid) {
+    res.status(401).json({ error: "Current password is incorrect" });
+    return;
+  }
+  await updatePassword(req.user!.userId, parsed.data.newPassword);
+  res.status(204).end();
+});
+
 // --- User management (super_admin only) ---
 
 const CreateUserInputSchema = z.object({
@@ -189,6 +218,20 @@ app.patch("/api/users/:userId/role", requireRole("super_admin"), async (req, res
     return;
   }
   res.json(updated);
+});
+
+app.patch("/api/users/:userId/password", requireRole("super_admin"), async (req, res) => {
+  const parsed = z.object({ newPassword: z.string().min(8) }).safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.issues });
+    return;
+  }
+  const updated = await updatePassword(req.params.userId, parsed.data.newPassword);
+  if (!updated) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+  res.status(204).end();
 });
 
 // --- Courses & modules ---

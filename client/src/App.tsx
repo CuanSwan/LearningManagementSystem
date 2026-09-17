@@ -5,6 +5,7 @@ import { RequireAuth } from "./components/RequireAuth.js";
 import { RequireRole } from "./components/RequireRole.js";
 import { TopBar } from "./components/TopBar.js";
 import { DisplayPreferenceProvider, useDisplayPreference } from "./displayPreference.js";
+import { Account } from "./pages/Account.js";
 import { AdminCourseDetail } from "./pages/AdminCourseDetail.js";
 import { AdminCourseList } from "./pages/AdminCourseList.js";
 import { AdminModuleEditor } from "./pages/AdminModuleEditor.js";
@@ -58,6 +59,7 @@ export function App() {
             }
           >
             <Route path="/" element={<LearningPaths />} />
+            <Route path="/account" element={<Account />} />
             <Route path="/learning-paths/:pathId" element={<LearningPathDetail />} />
             <Route path="/courses" element={<StudentCatalog />} />
             <Route path="/courses/:courseId" element={<StudentCourse />} />

@@ -68,6 +68,20 @@ export async function setUserRole(userId: string, role: UserRole): Promise<User 
   return updated ? toPublicUser(updated) : undefined;
 }
 
+// For a user changing their own password - verifies the password they
+// currently know before letting the change through.
+export async function verifyCurrentPassword(userId: string, password: string): Promise<boolean> {
+  const stored = await users.get(userId);
+  return stored ? verifyPassword(password, stored.passwordHash) : false;
+}
+
+// For both self-service changes (after verifyCurrentPassword above) and a
+// super_admin's password reset for another user (no current-password check).
+export async function updatePassword(userId: string, newPassword: string): Promise<boolean> {
+  const updated = await users.update(userId, { passwordHash: hashPassword(newPassword) });
+  return updated !== null;
+}
+
 export async function userExistsByEmail(email: string): Promise<boolean> {
   const matches = await users.list({ email: email.toLowerCase() });
   return matches.length > 0;
