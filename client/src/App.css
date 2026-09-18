@@ -1118,6 +1118,21 @@ a.path-snake-link:hover .path-snake-bubble {
   display: block;
 }
 
+.video-lesson-embed {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%;
+  background: #000;
+}
+
+.video-lesson-iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
 .video-lesson-transcript {
   margin-top: 0.75rem;
 }
