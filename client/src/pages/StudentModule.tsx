@@ -23,6 +23,7 @@ export function StudentModule() {
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
   const [currentLessonPreview, setCurrentLessonPreview] = useState<string | null>(null);
   const [showCompleteModal, setShowCompleteModal] = useState(false);
+  const [accessError, setAccessError] = useState<string | null>(null);
   const { mode } = useDisplayPreference();
 
   const handleCurrentLessonChange = useCallback((lesson: Lesson) => {
@@ -32,10 +33,16 @@ export function StudentModule() {
   useEffect(() => {
     if (!courseId || !moduleId) return;
     getCourse(courseId).then(setCourse);
-    getModule(moduleId).then(setModule);
+    getModule(moduleId)
+      .then(setModule)
+      .catch((err) => setAccessError(err instanceof Error ? err.message : "Couldn't load this module."));
     getProgress().then((p) => setCompletedIds(new Set(p.completedLessonIds)));
-    listModulesByCourse(courseId).then((list) => setCourseModules(list.filter((m) => m.status === "published")));
+    listModulesByCourse(courseId)
+      .then((list) => setCourseModules(list.filter((m) => m.status === "published")))
+      .catch(() => {});
   }, [courseId, moduleId]);
+
+  if (accessError) return <p className="access-restricted-notice">{accessError}</p>;
 
   async function markComplete(lessonId: string) {
     if (!foundModule) return;

@@ -1,9 +1,25 @@
 import { describe, expect, it } from "vitest";
-import { findCourseToContinue, summarizeCourseProgress } from "./continueLearning.js";
-import type { Course, Lesson, Module } from "./types.js";
+import { findCourseToContinue, findFirstAssignedCourse, summarizeCourseProgress } from "./continueLearning.js";
+import type { Course, LearningPath, Lesson, Module, User } from "./types.js";
 
 function course(courseId: string, title: string): Course {
   return { courseId, title, theme: {} };
+}
+
+function path(pathId: string, courseIds: string[]): LearningPath {
+  return { pathId, title: pathId, courseIds };
+}
+
+function student(assignments: Partial<Pick<User, "assignedLearningPathIds" | "assignedCourseIds">> = {}): User {
+  return {
+    userId: "u1",
+    email: "s@example.com",
+    name: "Student",
+    role: "student",
+    assignedLearningPathIds: [],
+    assignedCourseIds: [],
+    ...assignments,
+  };
 }
 
 function lesson(lessonId: string): Lesson {
@@ -72,5 +88,29 @@ describe("findCourseToContinue", () => {
 
   it("returns null when there are no courses", () => {
     expect(findCourseToContinue([])).toBeNull();
+  });
+});
+
+describe("findFirstAssignedCourse", () => {
+  const courses = [course("c1", "Course One"), course("c2", "Course Two"), course("c3", "Course Three")];
+  const paths = [path("p1", ["c2", "c1"])];
+
+  it("prefers the first course in the student's first assigned learning path", () => {
+    const user = student({ assignedLearningPathIds: ["p1"], assignedCourseIds: ["c3"] });
+    expect(findFirstAssignedCourse(user, courses, paths)?.courseId).toBe("c2");
+  });
+
+  it("falls back to the first individually assigned course when no path is assigned", () => {
+    const user = student({ assignedCourseIds: ["c3"] });
+    expect(findFirstAssignedCourse(user, courses, paths)?.courseId).toBe("c3");
+  });
+
+  it("returns null when nothing is assigned at all", () => {
+    expect(findFirstAssignedCourse(student(), courses, paths)).toBeNull();
+  });
+
+  it("falls back to individual courses if the assigned path can't be found", () => {
+    const user = student({ assignedLearningPathIds: ["missing-path"], assignedCourseIds: ["c3"] });
+    expect(findFirstAssignedCourse(user, courses, paths)?.courseId).toBe("c3");
   });
 });

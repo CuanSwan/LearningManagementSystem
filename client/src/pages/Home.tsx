@@ -1,40 +1,59 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../auth.js";
-import { getProgress, listCourses, listModulesByCourse } from "../api.js";
-import { findCourseToContinue, summarizeCourseProgress } from "../continueLearning.js";
-import type { Course, Module } from "../types.js";
+import { getProgress, listCourses, listLearningPaths, listModulesByCourse } from "../api.js";
+import { isCourseAccessible } from "../access.js";
+import { findCourseToContinue, findFirstAssignedCourse, summarizeCourseProgress } from "../continueLearning.js";
+import type { Course, LearningPath, Module } from "../types.js";
 
 export function Home() {
   const { user } = useAuth();
   const firstName = user?.name.split(" ")[0];
-  const [continueCourse, setContinueCourse] = useState<Course | null>(null);
+  // undefined = still loading, null = nothing assigned/in progress yet.
+  const [primaryCourse, setPrimaryCourse] = useState<Course | null | undefined>(undefined);
+  const [isContinuing, setIsContinuing] = useState(false);
 
   useEffect(() => {
+    if (!user) return;
     let cancelled = false;
 
     async function load() {
-      const [courses, progress] = await Promise.all([listCourses(), getProgress()]);
+      const [courses, progress, learningPaths] = await Promise.all([
+        listCourses(),
+        getProgress(),
+        listLearningPaths(),
+      ]);
+      if (cancelled) return;
+
+      // Only fetch content for courses the student can actually enter -
+      // anything else 403s, and locked courses can't be "in progress" anyway.
+      const accessibleCourses = courses.filter((c) => isCourseAccessible(user!, c.courseId, learningPaths));
       const modulesByCourse: Record<string, Module[]> = {};
       await Promise.all(
-        courses.map(async (course) => {
+        accessibleCourses.map(async (course) => {
           modulesByCourse[course.courseId] = await listModulesByCourse(course.courseId);
         })
       );
       if (cancelled) return;
-      const summaries = summarizeCourseProgress(courses, modulesByCourse, progress.completedLessonIds);
-      setContinueCourse(findCourseToContinue(summaries));
+
+      const summaries = summarizeCourseProgress(accessibleCourses, modulesByCourse, progress.completedLessonIds);
+      const continuing = findCourseToContinue(summaries);
+      if (continuing) {
+        setPrimaryCourse(continuing);
+        setIsContinuing(true);
+        return;
+      }
+      setPrimaryCourse(findFirstAssignedCourse(user!, courses, learningPaths));
     }
 
     load().catch(() => {
-      // Nothing in-progress to resume is a fine fallback if this fails -
-      // the "Get Started" card just stays put.
+      if (!cancelled) setPrimaryCourse(null);
     });
 
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [user]);
 
   return (
     <main className="student-view home-page">
@@ -44,15 +63,21 @@ export function Home() {
       </div>
 
       <div className="home-choices">
-        {continueCourse ? (
-          <Link to={`/courses/${continueCourse.courseId}`} className="home-choice-card home-choice-card-primary">
-            <span className="home-choice-card-eyebrow">Continue where you left off</span>
-            <h2>{continueCourse.title}</h2>
+        {primaryCourse ? (
+          <Link to={`/courses/${primaryCourse.courseId}`} className="home-choice-card home-choice-card-primary">
+            <span className="home-choice-card-eyebrow">
+              {isContinuing ? "Continue where you left off" : "Get started"}
+            </span>
+            <h2>{primaryCourse.title}</h2>
           </Link>
         ) : (
           <Link to="/courses" className="home-choice-card home-choice-card-primary">
             <h2>Get Started</h2>
-            <p>New here? Browse the course catalog and start learning.</p>
+            <p>
+              {primaryCourse === undefined
+                ? "New here? Browse the course catalog and start learning."
+                : "No courses assigned to you yet - browse what's available, or check back once an admin assigns you one."}
+            </p>
           </Link>
         )}
         <Link to="/courses" className="home-choice-card">

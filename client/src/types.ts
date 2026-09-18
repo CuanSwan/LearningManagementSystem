@@ -149,6 +149,8 @@ export interface User {
   email: string;
   name: string;
   role: UserRole;
+  assignedLearningPathIds: string[];
+  assignedCourseIds: string[];
 }
 
 export type LessonDisplayMode = "vertical" | "carousel" | "accessible";

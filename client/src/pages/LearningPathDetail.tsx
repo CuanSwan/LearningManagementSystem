@@ -2,7 +2,9 @@ import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from
 import { Link, useParams } from "react-router-dom";
 import { Theme } from "../theme.js";
 import type { Course, LearningPath, Module } from "../types.js";
-import { getCourse, getLearningPath, getProgress, listModulesByCourse } from "../api.js";
+import { getCourse, getLearningPath, getProgress, listLearningPaths, listModulesByCourse } from "../api.js";
+import { isCourseAccessible } from "../access.js";
+import { useAuth } from "../auth.js";
 import { Breadcrumb } from "../components/Breadcrumb.js";
 
 const IN_PROGRESS_COLOR = "#e8862f";
@@ -20,23 +22,31 @@ function isCourseComplete(modules: Module[], completedIds: Set<string>): boolean
 
 export function LearningPathDetail() {
   const { pathId } = useParams<{ pathId: string }>();
+  const { user } = useAuth();
   const [path, setPath] = useState<LearningPath | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
   const [modulesByCourse, setModulesByCourse] = useState<Record<string, Module[]>>({});
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
+  const [learningPaths, setLearningPaths] = useState<LearningPath[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const nodeRefs = useRef<Array<HTMLElement | null>>([]);
   const [linePath, setLinePath] = useState("");
 
   useEffect(() => {
     if (!pathId) return;
-    getLearningPath(pathId).then(async (p) => {
+    Promise.all([getLearningPath(pathId), listLearningPaths()]).then(async ([p, allPaths]) => {
       setPath(p);
+      setLearningPaths(allPaths);
       const loadedCourses = await Promise.all(p.courseIds.map((id) => getCourse(id)));
       setCourses(loadedCourses);
+      // A course the viewer isn't assigned (directly or via this or another
+      // path) 403s on its modules - it'll render locked regardless, so
+      // there's no content worth fetching for it.
       const moduleLists = await Promise.all(
         p.courseIds.map((id) =>
-          listModulesByCourse(id).then((list) => list.filter((m) => m.status === "published"))
+          !user || isCourseAccessible(user, id, allPaths)
+            ? listModulesByCourse(id).then((list) => list.filter((m) => m.status === "published"))
+            : Promise.resolve([])
         )
       );
       const map: Record<string, Module[]> = {};
@@ -46,7 +56,7 @@ export function LearningPathDetail() {
       setModulesByCourse(map);
     });
     getProgress().then((p) => setCompletedIds(new Set(p.completedLessonIds)));
-  }, [pathId]);
+  }, [pathId, user]);
 
   useLayoutEffect(() => {
     function recompute() {
@@ -133,7 +143,8 @@ export function LearningPathDetail() {
               const priorCoursesComplete = courses
                 .slice(0, index)
                 .every((c) => isCourseComplete(modulesByCourse[c.courseId] ?? [], completedIds));
-              const locked = !complete && !priorCoursesComplete;
+              const accessible = !user || isCourseAccessible(user, course.courseId, learningPaths);
+              const locked = !accessible || (!complete && !priorCoursesComplete);
               const accentColor = complete ? Theme.default().primaryColor : locked ? LOCKED_COLOR : IN_PROGRESS_COLOR;
               const lane = LANE_CLASSES[index % LANE_CLASSES.length];
 

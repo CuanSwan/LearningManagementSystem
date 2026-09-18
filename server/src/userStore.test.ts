@@ -4,7 +4,14 @@ import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createFileStore } from "./db/fileStore.js";
 import type { Database } from "./db/index.js";
-import { createUser, initUserStore, updatePassword, verifyCredentials, verifyCurrentPassword } from "./userStore.js";
+import {
+  createUser,
+  initUserStore,
+  setUserAssignments,
+  updatePassword,
+  verifyCredentials,
+  verifyCurrentPassword,
+} from "./userStore.js";
 
 let dir: string;
 
@@ -46,5 +53,29 @@ describe("verifyCurrentPassword", () => {
 
   it("returns false for a userId that doesn't exist", async () => {
     expect(await verifyCurrentPassword("missing", "anything")).toBe(false);
+  });
+});
+
+describe("createUser", () => {
+  it("starts a new user with no assignments", async () => {
+    const user = await createUser({ email: "a@b.com", name: "A", password: "Password1", role: "student" });
+    expect(user.assignedLearningPathIds).toEqual([]);
+    expect(user.assignedCourseIds).toEqual([]);
+  });
+});
+
+describe("setUserAssignments", () => {
+  it("updates a user's assigned learning paths and courses", async () => {
+    const user = await createUser({ email: "a@b.com", name: "A", password: "Password1", role: "student" });
+    const updated = await setUserAssignments(user.userId, {
+      assignedLearningPathIds: ["p1"],
+      assignedCourseIds: ["c1", "c2"],
+    });
+    expect(updated?.assignedLearningPathIds).toEqual(["p1"]);
+    expect(updated?.assignedCourseIds).toEqual(["c1", "c2"]);
+  });
+
+  it("returns undefined for a userId that doesn't exist", async () => {
+    expect(await setUserAssignments("missing", { assignedLearningPathIds: [], assignedCourseIds: [] })).toBeUndefined();
   });
 });

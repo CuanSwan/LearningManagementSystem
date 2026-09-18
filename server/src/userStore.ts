@@ -8,6 +8,8 @@ interface StoredUser extends Record<string, unknown> {
   name: string;
   role: UserRole;
   passwordHash: string;
+  assignedLearningPathIds?: string[];
+  assignedCourseIds?: string[];
 }
 
 let users: DocumentStore<StoredUser>;
@@ -25,6 +27,8 @@ function toPublicUser(stored: StoredUser): User {
     email: stored.email,
     name: stored.name,
     role: stored.role,
+    assignedLearningPathIds: stored.assignedLearningPathIds ?? [],
+    assignedCourseIds: stored.assignedCourseIds ?? [],
   });
 }
 
@@ -45,6 +49,8 @@ export async function createUser(input: {
     name: input.name,
     role: input.role,
     passwordHash: hashPassword(input.password),
+    assignedLearningPathIds: [],
+    assignedCourseIds: [],
   };
   try {
     await users.set(stored.userId, stored);
@@ -81,6 +87,14 @@ export async function listUsers(): Promise<User[]> {
 
 export async function setUserRole(userId: string, role: UserRole): Promise<User | undefined> {
   const updated = await users.update(userId, { role });
+  return updated ? toPublicUser(updated) : undefined;
+}
+
+export async function setUserAssignments(
+  userId: string,
+  assignments: { assignedLearningPathIds: string[]; assignedCourseIds: string[] }
+): Promise<User | undefined> {
+  const updated = await users.update(userId, assignments);
   return updated ? toPublicUser(updated) : undefined;
 }
 

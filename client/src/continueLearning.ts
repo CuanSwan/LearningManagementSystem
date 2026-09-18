@@ -1,4 +1,4 @@
-import type { Course, Module } from "./types.js";
+import type { Course, LearningPath, Module, User } from "./types.js";
 
 export interface CourseProgress {
   course: Course;
@@ -38,4 +38,20 @@ export function findCourseToContinue(summaries: CourseProgress[]): Course | null
   );
   if (inProgress.length === 0) return null;
   return inProgress.reduce((best, s) => (s.completedLessons > best.completedLessons ? s : best)).course;
+}
+
+// What "Get Started" points a first-time student at: the first course in
+// their first assigned learning path, or their first individually assigned
+// course if they have no assigned path. Order matters here because it's
+// exactly what the student was told to expect - a path is a sequence, so
+// its first course comes before a standalone assignment.
+export function findFirstAssignedCourse(user: User, courses: Course[], learningPaths: LearningPath[]): Course | null {
+  const [firstPathId] = user.assignedLearningPathIds;
+  const firstPath = firstPathId ? learningPaths.find((p) => p.pathId === firstPathId) : undefined;
+  const [firstPathCourseId] = firstPath?.courseIds ?? [];
+  const pathCourse = firstPathCourseId ? courses.find((c) => c.courseId === firstPathCourseId) : undefined;
+  if (pathCourse) return pathCourse;
+
+  const [firstCourseId] = user.assignedCourseIds;
+  return (firstCourseId && courses.find((c) => c.courseId === firstCourseId)) || null;
 }

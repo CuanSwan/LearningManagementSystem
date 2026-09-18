@@ -542,6 +542,14 @@ main {
   max-width: none;
 }
 
+.access-restricted-notice {
+  color: #9ca3af;
+  font-size: 1.05rem;
+  border: 1px dashed #9ca3af;
+  padding: 1.5rem;
+  max-width: 32rem;
+}
+
 .catalog-page {
   max-width: none;
   margin: 0;
@@ -681,6 +689,13 @@ main {
   margin-bottom: 0.5rem;
 }
 
+.catalog-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
 .catalog-card {
   display: block;
   background: var(--theme-bg, #fff);
@@ -695,6 +710,17 @@ main {
 
 .catalog-grid .catalog-card {
   color: #0d0d0d;
+}
+
+.catalog-card.is-locked {
+  cursor: not-allowed;
+  background: #fafafa;
+  border-top-color: #9ca3af;
+}
+
+.catalog-card.is-locked h2,
+.catalog-card.is-locked p {
+  color: #9ca3af;
 }
 
 .catalog-card h2 {
@@ -1678,6 +1704,50 @@ a.path-snake-link:hover .path-snake-bubble {
   padding: 0.25rem 0.4rem;
   border: 1px solid #ccc;
   border-radius: 4px;
+}
+
+.assignment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 720px;
+}
+
+.assignment-row {
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+}
+
+.assignment-row > summary {
+  cursor: pointer;
+  padding: 0.25rem 0;
+}
+
+.assignment-row-body {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.assignment-group h3 {
+  font-size: 0.85rem;
+  margin: 0 0 0.5rem;
+}
+
+.assignment-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  padding: 0.2rem 0;
+}
+
+.assignment-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .suggest-theme-btn {
