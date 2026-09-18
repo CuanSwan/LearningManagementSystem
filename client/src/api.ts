@@ -55,6 +55,13 @@ export function setUserRole(userId: string, role: UserRole): Promise<User> {
   return request(`/api/users/${userId}/role`, { method: "PATCH", body: JSON.stringify({ role }) });
 }
 
+export function setUserAssignments(
+  userId: string,
+  assignments: { assignedLearningPathIds: string[]; assignedCourseIds: string[] }
+): Promise<User> {
+  return request(`/api/users/${userId}/assignments`, { method: "PATCH", body: JSON.stringify(assignments) });
+}
+
 // Self-service: the caller's own password change, requires their current one.
 export async function changeMyPassword(currentPassword: string, newPassword: string): Promise<void> {
   const res = await fetch(`${API_BASE_URL}/api/auth/me/password`, {

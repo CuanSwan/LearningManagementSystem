@@ -5,8 +5,10 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createFileStore } from "./db/fileStore.js";
 import type { Database } from "./db/index.js";
 import { parseCourse, parseLearningPath, parseModule } from "./schemas.js";
+import type { User } from "./userSchema.js";
 import {
   createCourse,
+  createLearningPath,
   getCourse,
   getLearningPath,
   getModule,
@@ -18,7 +20,20 @@ import {
   seedCourse,
   seedLearningPath,
   seedModule,
+  userHasCourseAccess,
 } from "./store.js";
+
+function studentWith(assignments: Partial<Pick<User, "assignedLearningPathIds" | "assignedCourseIds">>): User {
+  return {
+    userId: "u1",
+    email: "student@example.com",
+    name: "Student",
+    role: "student",
+    assignedLearningPathIds: [],
+    assignedCourseIds: [],
+    ...assignments,
+  };
+}
 
 let dir: string;
 
@@ -107,5 +122,34 @@ describe("seedLearningPath", () => {
     await seedLearningPath(path1);
 
     expect((await getLearningPath("p1"))?.title).toBe("Admin Renamed Path");
+  });
+});
+
+describe("userHasCourseAccess", () => {
+  it("always grants access to an admin", async () => {
+    const admin: User = { ...studentWith({}), role: "admin" };
+    expect(await userHasCourseAccess(admin, "any-course")).toBe(true);
+  });
+
+  it("grants access to a directly assigned course", async () => {
+    const student = studentWith({ assignedCourseIds: ["c1"] });
+    expect(await userHasCourseAccess(student, "c1")).toBe(true);
+  });
+
+  it("grants access to a course reached via an assigned learning path", async () => {
+    const path = await createLearningPath({ pathId: "p1", title: "Path", courseIds: ["c1", "c2"] });
+    const student = studentWith({ assignedLearningPathIds: [path.pathId] });
+    expect(await userHasCourseAccess(student, "c2")).toBe(true);
+  });
+
+  it("denies access to a course that's neither directly assigned nor in an assigned path", async () => {
+    const path = await createLearningPath({ pathId: "p1", title: "Path", courseIds: ["c1"] });
+    const student = studentWith({ assignedLearningPathIds: [path.pathId], assignedCourseIds: ["c2"] });
+    expect(await userHasCourseAccess(student, "c3")).toBe(false);
+  });
+
+  it("denies access to a student with no assignments at all", async () => {
+    const student = studentWith({});
+    expect(await userHasCourseAccess(student, "c1")).toBe(false);
   });
 });

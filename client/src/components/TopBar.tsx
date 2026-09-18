@@ -13,9 +13,10 @@ export function TopBar() {
         LMS
       </Link>
       <nav className="top-bar-nav">
-        <Link to="/">Learning Paths</Link>
+        <Link to="/learning-paths">Learning Paths</Link>
         <Link to="/courses">Courses</Link>
         {(user.role === "admin" || user.role === "super_admin") && <Link to="/admin">Admin</Link>}
+        {(user.role === "admin" || user.role === "super_admin") && <Link to="/admin/assignments">Assignments</Link>}
         {user.role === "super_admin" && <Link to="/admin/users">Users</Link>}
         <div className="display-toggle-group">
           <span className="top-bar-label">Reading Mode</span>

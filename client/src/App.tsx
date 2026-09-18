@@ -6,6 +6,7 @@ import { RequireRole } from "./components/RequireRole.js";
 import { TopBar } from "./components/TopBar.js";
 import { DisplayPreferenceProvider, useDisplayPreference } from "./displayPreference.js";
 import { Account } from "./pages/Account.js";
+import { AdminAssignments } from "./pages/AdminAssignments.js";
 import { AdminCourseDetail } from "./pages/AdminCourseDetail.js";
 import { AdminCourseList } from "./pages/AdminCourseList.js";
 import { AdminModuleEditor } from "./pages/AdminModuleEditor.js";
@@ -13,6 +14,7 @@ import { AdminNewModule } from "./pages/AdminNewModule.js";
 import { AdminLearningPathDetail } from "./pages/AdminLearningPathDetail.js";
 import { AdminLearningPathList } from "./pages/AdminLearningPathList.js";
 import { AdminUsers } from "./pages/AdminUsers.js";
+import { Home } from "./pages/Home.js";
 import { LearningPathDetail } from "./pages/LearningPathDetail.js";
 import { LearningPaths } from "./pages/LearningPaths.js";
 import { Login } from "./pages/Login.js";
@@ -58,8 +60,9 @@ export function App() {
               </RequireAuth>
             }
           >
-            <Route path="/" element={<LearningPaths />} />
+            <Route path="/" element={<Home />} />
             <Route path="/account" element={<Account />} />
+            <Route path="/learning-paths" element={<LearningPaths />} />
             <Route path="/learning-paths/:pathId" element={<LearningPathDetail />} />
             <Route path="/courses" element={<StudentCatalog />} />
             <Route path="/courses/:courseId" element={<StudentCourse />} />
@@ -72,6 +75,7 @@ export function App() {
               <Route path="/admin/modules/:moduleId" element={<AdminModuleEditor />} />
               <Route path="/admin/learning-paths" element={<AdminLearningPathList />} />
               <Route path="/admin/learning-paths/:pathId" element={<AdminLearningPathDetail />} />
+              <Route path="/admin/assignments" element={<AdminAssignments />} />
             </Route>
 
             <Route element={<RequireRole roles={["super_admin"]} />}>

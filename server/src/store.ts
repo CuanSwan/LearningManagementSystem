@@ -1,5 +1,6 @@
 import type { Database, DocumentStore } from "./db/index.js";
 import { parseCourse, parseLearningPath, parseModule, type Course, type LearningPath, type Module } from "./schemas.js";
+import type { User } from "./userSchema.js";
 
 let courses: DocumentStore<Course>;
 let modules: DocumentStore<Module>;
@@ -219,4 +220,17 @@ export async function patchLearningPath(
 export async function seedLearningPath(path: LearningPath): Promise<void> {
   if (await learningPaths.get(path.pathId)) return;
   await learningPaths.set(path.pathId, path);
+}
+
+// Students only get into a course's actual content (modules/lessons) if an
+// admin assigned it to them directly, or assigned a learning path that
+// includes it - browsing the catalog itself (title/description) is never
+// gated, only what's inside. Admins/super_admins always have full access,
+// since they're the ones managing this content.
+export async function userHasCourseAccess(user: User, courseId: string): Promise<boolean> {
+  if (user.role === "admin" || user.role === "super_admin") return true;
+  if (user.assignedCourseIds.includes(courseId)) return true;
+  if (user.assignedLearningPathIds.length === 0) return false;
+  const assignedPaths = await Promise.all(user.assignedLearningPathIds.map((id) => learningPaths.get(id)));
+  return assignedPaths.some((path) => path?.courseIds.includes(courseId));
 }

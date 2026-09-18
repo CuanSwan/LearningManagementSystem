@@ -555,10 +555,98 @@ main {
   max-width: none;
 }
 
+.access-restricted-notice {
+  color: #9ca3af;
+  font-size: 1.05rem;
+  border: 1px dashed #9ca3af;
+  padding: 1.5rem;
+  max-width: 32rem;
+}
+
 .catalog-page {
   max-width: none;
   margin: 0;
   padding: 2rem 7rem;
+}
+
+.home-page {
+  max-width: none;
+  margin: 0;
+  padding: 2rem 7rem;
+}
+
+.home-hero {
+  padding: 3rem 0 2.5rem;
+}
+
+.home-hero h1 {
+  font-family: "Oranienbaum", serif;
+  font-weight: 400;
+  color: #0d0d0d;
+  font-size: 3.25rem;
+  line-height: 1.15;
+  margin: 0 0 0.75rem;
+}
+
+.home-hero-sub {
+  font-family: "Poppins", sans-serif;
+  font-size: 1.25rem;
+  color: #555;
+  margin: 0;
+}
+
+.home-choices {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2.25rem;
+}
+
+.home-choice-card {
+  display: block;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-top: 4px solid var(--theme-primary, #3e6259);
+  border-radius: 0;
+  padding: 2.5rem;
+  text-decoration: none;
+  color: #0d0d0d;
+  font-family: "Poppins", sans-serif;
+}
+
+.home-choice-card-primary {
+  background: #f6f5f1;
+  border-top-width: 6px;
+}
+
+.home-choice-card-eyebrow {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--theme-primary, #3e6259);
+  margin-bottom: 0.5rem;
+}
+
+.home-choice-card h2 {
+  margin-top: 0;
+  font-weight: 400;
+  font-size: 1.6rem;
+}
+
+.home-choice-card p {
+  margin-bottom: 0;
+  color: #555;
+}
+
+@media (max-width: 640px) {
+  .home-page {
+    padding: 2rem 1.5rem;
+  }
+
+  .home-choices {
+    grid-template-columns: 1fr;
+  }
 }
 
 .course-page {
@@ -614,6 +702,13 @@ main {
   margin-bottom: 0.5rem;
 }
 
+.catalog-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
 .catalog-card {
   display: block;
   background: var(--theme-bg, #fff);
@@ -628,6 +723,17 @@ main {
 
 .catalog-grid .catalog-card {
   color: #0d0d0d;
+}
+
+.catalog-card.is-locked {
+  cursor: not-allowed;
+  background: #fafafa;
+  border-top-color: #9ca3af;
+}
+
+.catalog-card.is-locked h2,
+.catalog-card.is-locked p {
+  color: #9ca3af;
 }
 
 .catalog-card h2 {
@@ -1654,6 +1760,50 @@ a.path-snake-link:hover .path-snake-bubble {
   padding: 0.25rem 0.4rem;
   border: 1px solid #ccc;
   border-radius: 4px;
+}
+
+.assignment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 720px;
+}
+
+.assignment-row {
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+}
+
+.assignment-row > summary {
+  cursor: pointer;
+  padding: 0.25rem 0;
+}
+
+.assignment-row-body {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.assignment-group h3 {
+  font-size: 0.85rem;
+  margin: 0 0 0.5rem;
+}
+
+.assignment-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  padding: 0.2rem 0;
+}
+
+.assignment-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .suggest-theme-btn {

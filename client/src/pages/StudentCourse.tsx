@@ -1,7 +1,9 @@
 import { useEffect, useState, type CSSProperties } from "react";
 import { Link, useParams } from "react-router-dom";
-import type { Course, Module } from "../types.js";
-import { getCourse, getProgress, listModulesByCourse } from "../api.js";
+import type { Course, LearningPath, Module } from "../types.js";
+import { getCourse, getProgress, listLearningPaths, listModulesByCourse } from "../api.js";
+import { isCourseAccessible } from "../access.js";
+import { useAuth } from "../auth.js";
 import { BackButton } from "../components/BackButton.js";
 import { Breadcrumb } from "../components/Breadcrumb.js";
 import { describeLesson, lessonTypeLabel } from "../lessonTemplates.js";
@@ -20,13 +22,23 @@ function isModuleComplete(module: Module, completedIds: Set<string>): boolean {
 
 export function StudentCourse() {
   const { courseId } = useParams<{ courseId: string }>();
+  const { user } = useAuth();
   const [course, setCourse] = useState<Course | null>(null);
   const [modules, setModules] = useState<Module[]>([]);
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
+  const [learningPaths, setLearningPaths] = useState<LearningPath[]>([]);
 
   useEffect(() => {
     if (!courseId) return;
     getCourse(courseId).then(setCourse);
+    listLearningPaths().then(setLearningPaths);
+    getProgress().then((p) => setCompletedIds(new Set(p.completedLessonIds)));
+  }, [courseId]);
+
+  const accessible = !user || isCourseAccessible(user, courseId!, learningPaths);
+
+  useEffect(() => {
+    if (!courseId || !accessible) return;
     listModulesByCourse(courseId).then((list) =>
       setModules(
         list
@@ -34,11 +46,26 @@ export function StudentCourse() {
           .map((m) => ({ ...m, lessons: [...m.lessons].sort((a, b) => a.order - b.order) }))
       )
     );
-    getProgress().then((p) => setCompletedIds(new Set(p.completedLessonIds)));
-  }, [courseId]);
+    // learningPaths only affects whether this effect *runs*, not what it fetches -
+    // re-running it every time the path list reference changes would be pointless.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [courseId, accessible]);
 
   if (!course) return <p>Loading...</p>;
   const resolved = Theme.default().withOverrides(course.theme);
+
+  if (!accessible) {
+    return (
+      <main className="student-view course-page" style={themeStyle(resolved)}>
+        <Breadcrumb items={[{ label: "Courses", to: "/courses" }, { label: course.title }]} />
+        <BackButton to="/courses" label="Back to courses" />
+        <h1>{course.title}</h1>
+        <p className="access-restricted-notice">
+          You don&apos;t have access to this course yet - ask an admin to assign it to you.
+        </p>
+      </main>
+    );
+  }
 
   const totalLessons = modules.reduce((sum, m) => sum + m.lessons.length, 0);
   const totalCompleted = modules.reduce(

@@ -33,12 +33,14 @@ import {
   patchLearningPath,
   saveModule,
   unassignModule,
+  userHasCourseAccess,
 } from "./store.js";
 import {
   createUser,
   getUserById,
   initUserStore,
   listUsers,
+  setUserAssignments,
   setUserRole,
   updatePassword,
   verifyCredentials,
@@ -189,7 +191,10 @@ const CreateUserInputSchema = z.object({
   role: UserRoleSchema,
 });
 
-app.get("/api/users", requireRole("super_admin"), async (_req, res) => {
+// Listing users (name/email/role/assignments) is needed by the course/
+// learning-path assignment UI, which regular admins also use - unlike
+// creating accounts or changing role/password, which stay super_admin-only.
+app.get("/api/users", requireRole("admin", "super_admin"), async (_req, res) => {
   res.json(await listUsers());
 });
 
@@ -232,6 +237,25 @@ app.patch("/api/users/:userId/password", requireRole("super_admin"), async (req,
     return;
   }
   res.status(204).end();
+});
+
+const SetUserAssignmentsSchema = z.object({
+  assignedLearningPathIds: z.array(z.string()),
+  assignedCourseIds: z.array(z.string()),
+});
+
+app.patch("/api/users/:userId/assignments", requireRole("admin", "super_admin"), async (req, res) => {
+  const parsed = SetUserAssignmentsSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.issues });
+    return;
+  }
+  const updated = await setUserAssignments(req.params.userId, parsed.data);
+  if (!updated) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+  res.json(updated);
 });
 
 // --- Courses & modules ---
@@ -360,6 +384,10 @@ app.delete("/api/courses/:courseId", requireRole("admin", "super_admin"), async 
 });
 
 app.get("/api/courses/:courseId/modules", requireAuth, async (req, res) => {
+  if (!(await userHasCourseAccess(req.user!, req.params.courseId))) {
+    res.status(403).json({ error: "You don't have access to this course" });
+    return;
+  }
   res.json(await listModulesByCourse(req.params.courseId));
 });
 
@@ -385,6 +413,10 @@ app.get("/api/modules/:moduleId", requireAuth, async (req, res) => {
   const module = await getModule(req.params.moduleId);
   if (!module) {
     res.status(404).json({ error: "Module not found" });
+    return;
+  }
+  if (!module.courseId || !(await userHasCourseAccess(req.user!, module.courseId))) {
+    res.status(403).json({ error: "You don't have access to this course" });
     return;
   }
   res.json(module);
