@@ -211,19 +211,20 @@ export function patchLearningPath(
 
 export function getProgress(): Promise<{
   completedLessonIds: string[];
-  lastVisited: { courseId: string; moduleId: string } | null;
+  lastCompleted: { courseId: string; moduleId: string } | null;
 }> {
   return request("/api/progress");
 }
 
-export function setLessonProgress(lessonId: string, completed: boolean): Promise<{ completedLessonIds: string[] }> {
-  return request(`/api/progress/lessons/${lessonId}`, { method: "PUT", body: JSON.stringify({ completed }) });
-}
-
-// Fire-and-forget from the student's perspective - records the module they
-// just opened so Home's "Continue where you left off" can deep-link to it.
-export async function setLastVisited(courseId: string, moduleId: string): Promise<void> {
-  await request("/api/progress/last-visited", { method: "PUT", body: JSON.stringify({ courseId, moduleId }) });
+// `context` records which course/module the completed lesson belongs to, so
+// the server can also update lastCompleted - Home's "Continue where you left
+// off" deep-links to that module instead of just the course.
+export function setLessonProgress(
+  lessonId: string,
+  completed: boolean,
+  context?: { courseId: string; moduleId: string }
+): Promise<{ completedLessonIds: string[] }> {
+  return request(`/api/progress/lessons/${lessonId}`, { method: "PUT", body: JSON.stringify({ completed, ...context }) });
 }
 
 export function getPreferences(): Promise<{

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import type { Course, Lesson, Module } from "../types.js";
-import { getCourse, getModule, getProgress, listModulesByCourse, setLastVisited, setLessonProgress } from "../api.js";
+import { getCourse, getModule, getProgress, listModulesByCourse, setLessonProgress } from "../api.js";
 import { BackButton } from "../components/BackButton.js";
 import { Breadcrumb } from "../components/Breadcrumb.js";
 import { LessonCarousel } from "../components/LessonCarousel.js";
@@ -34,10 +34,7 @@ export function StudentModule() {
     if (!courseId || !moduleId) return;
     getCourse(courseId).then(setCourse);
     getModule(moduleId)
-      .then((m) => {
-        setModule(m);
-        setLastVisited(courseId, moduleId).catch(() => {});
-      })
+      .then(setModule)
       .catch((err) => setAccessError(err instanceof Error ? err.message : "Couldn't load this module."));
     getProgress().then((p) => setCompletedIds(new Set(p.completedLessonIds)));
     listModulesByCourse(courseId)
@@ -48,11 +45,11 @@ export function StudentModule() {
   if (accessError) return <p className="access-restricted-notice">{accessError}</p>;
 
   async function markComplete(lessonId: string) {
-    if (!foundModule) return;
+    if (!foundModule || !courseId || !moduleId) return;
     const lessonIds = foundModule.lessons.map((l) => l.lessonId);
     const wasComplete = lessonIds.length > 0 && lessonIds.every((id) => completedIds.has(id));
 
-    const result = await setLessonProgress(lessonId, true);
+    const result = await setLessonProgress(lessonId, true, { courseId, moduleId });
     const nextCompleted = new Set(result.completedLessonIds);
     setCompletedIds(nextCompleted);
 
