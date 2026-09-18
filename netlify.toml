@@ -1,0 +1,12 @@
+[build]
+  command = "npm install && npm run build:client"
+  publish = "client/dist"
+
+# The client is a single-page app (react-router) - a hard refresh or a
+# direct link to a route like /courses/:id has no matching static file,
+# so every path needs to fall through to index.html and let the client
+# router take over.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
