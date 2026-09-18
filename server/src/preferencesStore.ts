@@ -1,9 +1,10 @@
 import type { Database, DocumentStore } from "./db/index.js";
-import type { LessonDisplayMode } from "./displayPreference.js";
+import type { ColorScheme, LessonDisplayMode } from "./displayPreference.js";
 
 interface PreferenceDoc extends Record<string, unknown> {
   userId: string;
-  lessonDisplayMode: LessonDisplayMode;
+  lessonDisplayMode?: LessonDisplayMode;
+  colorScheme?: ColorScheme;
 }
 
 let preferences: DocumentStore<PreferenceDoc>;
@@ -18,5 +19,16 @@ export async function getLessonDisplayMode(userId: string): Promise<LessonDispla
 }
 
 export async function setLessonDisplayMode(userId: string, mode: LessonDisplayMode): Promise<void> {
-  await preferences.set(userId, { userId, lessonDisplayMode: mode });
+  const existing = await preferences.get(userId);
+  await preferences.set(userId, { ...existing, userId, lessonDisplayMode: mode });
+}
+
+export async function getColorScheme(userId: string): Promise<ColorScheme | null> {
+  const doc = await preferences.get(userId);
+  return doc?.colorScheme ?? null;
+}
+
+export async function setColorScheme(userId: string, scheme: ColorScheme): Promise<void> {
+  const existing = await preferences.get(userId);
+  await preferences.set(userId, { ...existing, userId, colorScheme: scheme });
 }

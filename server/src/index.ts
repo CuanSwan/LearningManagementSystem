@@ -1,4 +1,4 @@
-import { LessonDisplayModeSchema } from "./displayPreference.js";
+import { ColorSchemeSchema, LessonDisplayModeSchema } from "./displayPreference.js";
 import { LessonSchema, ModuleSchema } from "./schemas.js";
 import { ThemeOverrideSchema } from "./theme.js";
 import { UserRoleSchema, type UserRole } from "./userSchema.js";
@@ -9,7 +9,13 @@ import multer from "multer";
 import { z } from "zod";
 import { createSession, destroySession, getSessionUserId } from "./auth.js";
 import { connectDb } from "./db/index.js";
-import { getLessonDisplayMode, initPreferencesStore, setLessonDisplayMode } from "./preferencesStore.js";
+import {
+  getColorScheme,
+  getLessonDisplayMode,
+  initPreferencesStore,
+  setColorScheme,
+  setLessonDisplayMode,
+} from "./preferencesStore.js";
 import { getCompletedLessons, getLastVisited, initProgressStore, setLastVisited, setLessonCompletion } from "./progressStore.js";
 import { convertRiseCourse, RiseImportError } from "./riseImport.js";
 import { extractRiseRuntimeData, RiseZipError } from "./riseZip.js";
@@ -536,7 +542,11 @@ app.put("/api/progress/last-visited", requireAuth, async (req, res) => {
 // --- Display preference (per-user) ---
 
 app.get("/api/preferences", requireAuth, async (req, res) => {
-  res.json({ lessonDisplayMode: await getLessonDisplayMode(req.user!.userId) });
+  const [lessonDisplayMode, colorScheme] = await Promise.all([
+    getLessonDisplayMode(req.user!.userId),
+    getColorScheme(req.user!.userId),
+  ]);
+  res.json({ lessonDisplayMode, colorScheme });
 });
 
 app.put("/api/preferences", requireAuth, async (req, res) => {
@@ -547,6 +557,16 @@ app.put("/api/preferences", requireAuth, async (req, res) => {
   }
   await setLessonDisplayMode(req.user!.userId, parsed.data.lessonDisplayMode);
   res.json({ lessonDisplayMode: parsed.data.lessonDisplayMode });
+});
+
+app.put("/api/preferences/color-scheme", requireAuth, async (req, res) => {
+  const parsed = z.object({ colorScheme: ColorSchemeSchema }).safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.issues });
+    return;
+  }
+  await setColorScheme(req.user!.userId, parsed.data.colorScheme);
+  res.json({ colorScheme: parsed.data.colorScheme });
 });
 
 async function main() {

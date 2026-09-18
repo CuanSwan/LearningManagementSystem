@@ -5,7 +5,7 @@ export function DisplayPreferenceChooser({ onChoose }: { onChoose: (mode: Lesson
     <div className="preference-chooser">
       <div className="preference-chooser-card">
         <h1>How do you want to read lessons?</h1>
-        <p>You can change this anytime from the top bar.</p>
+        <p>You can change this anytime from the settings button in the bottom-left corner.</p>
         <div className="preference-options">
           <button type="button" className="preference-option" onClick={() => onChoose("vertical")}>
             <strong>List</strong>

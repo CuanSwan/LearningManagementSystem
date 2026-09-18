@@ -160,3 +160,5 @@ export interface User {
 }
 
 export type LessonDisplayMode = "vertical" | "carousel" | "accessible";
+
+export type ColorScheme = "light" | "dark";

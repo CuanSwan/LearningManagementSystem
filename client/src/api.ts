@@ -1,4 +1,4 @@
-import type { Course, LearningPath, Lesson, LessonDisplayMode, Module, User, UserRole } from "./types.js";
+import type { ColorScheme, Course, LearningPath, Lesson, LessonDisplayMode, Module, User, UserRole } from "./types.js";
 
 // In production this points at the deployed API (e.g. Render); in local
 // dev it's left empty and vite.config.ts's proxy forwards /api requests
@@ -226,10 +226,17 @@ export async function setLastVisited(courseId: string, moduleId: string): Promis
   await request("/api/progress/last-visited", { method: "PUT", body: JSON.stringify({ courseId, moduleId }) });
 }
 
-export function getPreferences(): Promise<{ lessonDisplayMode: LessonDisplayMode | null }> {
+export function getPreferences(): Promise<{
+  lessonDisplayMode: LessonDisplayMode | null;
+  colorScheme: ColorScheme | null;
+}> {
   return request("/api/preferences");
 }
 
 export function setPreferences(lessonDisplayMode: LessonDisplayMode): Promise<{ lessonDisplayMode: LessonDisplayMode }> {
   return request("/api/preferences", { method: "PUT", body: JSON.stringify({ lessonDisplayMode }) });
+}
+
+export function setColorScheme(colorScheme: ColorScheme): Promise<{ colorScheme: ColorScheme }> {
+  return request("/api/preferences/color-scheme", { method: "PUT", body: JSON.stringify({ colorScheme }) });
 }
