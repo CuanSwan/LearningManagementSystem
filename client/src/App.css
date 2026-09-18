@@ -85,7 +85,8 @@ main {
   color: #888;
 }
 
-.component-library {
+.component-library,
+.library-sidebar {
   width: 220px;
   flex-shrink: 0;
   border: 1px solid #ddd;
@@ -93,6 +94,18 @@ main {
   padding: 1rem;
   position: sticky;
   top: 1rem;
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+}
+
+.library-sidebar {
+  width: 260px;
+}
+
+.library-sidebar > .library-section:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
 }
 
 .component-library h2 {
