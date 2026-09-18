@@ -1,6 +1,6 @@
 import type { Database, DocumentStore } from "./db/index.js";
 
-export interface LastVisited {
+export interface LastCompleted {
   courseId: string;
   moduleId: string;
 }
@@ -8,7 +8,7 @@ export interface LastVisited {
 interface ProgressDoc extends Record<string, unknown> {
   userId: string;
   completedLessonIds: string[];
-  lastVisited?: LastVisited;
+  lastCompleted?: LastCompleted;
 }
 
 let progress: DocumentStore<ProgressDoc>;
@@ -30,17 +30,17 @@ export async function setLessonCompletion(userId: string, lessonId: string, comp
   await progress.set(userId, { ...existing, userId, completedLessonIds: [...completedLessonIds] });
 }
 
-export async function getLastVisited(userId: string): Promise<LastVisited | null> {
+export async function getLastCompleted(userId: string): Promise<LastCompleted | null> {
   const doc = await progress.get(userId);
-  return doc?.lastVisited ?? null;
+  return doc?.lastCompleted ?? null;
 }
 
-export async function setLastVisited(userId: string, courseId: string, moduleId: string): Promise<void> {
+export async function setLastCompleted(userId: string, courseId: string, moduleId: string): Promise<void> {
   const existing = await progress.get(userId);
   await progress.set(userId, {
     ...existing,
     userId,
     completedLessonIds: existing?.completedLessonIds ?? [],
-    lastVisited: { courseId, moduleId },
+    lastCompleted: { courseId, moduleId },
   });
 }

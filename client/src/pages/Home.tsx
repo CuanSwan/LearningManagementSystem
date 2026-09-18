@@ -37,7 +37,7 @@ export function Home() {
       if (cancelled) return;
 
       const summaries = summarizeCourseProgress(accessibleCourses, modulesByCourse, progress.completedLessonIds);
-      const target = findContinueTarget(progress.lastVisited, accessibleCourses, modulesByCourse, summaries);
+      const target = findContinueTarget(progress.lastCompleted, accessibleCourses, modulesByCourse, summaries);
       if (target) {
         setPrimaryTarget(target);
         setIsContinuing(true);

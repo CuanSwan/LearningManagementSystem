@@ -6,7 +6,7 @@ export interface CourseProgress {
   completedLessons: number;
 }
 
-export interface LastVisited {
+export interface LastCompleted {
   courseId: string;
   moduleId: string;
 }
@@ -55,22 +55,23 @@ export function findCourseToContinue(summaries: CourseProgress[]): Course | null
 }
 
 // The real signal, when it exists: the module the student most recently
-// opened. Preferred over the completion-based heuristic below, since it's
-// literally where they left off rather than a guess - but only if that
-// module is still there to resume (still published, and its course still
-// among the ones the caller fetched, i.e. still accessible). Falls back to
-// the heuristic for progress recorded before this tracking existed, or if
-// the last-visited module was since deleted or access to it was revoked.
+// completed a lesson in. Preferred over the completion-based heuristic
+// below, since it's literally where they left off rather than a guess -
+// but only if that module is still there to resume (still published, and
+// its course still among the ones the caller fetched, i.e. still
+// accessible). Falls back to the heuristic for progress recorded before
+// this tracking existed, or if the last-completed module was since deleted
+// or access to it was revoked.
 export function findContinueTarget(
-  lastVisited: LastVisited | null,
+  lastCompleted: LastCompleted | null,
   courses: Course[],
   modulesByCourse: Record<string, Module[]>,
   summaries: CourseProgress[]
 ): ContinueTarget | null {
-  if (lastVisited) {
-    const course = courses.find((c) => c.courseId === lastVisited.courseId);
-    const module = modulesByCourse[lastVisited.courseId]?.find(
-      (m) => m.moduleId === lastVisited.moduleId && m.status === "published"
+  if (lastCompleted) {
+    const course = courses.find((c) => c.courseId === lastCompleted.courseId);
+    const module = modulesByCourse[lastCompleted.courseId]?.find(
+      (m) => m.moduleId === lastCompleted.moduleId && m.status === "published"
     );
     if (course && module) {
       return { courseId: course.courseId, courseTitle: course.title, moduleId: module.moduleId, moduleTitle: module.seed.title };

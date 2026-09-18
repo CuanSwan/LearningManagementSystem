@@ -118,33 +118,33 @@ describe("findFirstAssignedCourse", () => {
 describe("findContinueTarget", () => {
   const courses = [course("c1", "Course One")];
 
-  it("deep-links to the last-visited module when it's still published and accessible", () => {
+  it("deep-links to the last-completed module when it's still published and accessible", () => {
     const modulesByCourse = { c1: [module("m1", "c1", "published", ["l1", "l2"])] };
     const target = findContinueTarget({ courseId: "c1", moduleId: "m1" }, courses, modulesByCourse, []);
     expect(target).toEqual({ courseId: "c1", courseTitle: "Course One", moduleId: "m1", moduleTitle: "m1" });
   });
 
-  it("falls back to the completion heuristic when the last-visited module is no longer published", () => {
+  it("falls back to the completion heuristic when the last-completed module is no longer published", () => {
     const modulesByCourse = { c1: [module("m1", "c1", "draft", ["l1"])] };
     const summaries = [{ course: courses[0], totalLessons: 5, completedLessons: 2 }];
     const target = findContinueTarget({ courseId: "c1", moduleId: "m1" }, courses, modulesByCourse, summaries);
     expect(target).toEqual({ courseId: "c1", courseTitle: "Course One" });
   });
 
-  it("falls back to the completion heuristic when the last-visited course is no longer accessible", () => {
+  it("falls back to the completion heuristic when the last-completed course is no longer accessible", () => {
     const modulesByCourse = {};
     const summaries = [{ course: courses[0], totalLessons: 5, completedLessons: 2 }];
     const target = findContinueTarget({ courseId: "gone", moduleId: "m1" }, courses, modulesByCourse, summaries);
     expect(target).toEqual({ courseId: "c1", courseTitle: "Course One" });
   });
 
-  it("falls back to the completion heuristic when there's no last-visited record at all", () => {
+  it("falls back to the completion heuristic when there's no last-completed record at all", () => {
     const summaries = [{ course: courses[0], totalLessons: 5, completedLessons: 2 }];
     const target = findContinueTarget(null, courses, {}, summaries);
     expect(target).toEqual({ courseId: "c1", courseTitle: "Course One" });
   });
 
-  it("returns null when neither a last-visited module nor any in-progress course exists", () => {
+  it("returns null when neither a last-completed module nor any in-progress course exists", () => {
     expect(findContinueTarget(null, courses, {}, [])).toBeNull();
   });
 });

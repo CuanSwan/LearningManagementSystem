@@ -16,7 +16,7 @@ import {
   setColorScheme,
   setLessonDisplayMode,
 } from "./preferencesStore.js";
-import { getCompletedLessons, getLastVisited, initProgressStore, setLastVisited, setLessonCompletion } from "./progressStore.js";
+import { getCompletedLessons, getLastCompleted, initProgressStore, setLastCompleted, setLessonCompletion } from "./progressStore.js";
 import { convertRiseCourse, RiseImportError } from "./riseImport.js";
 import { extractRiseRuntimeData, RiseZipError } from "./riseZip.js";
 import { seedSampleData } from "./sampleData.js";
@@ -510,33 +510,31 @@ app.patch("/api/learning-paths/:pathId", requireRole("admin", "super_admin"), as
 // --- Lesson completion (per-user) ---
 
 app.get("/api/progress", requireAuth, async (req, res) => {
-  const [completedLessonIds, lastVisited] = await Promise.all([
+  const [completedLessonIds, lastCompleted] = await Promise.all([
     getCompletedLessons(req.user!.userId),
-    getLastVisited(req.user!.userId),
+    getLastCompleted(req.user!.userId),
   ]);
-  res.json({ completedLessonIds, lastVisited });
+  res.json({ completedLessonIds, lastCompleted });
 });
 
+// courseId/moduleId are optional so completion can still be recorded without
+// them, but when present and the lesson is being marked complete (not
+// uncompleted), they also update lastCompleted - the module a student most
+// recently finished a lesson in, which "Continue where you left off"
+// deep-links straight back to instead of just the course.
 app.put("/api/progress/lessons/:lessonId", requireAuth, async (req, res) => {
-  const parsed = z.object({ completed: z.boolean() }).safeParse(req.body);
+  const parsed = z
+    .object({ completed: z.boolean(), courseId: z.string().min(1).optional(), moduleId: z.string().min(1).optional() })
+    .safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.issues });
     return;
   }
   await setLessonCompletion(req.user!.userId, req.params.lessonId, parsed.data.completed);
-  res.json({ completedLessonIds: await getCompletedLessons(req.user!.userId) });
-});
-
-// Records the module a student most recently opened, so "Continue where you
-// left off" can deep-link straight back to it instead of just the course.
-app.put("/api/progress/last-visited", requireAuth, async (req, res) => {
-  const parsed = z.object({ courseId: z.string().min(1), moduleId: z.string().min(1) }).safeParse(req.body);
-  if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.issues });
-    return;
+  if (parsed.data.completed && parsed.data.courseId && parsed.data.moduleId) {
+    await setLastCompleted(req.user!.userId, parsed.data.courseId, parsed.data.moduleId);
   }
-  await setLastVisited(req.user!.userId, parsed.data.courseId, parsed.data.moduleId);
-  res.json({ ok: true });
+  res.json({ completedLessonIds: await getCompletedLessons(req.user!.userId) });
 });
 
 // --- Display preference (per-user) ---
