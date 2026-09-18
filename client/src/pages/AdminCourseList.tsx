@@ -81,6 +81,11 @@ export function AdminCourseList() {
 
       <form className="course-form" onSubmit={handleCreate}>
         <h2>Create a course</h2>
+        <p className="library-section-hint">
+          Every course automatically starts with a mandatory Course Orientation module: an exam breakdown,
+          orientation video, study plan, and additional resources, in that order. It's created blank for you to fill
+          in once the course exists.
+        </p>
         <label className="field">
           Title
           <input value={title} onChange={(e) => setTitle(e.target.value)} required />
@@ -108,7 +113,9 @@ export function AdminCourseList() {
       <form className="course-form" onSubmit={handleRiseImport}>
         <h2>Import from Rise 360</h2>
         <p className="library-section-hint">
-          Upload a Rise 360 .zip export - it's decompiled into a new course with its modules and lessons.
+          Upload a Rise 360 .zip export - it's decompiled into a new course with its modules and lessons. Like any other
+          course, it also starts with a mandatory Course Orientation module (exam breakdown, orientation video, study
+          plan, additional resources, in that order).
         </p>
         <label className="field">
           Rise 360 export (.zip)

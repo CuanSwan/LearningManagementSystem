@@ -1,5 +1,13 @@
 import { lazy, Suspense } from "react";
-import type { AccordionLesson, FlashcardLesson, Lesson, MatchingLesson, PracticalLesson, QuizLesson } from "../types.js";
+import type {
+  AccordionLesson,
+  ExamBreakdownLesson,
+  FlashcardLesson,
+  Lesson,
+  MatchingLesson,
+  PracticalLesson,
+  QuizLesson,
+} from "../types.js";
 
 // TipTap/ProseMirror are the single largest dependency in this app's bundle
 // - lazy-loaded so students (who never open this editor) never pay for it,
@@ -270,6 +278,58 @@ function MatchingEditor({
   );
 }
 
+function ExamBreakdownEditor({
+  content,
+  onChange,
+}: {
+  content: ExamBreakdownLesson["content"];
+  onChange: (content: ExamBreakdownLesson["content"]) => void;
+}) {
+  return (
+    <div className="field-group">
+      <label className="field">
+        Number of questions
+        <input
+          type="number"
+          min={1}
+          step={1}
+          value={content.questionCount}
+          onChange={(e) => onChange({ ...content, questionCount: Number(e.target.value) })}
+        />
+      </label>
+      <label className="field">
+        Time limit (minutes)
+        <input
+          type="number"
+          min={1}
+          step={1}
+          value={content.timeLimitMinutes}
+          onChange={(e) => onChange({ ...content, timeLimitMinutes: Number(e.target.value) })}
+        />
+      </label>
+      <label className="field">
+        Pass mark (%)
+        <input
+          type="number"
+          min={0}
+          max={100}
+          step={1}
+          value={content.passMarkPercent}
+          onChange={(e) => onChange({ ...content, passMarkPercent: Number(e.target.value) })}
+        />
+      </label>
+      <label>
+        <input
+          type="checkbox"
+          checked={content.openBook}
+          onChange={(e) => onChange({ ...content, openBook: e.target.checked })}
+        />
+        Open book
+      </label>
+    </div>
+  );
+}
+
 export function LessonEditorForm({
   lesson,
   onChange,
@@ -354,5 +414,7 @@ export function LessonEditorForm({
           </span>
         </label>
       );
+    case "examBreakdown":
+      return <ExamBreakdownEditor content={lesson.content} onChange={onChange} />;
   }
 }

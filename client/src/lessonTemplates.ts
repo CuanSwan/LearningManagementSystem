@@ -1,6 +1,10 @@
 import DOMPurify from "dompurify";
 import type { Lesson, LessonType, Module } from "./types.js";
 
+// Exam breakdown is deliberately excluded here - it's not a general-purpose
+// block an admin can drag into any module. It's a permanent fixture of the
+// Course Orientation module (see createOrientationModule in the server's
+// store.ts), never freely addable elsewhere.
 export const LESSON_TYPES: LessonType[] = [
   "text",
   "video",
@@ -25,6 +29,7 @@ const LESSON_TYPE_LABELS: Record<LessonType, string> = {
   matching: "Matching",
   html: "Custom HTML",
   embed: "Embed (iframe)",
+  examBreakdown: "Exam Breakdown",
 };
 
 export function lessonTypeLabel(type: LessonType): string {
@@ -61,6 +66,10 @@ export function describeLesson(lesson: Lesson): string {
       return textPreview(lesson.content.html) || "(empty)";
     case "embed":
       return lesson.content.url || "(empty)";
+    case "examBreakdown": {
+      const { questionCount, timeLimitMinutes, passMarkPercent, openBook } = lesson.content;
+      return `${questionCount} questions, ${timeLimitMinutes} min, ${passMarkPercent}% to pass, ${openBook ? "open book" : "closed book"}`;
+    }
   }
 }
 
@@ -105,5 +114,11 @@ export function createBlankLesson(type: LessonType, order: number): Lesson {
       return { ...base, type, content: { html: "" } };
     case "embed":
       return { ...base, type, content: { url: "" } };
+    case "examBreakdown":
+      return {
+        ...base,
+        type,
+        content: { passMarkPercent: 50, timeLimitMinutes: 60, questionCount: 20, openBook: false },
+      };
   }
 }

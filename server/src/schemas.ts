@@ -73,6 +73,13 @@ const EmbedContentSchema = z.object({
   url: z.string().url().refine((u) => /^https?:\/\//i.test(u), "Embed URL must start with http:// or https://"),
 });
 
+const ExamBreakdownContentSchema = z.object({
+  passMarkPercent: z.number().min(0).max(100),
+  timeLimitMinutes: z.number().int().positive(),
+  questionCount: z.number().int().positive(),
+  openBook: z.boolean(),
+});
+
 const LessonBaseSchema = z.object({
   lessonId: z.string(),
   schemaVersion: z.number().int().positive(),
@@ -131,6 +138,11 @@ export const EmbedLessonSchema = LessonBaseSchema.extend({
   content: EmbedContentSchema,
 });
 
+export const ExamBreakdownLessonSchema = LessonBaseSchema.extend({
+  type: z.literal("examBreakdown"),
+  content: ExamBreakdownContentSchema,
+});
+
 export const LessonSchema = z.discriminatedUnion("type", [
   TextLessonSchema,
   VideoLessonSchema,
@@ -142,6 +154,7 @@ export const LessonSchema = z.discriminatedUnion("type", [
   MatchingLessonSchema,
   CustomHtmlLessonSchema,
   EmbedLessonSchema,
+  ExamBreakdownLessonSchema,
 ]);
 
 export type Lesson = z.infer<typeof LessonSchema>;
@@ -155,6 +168,7 @@ export type AccordionLesson = z.infer<typeof AccordionLessonSchema>;
 export type MatchingLesson = z.infer<typeof MatchingLessonSchema>;
 export type CustomHtmlLesson = z.infer<typeof CustomHtmlLessonSchema>;
 export type EmbedLesson = z.infer<typeof EmbedLessonSchema>;
+export type ExamBreakdownLesson = z.infer<typeof ExamBreakdownLessonSchema>;
 export type LessonType = Lesson["type"];
 
 export const ModuleSeedSchema = z.object({

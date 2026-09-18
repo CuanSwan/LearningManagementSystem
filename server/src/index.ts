@@ -318,11 +318,16 @@ app.post(
       theme: {},
     });
 
-    const modules = await Promise.all(
+    await Promise.all(
       converted.modules.map((m) => createModule({ courseId: course.courseId, title: m.title, objective: m.objective, lessons: m.lessons }))
     );
 
-    res.status(201).json({ course, moduleCount: modules.length, skipped: converted.skipped });
+    // createCourse() above also created the mandatory orientation module, so
+    // the count reported here is every module the course now has, not just
+    // the ones converted from the Rise file - what the admin actually sees
+    // when they open the course.
+    const allModules = await listModulesByCourse(course.courseId);
+    res.status(201).json({ course, moduleCount: allModules.length, skipped: converted.skipped });
   }
 );
 

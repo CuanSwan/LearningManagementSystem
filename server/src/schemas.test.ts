@@ -114,12 +114,39 @@ const validModule = {
       order: 10,
       content: { url: "https://example.com/practical-exercise" },
     },
+    {
+      lessonId: "l11",
+      type: "examBreakdown",
+      schemaVersion: 1,
+      source: "human",
+      wordingStyle: "official",
+      order: 11,
+      content: { passMarkPercent: 70, timeLimitMinutes: 90, questionCount: 40, openBook: false },
+    },
   ],
 };
 
 describe("ModuleSchema", () => {
-  it("accepts a module with all ten lesson types", () => {
+  it("accepts a module with all eleven lesson types", () => {
     expect(() => parseModule(validModule)).not.toThrow();
+  });
+
+  it("rejects an exam breakdown lesson with a pass mark over 100", () => {
+    const invalid = {
+      ...validModule,
+      lessons: [
+        {
+          lessonId: "l11",
+          type: "examBreakdown",
+          schemaVersion: 1,
+          source: "human",
+          wordingStyle: "official",
+          order: 1,
+          content: { passMarkPercent: 150, timeLimitMinutes: 90, questionCount: 40, openBook: false },
+        },
+      ],
+    };
+    expect(() => parseModule(invalid)).toThrow();
   });
 
   it("sanitizes an html lesson's content on parse, not just at render time", () => {
