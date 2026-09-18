@@ -3,14 +3,14 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../auth.js";
 import { getProgress, listCourses, listLearningPaths, listModulesByCourse } from "../api.js";
 import { isCourseAccessible } from "../access.js";
-import { findCourseToContinue, findFirstAssignedCourse, summarizeCourseProgress } from "../continueLearning.js";
+import { findContinueTarget, findFirstAssignedCourse, summarizeCourseProgress, type ContinueTarget } from "../continueLearning.js";
 import type { Course, LearningPath, Module } from "../types.js";
 
 export function Home() {
   const { user } = useAuth();
   const firstName = user?.name.split(" ")[0];
   // undefined = still loading, null = nothing assigned/in progress yet.
-  const [primaryCourse, setPrimaryCourse] = useState<Course | null | undefined>(undefined);
+  const [primaryTarget, setPrimaryTarget] = useState<ContinueTarget | null | undefined>(undefined);
   const [isContinuing, setIsContinuing] = useState(false);
 
   useEffect(() => {
@@ -37,17 +37,18 @@ export function Home() {
       if (cancelled) return;
 
       const summaries = summarizeCourseProgress(accessibleCourses, modulesByCourse, progress.completedLessonIds);
-      const continuing = findCourseToContinue(summaries);
-      if (continuing) {
-        setPrimaryCourse(continuing);
+      const target = findContinueTarget(progress.lastVisited, accessibleCourses, modulesByCourse, summaries);
+      if (target) {
+        setPrimaryTarget(target);
         setIsContinuing(true);
         return;
       }
-      setPrimaryCourse(findFirstAssignedCourse(user!, courses, learningPaths));
+      const first = findFirstAssignedCourse(user!, courses, learningPaths);
+      setPrimaryTarget(first ? { courseId: first.courseId, courseTitle: first.title } : null);
     }
 
     load().catch(() => {
-      if (!cancelled) setPrimaryCourse(null);
+      if (!cancelled) setPrimaryTarget(null);
     });
 
     return () => {
@@ -63,18 +64,26 @@ export function Home() {
       </div>
 
       <div className="home-choices">
-        {primaryCourse ? (
-          <Link to={`/courses/${primaryCourse.courseId}`} className="home-choice-card home-choice-card-primary">
+        {primaryTarget ? (
+          <Link
+            to={
+              primaryTarget.moduleId
+                ? `/courses/${primaryTarget.courseId}/modules/${primaryTarget.moduleId}`
+                : `/courses/${primaryTarget.courseId}`
+            }
+            className="home-choice-card home-choice-card-primary"
+          >
             <span className="home-choice-card-eyebrow">
               {isContinuing ? "Continue where you left off" : "Get started"}
             </span>
-            <h2>{primaryCourse.title}</h2>
+            <h2>{primaryTarget.courseTitle}</h2>
+            {primaryTarget.moduleTitle && <p>{primaryTarget.moduleTitle}</p>}
           </Link>
         ) : (
           <Link to="/courses" className="home-choice-card home-choice-card-primary">
             <h2>Get Started</h2>
             <p>
-              {primaryCourse === undefined
+              {primaryTarget === undefined
                 ? "New here? Browse the course catalog and start learning."
                 : "No courses assigned to you yet - browse what's available, or check back once an admin assigns you one."}
             </p>

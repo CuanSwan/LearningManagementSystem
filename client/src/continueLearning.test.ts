@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { findCourseToContinue, findFirstAssignedCourse, summarizeCourseProgress } from "./continueLearning.js";
+import { findContinueTarget, findCourseToContinue, findFirstAssignedCourse, summarizeCourseProgress } from "./continueLearning.js";
 import type { Course, LearningPath, Lesson, Module, User } from "./types.js";
 
 function course(courseId: string, title: string): Course {
@@ -112,5 +112,39 @@ describe("findFirstAssignedCourse", () => {
   it("falls back to individual courses if the assigned path can't be found", () => {
     const user = student({ assignedLearningPathIds: ["missing-path"], assignedCourseIds: ["c3"] });
     expect(findFirstAssignedCourse(user, courses, paths)?.courseId).toBe("c3");
+  });
+});
+
+describe("findContinueTarget", () => {
+  const courses = [course("c1", "Course One")];
+
+  it("deep-links to the last-visited module when it's still published and accessible", () => {
+    const modulesByCourse = { c1: [module("m1", "c1", "published", ["l1", "l2"])] };
+    const target = findContinueTarget({ courseId: "c1", moduleId: "m1" }, courses, modulesByCourse, []);
+    expect(target).toEqual({ courseId: "c1", courseTitle: "Course One", moduleId: "m1", moduleTitle: "m1" });
+  });
+
+  it("falls back to the completion heuristic when the last-visited module is no longer published", () => {
+    const modulesByCourse = { c1: [module("m1", "c1", "draft", ["l1"])] };
+    const summaries = [{ course: courses[0], totalLessons: 5, completedLessons: 2 }];
+    const target = findContinueTarget({ courseId: "c1", moduleId: "m1" }, courses, modulesByCourse, summaries);
+    expect(target).toEqual({ courseId: "c1", courseTitle: "Course One" });
+  });
+
+  it("falls back to the completion heuristic when the last-visited course is no longer accessible", () => {
+    const modulesByCourse = {};
+    const summaries = [{ course: courses[0], totalLessons: 5, completedLessons: 2 }];
+    const target = findContinueTarget({ courseId: "gone", moduleId: "m1" }, courses, modulesByCourse, summaries);
+    expect(target).toEqual({ courseId: "c1", courseTitle: "Course One" });
+  });
+
+  it("falls back to the completion heuristic when there's no last-visited record at all", () => {
+    const summaries = [{ course: courses[0], totalLessons: 5, completedLessons: 2 }];
+    const target = findContinueTarget(null, courses, {}, summaries);
+    expect(target).toEqual({ courseId: "c1", courseTitle: "Course One" });
+  });
+
+  it("returns null when neither a last-visited module nor any in-progress course exists", () => {
+    expect(findContinueTarget(null, courses, {}, [])).toBeNull();
   });
 });
