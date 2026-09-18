@@ -6,6 +6,20 @@ export interface CourseProgress {
   completedLessons: number;
 }
 
+export interface LastVisited {
+  courseId: string;
+  moduleId: string;
+}
+
+// What "Continue where you left off" actually links to - a specific module
+// when one is known, otherwise just the course.
+export interface ContinueTarget {
+  courseId: string;
+  courseTitle: string;
+  moduleId?: string;
+  moduleTitle?: string;
+}
+
 // There's no "last visited" timestamp anywhere in the schema, so "where you
 // left off" is approximated from what we do have: published lessons and
 // which of them are marked complete. A course only counts as published
@@ -38,6 +52,33 @@ export function findCourseToContinue(summaries: CourseProgress[]): Course | null
   );
   if (inProgress.length === 0) return null;
   return inProgress.reduce((best, s) => (s.completedLessons > best.completedLessons ? s : best)).course;
+}
+
+// The real signal, when it exists: the module the student most recently
+// opened. Preferred over the completion-based heuristic below, since it's
+// literally where they left off rather than a guess - but only if that
+// module is still there to resume (still published, and its course still
+// among the ones the caller fetched, i.e. still accessible). Falls back to
+// the heuristic for progress recorded before this tracking existed, or if
+// the last-visited module was since deleted or access to it was revoked.
+export function findContinueTarget(
+  lastVisited: LastVisited | null,
+  courses: Course[],
+  modulesByCourse: Record<string, Module[]>,
+  summaries: CourseProgress[]
+): ContinueTarget | null {
+  if (lastVisited) {
+    const course = courses.find((c) => c.courseId === lastVisited.courseId);
+    const module = modulesByCourse[lastVisited.courseId]?.find(
+      (m) => m.moduleId === lastVisited.moduleId && m.status === "published"
+    );
+    if (course && module) {
+      return { courseId: course.courseId, courseTitle: course.title, moduleId: module.moduleId, moduleTitle: module.seed.title };
+    }
+  }
+
+  const course = findCourseToContinue(summaries);
+  return course ? { courseId: course.courseId, courseTitle: course.title } : null;
 }
 
 // What "Get Started" points a first-time student at: the first course in
