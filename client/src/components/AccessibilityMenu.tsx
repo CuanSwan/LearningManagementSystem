@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { useDisplayPreference } from "../displayPreference.js";
-import type { LessonDisplayMode } from "../types.js";
+import type { ColorScheme, LessonDisplayMode } from "../types.js";
 
 // A single floating entry point for accessibility/display settings, fixed to
 // the bottom-left corner so it's reachable from every page without crowding
-// the top bar. Reading mode is the only section today, but the panel is
-// built to grow - add another <div className="accessibility-menu-section">
+// the top bar. Appearance and reading mode are the only sections today, but
+// the panel is built to grow - add another <div className="accessibility-menu-section">
 // (font size, contrast, motion, etc.) without needing a new place to put it.
 export function AccessibilityMenu() {
-  const { mode, choose } = useDisplayPreference();
+  const { mode, choose, colorScheme, setColorScheme } = useDisplayPreference();
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -36,6 +36,20 @@ export function AccessibilityMenu() {
     <div className="accessibility-menu" ref={containerRef}>
       {open && (
         <div className="accessibility-menu-panel" role="menu" aria-label="Accessibility and display settings">
+          <div className="accessibility-menu-section">
+            <label htmlFor="accessibility-menu-color-scheme" className="accessibility-menu-section-label">
+              Appearance
+            </label>
+            <select
+              id="accessibility-menu-color-scheme"
+              className="accessibility-menu-select"
+              value={colorScheme}
+              onChange={(event) => setColorScheme(event.target.value as ColorScheme)}
+            >
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+            </select>
+          </div>
           <div className="accessibility-menu-section">
             <label htmlFor="accessibility-menu-reading-mode" className="accessibility-menu-section-label">
               Reading Mode

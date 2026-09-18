@@ -1,6 +1,71 @@
+/* --- Dark mode design tokens ---
+   Neutral surface/text/border tokens for app chrome (page backgrounds,
+   cards, borders, muted text). Per-course branding (--theme-primary,
+   --theme-bg, --module-accent, set inline by Theme.withOverrides) and
+   semantic status colors (danger/success) are intentionally left as
+   literals - they're not part of the light/dark distinction. The top bar,
+   auth page, and floating accessibility menu are deliberately dark in both
+   themes and also stay literal. */
+:root {
+  --surface-app: #ffffff;
+  --surface-warm: #f6f5f1;
+  --surface-card: #ffffff;
+  --surface-sunken: #fafafa;
+  --surface-muted: #f4f4f4;
+  --text-primary: #0d0d0d;
+  --text-secondary: #555555;
+  --text-tertiary: #888888;
+  --text-disabled: #9ca3af;
+  --border-default: #dddddd;
+  --border-strong: #cccccc;
+  --border-disabled: #d1d5db;
+  --border-subtle: rgba(0, 0, 0, 0.08);
+  --border-medium: rgba(0, 0, 0, 0.12);
+  --border-strong-alpha: rgba(0, 0, 0, 0.2);
+  --divider-strong: rgba(0, 0, 0, 0.35);
+  --track-bg: rgba(0, 0, 0, 0.12);
+  --tint-weak: rgba(0, 0, 0, 0.03);
+  --shadow-color: rgba(0, 0, 0, 0.06);
+  --shadow-color-strong: rgba(0, 0, 0, 0.25);
+  --overlay-scrim: rgba(0, 0, 0, 0.5);
+}
+
+:root[data-theme="dark"] {
+  --surface-app: #121417;
+  --surface-warm: #121417;
+  --surface-card: #1c1f24;
+  --surface-sunken: #23262c;
+  --surface-muted: #23262c;
+  --text-primary: #f3f4f6;
+  --text-secondary: #b4b8c0;
+  --text-tertiary: #8b8f98;
+  --text-disabled: #9ca3af;
+  --border-default: #33363c;
+  --border-strong: #45484f;
+  --border-disabled: #4b5160;
+  --border-subtle: rgba(255, 255, 255, 0.1);
+  --border-medium: rgba(255, 255, 255, 0.14);
+  --border-strong-alpha: rgba(255, 255, 255, 0.22);
+  --divider-strong: rgba(255, 255, 255, 0.3);
+  --track-bg: rgba(255, 255, 255, 0.18);
+  --tint-weak: rgba(255, 255, 255, 0.06);
+  --shadow-color: rgba(0, 0, 0, 0.4);
+  --shadow-color-strong: rgba(0, 0, 0, 0.55);
+  --overlay-scrim: rgba(0, 0, 0, 0.7);
+}
+
 body {
   font-family: "Poppins", sans-serif;
   margin: 0;
+  background: var(--surface-app);
+  color: var(--text-primary);
+}
+
+input,
+textarea,
+select {
+  background: var(--surface-card);
+  color: var(--text-primary);
 }
 
 .app-shell {
@@ -44,13 +109,13 @@ main {
 }
 
 .lms-block {
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-default);
   border-radius: 6px;
   padding: 1rem;
 }
 
 .admin-lesson-wrapper {
-  border: 1px dashed #999;
+  border: 1px dashed var(--border-strong);
   border-radius: 6px;
   cursor: grab;
 }
@@ -70,26 +135,26 @@ main {
   align-items: center;
   gap: 0.75rem;
   padding: 0.35rem 0.6rem;
-  background: #f4f4f4;
-  border-bottom: 1px dashed #999;
+  background: var(--surface-muted);
+  border-bottom: 1px dashed var(--border-strong);
   font-size: 0.78rem;
-  color: #555;
+  color: var(--text-secondary);
 }
 
 .drop-zone {
-  border: 1px dashed #bbb;
+  border: 1px dashed var(--border-strong);
   border-radius: 6px;
   padding: 1rem;
   text-align: center;
   font-size: 0.85rem;
-  color: #888;
+  color: var(--text-tertiary);
 }
 
 .component-library,
 .library-sidebar {
   width: 220px;
   flex-shrink: 0;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-default);
   border-radius: 6px;
   padding: 1rem;
   position: sticky;
@@ -115,17 +180,17 @@ main {
 
 .component-library p {
   font-size: 0.8rem;
-  color: #666;
+  color: var(--text-secondary);
   margin: 0 0 0.75rem;
 }
 
 .library-item {
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-strong);
   border-radius: 4px;
   padding: 0.5rem 0.75rem;
   margin-bottom: 0.5rem;
   cursor: grab;
-  background: #fafafa;
+  background: var(--surface-sunken);
 }
 
 .library-item:active {
@@ -147,7 +212,7 @@ main {
   font-size: 0.68rem;
   text-transform: uppercase;
   letter-spacing: 0.03em;
-  color: #888;
+  color: var(--text-tertiary);
 }
 
 .library-item-preview {
@@ -160,7 +225,7 @@ main {
 .library-section {
   margin-top: 1rem;
   padding-top: 0.85rem;
-  border-top: 1px solid #ddd;
+  border-top: 1px solid var(--border-default);
 }
 
 .library-section h3 {
@@ -170,7 +235,7 @@ main {
 
 .library-section-hint {
   font-size: 0.75rem;
-  color: #888;
+  color: var(--text-tertiary);
   margin: 0 0 0.4rem;
 }
 
@@ -187,7 +252,7 @@ main {
 
 .library-tree-node .library-tree-node {
   margin-left: 0.75rem;
-  border-left: 1px solid #e2e2e2;
+  border-left: 1px solid var(--border-default);
   padding-left: 0.6rem;
 }
 
@@ -199,12 +264,12 @@ main {
 
 .library-tree-empty {
   font-size: 0.75rem;
-  color: #999;
+  color: var(--text-tertiary);
   margin: 0.2rem 0 0.4rem;
 }
 
 .library-unassigned {
-  border-top: 1px solid #ddd;
+  border-top: 1px solid var(--border-default);
 }
 
 .library-new-module-link {
@@ -248,7 +313,7 @@ main {
 .field select {
   font: inherit;
   padding: 0.4rem 0.5rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-strong);
   border-radius: 4px;
 }
 
@@ -259,7 +324,7 @@ main {
 }
 
 .editor-question {
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-default);
   border-radius: 6px;
   padding: 0.75rem;
   margin: 0 0 0.5rem;
@@ -295,7 +360,7 @@ main {
   gap: 0.4rem;
   font-size: 0.95rem;
   margin: 0 0 1.5rem;
-  color: #777;
+  color: var(--text-secondary);
 }
 
 .breadcrumb-trail-item {
@@ -313,12 +378,12 @@ main {
 }
 
 .breadcrumb-trail-current {
-  color: #0d0d0d;
+  color: var(--text-primary);
   font-weight: 600;
 }
 
 .breadcrumb-trail-sep {
-  color: #bbb;
+  color: var(--text-tertiary);
 }
 
 .save-controls {
@@ -397,11 +462,11 @@ main {
   width: 0.9rem;
   height: 0.9rem;
   border-radius: 50%;
-  border: 1px solid rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--border-medium);
 }
 
 .course-form {
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-default);
   border-radius: 6px;
   padding: 1.25rem;
   max-width: 420px;
@@ -442,13 +507,13 @@ main {
 
 .module-status {
   font-size: 0.78rem;
-  color: #888;
+  color: var(--text-tertiary);
 }
 
 /* --- Student view: streamlined, theme-driven --- */
 
 .student-view {
-  background: var(--theme-bg, #f6f5f1);
+  background: var(--theme-bg, var(--surface-warm));
   font-family: var(--theme-font, "Poppins", sans-serif);
   min-height: 100vh;
   padding-bottom: 3rem;
@@ -541,7 +606,7 @@ main {
 
 .accessible-mode .carousel-dot.active {
   box-shadow:
-    0 0 0 3px var(--theme-bg, #f6f5f1),
+    0 0 0 3px var(--theme-bg, var(--surface-warm)),
     0 0 0 6px var(--theme-primary, #3e6259);
 }
 
@@ -551,14 +616,14 @@ main {
 }
 
 .course-description {
-  color: #555;
+  color: var(--text-secondary);
   max-width: none;
 }
 
 .access-restricted-notice {
-  color: #9ca3af;
+  color: var(--text-disabled);
   font-size: 1.05rem;
-  border: 1px dashed #9ca3af;
+  border: 1px dashed var(--text-disabled);
   padding: 1.5rem;
   max-width: 32rem;
 }
@@ -582,7 +647,7 @@ main {
 .home-hero h1 {
   font-family: "Oranienbaum", serif;
   font-weight: 400;
-  color: #0d0d0d;
+  color: var(--text-primary);
   font-size: 3.25rem;
   line-height: 1.15;
   margin: 0 0 0.75rem;
@@ -591,7 +656,7 @@ main {
 .home-hero-sub {
   font-family: "Poppins", sans-serif;
   font-size: 1.25rem;
-  color: #555;
+  color: var(--text-secondary);
   margin: 0;
 }
 
@@ -603,18 +668,18 @@ main {
 
 .home-choice-card {
   display: block;
-  background: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
   border-top: 4px solid var(--theme-primary, #3e6259);
   border-radius: 0;
   padding: 2.5rem;
   text-decoration: none;
-  color: #0d0d0d;
+  color: var(--text-primary);
   font-family: "Poppins", sans-serif;
 }
 
 .home-choice-card-primary {
-  background: #f6f5f1;
+  background: var(--surface-warm);
   border-top-width: 6px;
 }
 
@@ -636,7 +701,7 @@ main {
 
 .home-choice-card p {
   margin-bottom: 0;
-  color: #555;
+  color: var(--text-secondary);
 }
 
 @media (max-width: 640px) {
@@ -653,13 +718,13 @@ main {
   max-width: none;
   margin: 0;
   padding: 2rem 2.5rem;
-  background: #fff;
+  background: var(--surface-card);
 }
 
 .course-page h1 {
   font-family: "Oranienbaum", serif;
   font-weight: 400;
-  color: #0d0d0d;
+  color: var(--text-primary);
   font-size: 3.25rem;
   line-height: 1.15;
 }
@@ -668,7 +733,7 @@ main {
   max-width: none;
   margin: 0;
   padding: 2rem 2.5rem;
-  background: #fff;
+  background: var(--surface-card);
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -677,7 +742,7 @@ main {
 .module-page h1 {
   font-family: "Oranienbaum", serif;
   font-weight: 400;
-  color: #0d0d0d;
+  color: var(--text-primary);
   font-size: 3.25rem;
   line-height: 1.15;
 }
@@ -711,8 +776,8 @@ main {
 
 .catalog-card {
   display: block;
-  background: var(--theme-bg, #fff);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: var(--theme-bg, var(--surface-card));
+  border: 1px solid var(--border-subtle);
   border-top: 4px solid var(--theme-primary, #3e6259);
   border-radius: 0;
   padding: 2.5rem 1.25rem;
@@ -722,23 +787,23 @@ main {
 }
 
 .catalog-grid .catalog-card {
-  color: #0d0d0d;
+  color: var(--text-primary);
 }
 
 .catalog-card.is-locked {
   cursor: not-allowed;
-  background: #fafafa;
-  border-top-color: #9ca3af;
+  background: var(--surface-sunken);
+  border-top-color: var(--text-disabled);
 }
 
 .catalog-card.is-locked h2,
 .catalog-card.is-locked p {
-  color: #9ca3af;
+  color: var(--text-disabled);
 }
 
 .catalog-card h2 {
   margin-top: 0;
-  color: #0d0d0d;
+  color: var(--text-primary);
   font-weight: 400;
 }
 
@@ -772,7 +837,7 @@ main {
 
 .path-snake-svg path {
   fill: none;
-  stroke: rgba(0, 0, 0, 0.35);
+  stroke: var(--divider-strong);
   stroke-width: 2.5;
   stroke-linecap: round;
 }
@@ -819,7 +884,7 @@ main {
   min-width: 84px;
   border-radius: 50%;
   border: 4px solid var(--module-accent, #3e6259);
-  background: #fff;
+  background: var(--surface-card);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -840,22 +905,22 @@ a.path-snake-link:hover .path-snake-bubble {
 }
 
 .path-snake-bubble.is-locked {
-  border-color: #d1d5db;
-  background: #f3f4f6;
-  color: #9ca3af;
+  border-color: var(--border-disabled);
+  background: var(--surface-sunken);
+  color: var(--text-disabled);
   font-size: 1.4rem;
 }
 
 .path-snake-label {
-  background: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
   border-left: 4px solid var(--module-accent, #3e6259);
   padding: 0.85rem 1.25rem;
   min-width: 220px;
 }
 
 .path-snake-node.is-locked .path-snake-label {
-  border-left-color: #d1d5db;
+  border-left-color: var(--border-disabled);
 }
 
 .path-snake-label-header {
@@ -869,17 +934,17 @@ a.path-snake-link:hover .path-snake-bubble {
   margin: 0;
   font-size: 1.1rem;
   font-weight: 600;
-  color: #0d0d0d;
+  color: var(--text-primary);
 }
 
 .path-snake-node.is-locked .path-snake-label h2 {
-  color: #9ca3af;
+  color: var(--text-disabled);
 }
 
 .path-snake-label p {
   margin: 0.35rem 0 0;
   font-size: 0.85rem;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .path-snake-progress {
@@ -930,7 +995,7 @@ a.path-snake-link:hover .path-snake-bubble {
   width: 3.75rem;
   height: 3.75rem;
   border-radius: 50%;
-  background: #fff;
+  background: var(--surface-card);
   border: 2px solid var(--module-accent, #3e6259);
   position: relative;
   z-index: 1;
@@ -957,11 +1022,11 @@ a.path-snake-link:hover .path-snake-bubble {
 .tree-node-card {
   grid-column: 2;
   display: block;
-  background: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
   border-left: 4px solid var(--module-accent, #3e6259);
   border-radius: 6px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px var(--shadow-color);
   padding: 1.75rem 2rem;
   max-width: none;
   text-decoration: none;
@@ -970,12 +1035,12 @@ a.path-snake-link:hover .path-snake-bubble {
 
 .tree-node-card.is-locked {
   cursor: not-allowed;
-  background: #fafafa;
+  background: var(--surface-sunken);
 }
 
 .tree-node-card.is-locked .tree-node-card-header h2,
 .tree-node-card.is-locked .tree-node-card-desc {
-  color: #9ca3af;
+  color: var(--text-disabled);
 }
 
 .tree-node-card-header {
@@ -990,7 +1055,7 @@ a.path-snake-link:hover .path-snake-bubble {
   text-transform: uppercase;
   font-size: 1.1rem;
   letter-spacing: 0.02em;
-  color: #0d0d0d;
+  color: var(--text-primary);
 }
 
 .tree-node-complete-badge {
@@ -1007,7 +1072,7 @@ a.path-snake-link:hover .path-snake-bubble {
 
 .tree-node-locked-badge {
   flex-shrink: 0;
-  background: #9ca3af;
+  background: var(--text-disabled);
   color: #fff;
   font-size: 0.7rem;
   font-weight: 700;
@@ -1019,7 +1084,7 @@ a.path-snake-link:hover .path-snake-bubble {
 
 .tree-node-card-desc {
   margin: 0.5rem 0 0;
-  color: #555;
+  color: var(--text-secondary);
 }
 
 .tree-node-progress {
@@ -1033,7 +1098,7 @@ a.path-snake-link:hover .path-snake-bubble {
   flex: 1;
   height: 6px;
   border-radius: 999px;
-  background: rgba(0, 0, 0, 0.08);
+  background: var(--track-bg);
   overflow: hidden;
 }
 
@@ -1046,13 +1111,13 @@ a.path-snake-link:hover .path-snake-bubble {
 .tree-node-progress-label {
   font-size: 0.85rem;
   font-weight: 600;
-  color: #0d0d0d;
+  color: var(--text-primary);
   white-space: nowrap;
 }
 
 .tree-node-divider {
   border: none;
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  border-top: 1px solid var(--border-subtle);
   margin: 1.25rem 0 1rem;
 }
 
@@ -1098,15 +1163,15 @@ a.path-snake-link:hover .path-snake-bubble {
 }
 
 .timeline-step-number {
-  color: #9ca3af;
+  color: var(--text-disabled);
   font-weight: 700;
   font-size: 0.85rem;
 }
 
 .timeline-step-type {
   flex-shrink: 0;
-  border: 1px solid #0d0d0d;
-  color: #0d0d0d;
+  border: 1px solid var(--text-primary);
+  color: var(--text-primary);
   border-radius: 0;
   padding: 0.4rem 0.85rem;
   font-size: 0.78rem;
@@ -1116,7 +1181,7 @@ a.path-snake-link:hover .path-snake-bubble {
 }
 
 .timeline-step-preview {
-  color: #0d0d0d;
+  color: var(--text-primary);
 }
 
 .student-lessons {
@@ -1131,10 +1196,10 @@ a.path-snake-link:hover .path-snake-bubble {
   flex-direction: column;
   align-items: flex-start;
   gap: 0.75rem;
-  background: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
   border-radius: 0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px var(--shadow-color);
   padding: 1.75rem 2rem;
 }
 
@@ -1166,9 +1231,9 @@ a.path-snake-link:hover .path-snake-bubble {
   text-transform: uppercase;
   letter-spacing: 0.04em;
   padding: 0.2rem 0.5rem;
-  border: 1px solid rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border-strong-alpha);
   border-radius: 0;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .student-lesson-complete-badge {
@@ -1209,7 +1274,7 @@ a.path-snake-link:hover .path-snake-bubble {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  border: 1px solid rgba(0, 0, 0, 0.12);
+  border: 1px solid var(--border-medium);
   border-radius: 0;
   padding: 0.85rem 1rem;
   margin-bottom: 0.6rem;
@@ -1268,7 +1333,7 @@ a.path-snake-link:hover .path-snake-bubble {
 
 .video-lesson-transcript p {
   margin: 0.75rem 0 0;
-  color: #555;
+  color: var(--text-secondary);
 }
 
 .practical-lesson {
@@ -1276,7 +1341,7 @@ a.path-snake-link:hover .path-snake-bubble {
 }
 
 .practical-lesson-instructions {
-  color: #555;
+  color: var(--text-secondary);
   margin: 0 0 1rem;
 }
 
@@ -1309,7 +1374,7 @@ a.path-snake-link:hover .path-snake-bubble {
 .flashcard {
   flex: 1 1 220px;
   min-height: 120px;
-  border: 1px solid rgba(0, 0, 0, 0.12);
+  border: 1px solid var(--border-medium);
   border-radius: 0;
   padding: 1.25rem;
   background: none;
@@ -1322,7 +1387,7 @@ a.path-snake-link:hover .path-snake-bubble {
 
 .flashcard.is-flipped {
   border-color: var(--theme-primary, #3e6259);
-  background: rgba(0, 0, 0, 0.03);
+  background: var(--tint-weak);
 }
 
 .accordion-lesson {
@@ -1330,7 +1395,7 @@ a.path-snake-link:hover .path-snake-bubble {
 }
 
 .accordion-section {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  border-bottom: 1px solid var(--border-medium);
 }
 
 .accordion-section-title {
@@ -1347,7 +1412,7 @@ a.path-snake-link:hover .path-snake-bubble {
 
 .accordion-section-body {
   margin: 0 0 0.85rem;
-  color: #555;
+  color: var(--text-secondary);
 }
 
 .matching-lesson {
@@ -1368,7 +1433,7 @@ a.path-snake-link:hover .path-snake-bubble {
 }
 
 .matching-item {
-  border: 1px solid rgba(0, 0, 0, 0.12);
+  border: 1px solid var(--border-medium);
   border-radius: 0;
   padding: 0.7rem 0.9rem;
   background: none;
@@ -1391,7 +1456,7 @@ a.path-snake-link:hover .path-snake-bubble {
 }
 
 .exam-breakdown-stat {
-  border: 1px solid rgba(0, 0, 0, 0.12);
+  border: 1px solid var(--border-medium);
   padding: 0.9rem 1rem;
 }
 
@@ -1399,7 +1464,7 @@ a.path-snake-link:hover .path-snake-bubble {
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.02em;
-  color: #555;
+  color: var(--text-secondary);
   margin: 0 0 0.35rem;
 }
 
@@ -1416,7 +1481,7 @@ a.path-snake-link:hover .path-snake-bubble {
 
 .matching-item.is-matched {
   border-color: var(--theme-primary, #3e6259);
-  background: rgba(0, 0, 0, 0.03);
+  background: var(--tint-weak);
   opacity: 1;
 }
 
@@ -1459,14 +1524,14 @@ a.path-snake-link:hover .path-snake-bubble {
 .text-lesson-body blockquote {
   margin: 1rem 0;
   padding-left: 1rem;
-  border-left: 3px solid rgba(0, 0, 0, 0.15);
-  color: #555;
+  border-left: 3px solid var(--border-medium);
+  color: var(--text-secondary);
 }
 
 /* --- Rich text (markup) editor for the text lesson type --- */
 
 .rich-text-editor {
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-strong);
   border-radius: 4px;
   overflow: hidden;
 }
@@ -1476,8 +1541,8 @@ a.path-snake-link:hover .path-snake-bubble {
   flex-wrap: wrap;
   gap: 0.25rem;
   padding: 0.4rem;
-  background: #f4f4f4;
-  border-bottom: 1px solid #ccc;
+  background: var(--surface-muted);
+  border-bottom: 1px solid var(--border-strong);
 }
 
 .rich-text-toolbar select,
@@ -1485,9 +1550,9 @@ a.path-snake-link:hover .path-snake-bubble {
   font: inherit;
   font-size: 0.82rem;
   padding: 0.3rem 0.5rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-strong);
   border-radius: 3px;
-  background: #fff;
+  background: var(--surface-card);
   cursor: pointer;
 }
 
@@ -1510,7 +1575,7 @@ a.path-snake-link:hover .path-snake-bubble {
   width: 100%;
   box-sizing: border-box;
   border: none;
-  border-top: 1px solid #ccc;
+  border-top: 1px solid var(--border-strong);
   padding: 0.75rem;
   font-family: monospace;
   font-size: 0.85rem;
@@ -1523,7 +1588,7 @@ a.path-snake-link:hover .path-snake-bubble {
 .embed-lesson-frame {
   width: 100%;
   height: 480px;
-  border: 1px solid rgba(0, 0, 0, 0.12);
+  border: 1px solid var(--border-medium);
   border-radius: 0;
   display: block;
 }
@@ -1535,7 +1600,7 @@ a.path-snake-link:hover .path-snake-bubble {
 .field-hint {
   display: block;
   font-size: 0.75rem;
-  color: #888;
+  color: var(--text-tertiary);
   font-weight: 400;
   margin-top: 0.3rem;
 }
@@ -1546,7 +1611,7 @@ a.path-snake-link:hover .path-snake-bubble {
   gap: 0.75rem;
   margin: 1.5rem 0;
   font-size: 0.85rem;
-  color: #555;
+  color: var(--text-secondary);
 }
 
 .progress-bar {
@@ -1554,7 +1619,7 @@ a.path-snake-link:hover .path-snake-bubble {
   max-width: 220px;
   height: 6px;
   border-radius: 3px;
-  background: rgba(0, 0, 0, 0.1);
+  background: var(--track-bg);
   overflow: hidden;
 }
 
@@ -1630,7 +1695,7 @@ a.path-snake-link:hover .path-snake-bubble {
   width: 100%;
   max-width: 640px;
   padding: 72px 64px 56px;
-  background: #fff;
+  background: var(--surface-card);
   border-radius: 0;
 }
 
@@ -1672,9 +1737,9 @@ a.path-snake-link:hover .path-snake-bubble {
   font-size: 22px;
   font-weight: 300;
   padding: 20px 21px;
-  border: 1px solid #bfbfbf;
+  border: 1px solid var(--border-strong);
   border-radius: 0;
-  background: #ffffff;
+  background: var(--surface-card);
   margin-bottom: 32px;
   outline: none;
 }
@@ -1718,7 +1783,7 @@ a.path-snake-link:hover .path-snake-bubble {
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-default);
   border-radius: 6px;
   padding: 0.5rem 0.75rem;
 }
@@ -1744,7 +1809,7 @@ a.path-snake-link:hover .path-snake-bubble {
 .reset-password-form input {
   font: inherit;
   padding: 0.25rem 0.4rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-strong);
   border-radius: 4px;
 }
 
@@ -1756,7 +1821,7 @@ a.path-snake-link:hover .path-snake-bubble {
 }
 
 .assignment-row {
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-default);
   border-radius: 6px;
   padding: 0.75rem 1rem;
 }
@@ -1797,7 +1862,7 @@ a.path-snake-link:hover .path-snake-bubble {
   margin: 0.5rem 0 0.75rem;
   font-size: 0.8rem;
   background: none;
-  border: 1px dashed #999;
+  border: 1px dashed var(--border-strong);
   border-radius: 4px;
   padding: 0.35rem 0.6rem;
   cursor: pointer;
@@ -1816,7 +1881,7 @@ a.path-snake-link:hover .path-snake-bubble {
   align-items: center;
   justify-content: center;
   padding: 2rem;
-  background: #f6f5f1;
+  background: var(--surface-warm);
 }
 
 .preference-chooser-card {
@@ -1834,7 +1899,7 @@ a.path-snake-link:hover .path-snake-bubble {
 }
 
 .preference-chooser-card p {
-  color: #666;
+  color: var(--text-secondary);
   font-size: 1.1rem;
   margin: 0 0 2.5rem;
 }
@@ -1852,9 +1917,9 @@ a.path-snake-link:hover .path-snake-bubble {
   flex-direction: column;
   gap: 0.85rem;
   padding: 2.5rem 2rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-strong);
   border-radius: 0;
-  background: #fff;
+  background: var(--surface-card);
   cursor: pointer;
   text-align: left;
 }
@@ -1872,7 +1937,7 @@ a.path-snake-link:hover .path-snake-bubble {
 
 .preference-option span {
   font-size: 0.98rem;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 /* --- Floating accessibility/display settings menu --- */
@@ -1975,7 +2040,7 @@ a.path-snake-link:hover .path-snake-bubble {
   border-radius: 50%;
   border: none;
   padding: 0;
-  background: rgba(0, 0, 0, 0.15);
+  background: var(--track-bg);
   cursor: pointer;
 }
 
@@ -1988,7 +2053,7 @@ a.path-snake-link:hover .path-snake-bubble {
 .carousel-dot.active {
   transform: scale(1.35);
   box-shadow:
-    0 0 0 2px var(--theme-bg, #f6f5f1),
+    0 0 0 2px var(--theme-bg, var(--surface-warm)),
     0 0 0 3.5px var(--theme-primary, #3e6259);
 }
 
@@ -1999,7 +2064,7 @@ a.path-snake-link:hover .path-snake-bubble {
   gap: 1.5rem;
   margin-top: 1.25rem;
   padding-top: 1rem;
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  border-top: 1px solid var(--border-subtle);
 }
 
 .carousel-nav button {
@@ -2028,12 +2093,12 @@ a.path-snake-link:hover .path-snake-bubble {
   gap: 0.4rem;
   margin: -0.5rem 0 1.25rem;
   padding: 0.4rem 0.85rem;
-  border: 1px solid rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--border-medium);
   border-radius: 999px;
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--theme-primary, #3e6259);
-  background: #fff;
+  background: var(--surface-card);
   text-decoration: none;
 }
 
@@ -2051,7 +2116,7 @@ a.path-snake-link:hover .path-snake-bubble {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--overlay-scrim);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2060,12 +2125,12 @@ a.path-snake-link:hover .path-snake-bubble {
 }
 
 .modal-panel {
-  background: #fff;
+  background: var(--surface-card);
   border-radius: 8px;
   padding: 2rem;
   max-width: 28rem;
   width: 100%;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 12px 32px var(--shadow-color-strong);
 }
 
 .modal-panel h2 {
@@ -2089,9 +2154,9 @@ a.path-snake-link:hover .path-snake-bubble {
 }
 
 .modal-secondary {
-  border: 1px solid rgba(0, 0, 0, 0.2);
-  background: #fff;
-  color: #333;
+  border: 1px solid var(--border-strong-alpha);
+  background: var(--surface-card);
+  color: var(--text-primary);
 }
 
 .modal-primary {
