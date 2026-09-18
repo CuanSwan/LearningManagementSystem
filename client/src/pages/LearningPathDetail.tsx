@@ -101,7 +101,7 @@ export function LearningPathDetail() {
 
   return (
     <main className="student-view course-page">
-      <Breadcrumb items={[{ label: "Learning Paths", to: "/" }, { label: path.title }]} />
+      <Breadcrumb items={[{ label: "Learning Paths", to: "/learning-paths" }, { label: path.title }]} />
       <h1>{path.title}</h1>
       {path.description && <p className="course-description">{path.description}</p>}
 

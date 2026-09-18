@@ -14,7 +14,7 @@ export function StudentCatalog() {
 
   return (
     <main className="student-view catalog-page">
-      <Breadcrumb items={[{ label: "Learning Paths", to: "/" }, { label: "Courses" }]} />
+      <Breadcrumb items={[{ label: "Learning Paths", to: "/learning-paths" }, { label: "Courses" }]} />
       <h1>Courses</h1>
       <div className="catalog-grid">
         {courses.map((course) => {
