@@ -1875,28 +1875,6 @@ a.path-snake-link:hover .path-snake-bubble {
   color: #666;
 }
 
-.display-toggle {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.display-toggle button {
-  border: 1px solid #ffffff;
-  border-radius: 0;
-  background: none;
-  color: #fff;
-  padding: 0.4rem 0.9rem;
-  font-size: 0.78rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  cursor: pointer;
-}
-
-.display-toggle button.active {
-  border-color: #59bdb2;
-}
-
 /* --- Floating accessibility/display settings menu --- */
 
 .accessibility-menu {
@@ -1940,8 +1918,9 @@ a.path-snake-link:hover .path-snake-bubble {
 
 .accessibility-menu-section {
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
 }
 
 .accessibility-menu-section-label {
@@ -1950,10 +1929,22 @@ a.path-snake-link:hover .path-snake-bubble {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
+  white-space: nowrap;
 }
 
-.accessibility-menu .display-toggle {
-  flex-wrap: wrap;
+.accessibility-menu-select {
+  background: #1c1c1c;
+  color: #fff;
+  border: 1px solid #3a3a3a;
+  border-radius: 4px;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.accessibility-menu-select:focus-visible {
+  outline: 2px solid #59bdb2;
+  outline-offset: 1px;
 }
 
 .lesson-carousel {

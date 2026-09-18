@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useDisplayPreference } from "../displayPreference.js";
+import type { LessonDisplayMode } from "../types.js";
 
 // A single floating entry point for accessibility/display settings, fixed to
 // the bottom-left corner so it's reachable from every page without crowding
@@ -36,22 +37,19 @@ export function AccessibilityMenu() {
       {open && (
         <div className="accessibility-menu-panel" role="menu" aria-label="Accessibility and display settings">
           <div className="accessibility-menu-section">
-            <span className="accessibility-menu-section-label">Reading Mode</span>
-            <div className="display-toggle" role="group" aria-label="Lesson display">
-              <button type="button" className={mode === "vertical" ? "active" : ""} onClick={() => choose("vertical")}>
-                List
-              </button>
-              <button type="button" className={mode === "carousel" ? "active" : ""} onClick={() => choose("carousel")}>
-                Carousel
-              </button>
-              <button
-                type="button"
-                className={mode === "accessible" ? "active" : ""}
-                onClick={() => choose("accessible")}
-              >
-                Accessible
-              </button>
-            </div>
+            <label htmlFor="accessibility-menu-reading-mode" className="accessibility-menu-section-label">
+              Reading Mode
+            </label>
+            <select
+              id="accessibility-menu-reading-mode"
+              className="accessibility-menu-select"
+              value={mode ?? "vertical"}
+              onChange={(event) => choose(event.target.value as LessonDisplayMode)}
+            >
+              <option value="vertical">List</option>
+              <option value="carousel">Carousel</option>
+              <option value="accessible">Accessible</option>
+            </select>
           </div>
         </div>
       )}
