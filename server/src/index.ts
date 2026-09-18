@@ -16,7 +16,7 @@ import {
   setColorScheme,
   setLessonDisplayMode,
 } from "./preferencesStore.js";
-import { getCompletedLessons, initProgressStore, setLessonCompletion } from "./progressStore.js";
+import { getCompletedLessons, getLastVisited, initProgressStore, setLastVisited, setLessonCompletion } from "./progressStore.js";
 import { convertRiseCourse, RiseImportError } from "./riseImport.js";
 import { extractRiseRuntimeData, RiseZipError } from "./riseZip.js";
 import { seedSampleData } from "./sampleData.js";
@@ -510,7 +510,11 @@ app.patch("/api/learning-paths/:pathId", requireRole("admin", "super_admin"), as
 // --- Lesson completion (per-user) ---
 
 app.get("/api/progress", requireAuth, async (req, res) => {
-  res.json({ completedLessonIds: await getCompletedLessons(req.user!.userId) });
+  const [completedLessonIds, lastVisited] = await Promise.all([
+    getCompletedLessons(req.user!.userId),
+    getLastVisited(req.user!.userId),
+  ]);
+  res.json({ completedLessonIds, lastVisited });
 });
 
 app.put("/api/progress/lessons/:lessonId", requireAuth, async (req, res) => {
@@ -521,6 +525,18 @@ app.put("/api/progress/lessons/:lessonId", requireAuth, async (req, res) => {
   }
   await setLessonCompletion(req.user!.userId, req.params.lessonId, parsed.data.completed);
   res.json({ completedLessonIds: await getCompletedLessons(req.user!.userId) });
+});
+
+// Records the module a student most recently opened, so "Continue where you
+// left off" can deep-link straight back to it instead of just the course.
+app.put("/api/progress/last-visited", requireAuth, async (req, res) => {
+  const parsed = z.object({ courseId: z.string().min(1), moduleId: z.string().min(1) }).safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.issues });
+    return;
+  }
+  await setLastVisited(req.user!.userId, parsed.data.courseId, parsed.data.moduleId);
+  res.json({ ok: true });
 });
 
 // --- Display preference (per-user) ---

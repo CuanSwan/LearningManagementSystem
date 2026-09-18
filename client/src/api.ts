@@ -209,12 +209,21 @@ export function patchLearningPath(
   return request(`/api/learning-paths/${pathId}`, { method: "PATCH", body: JSON.stringify(patch) });
 }
 
-export function getProgress(): Promise<{ completedLessonIds: string[] }> {
+export function getProgress(): Promise<{
+  completedLessonIds: string[];
+  lastVisited: { courseId: string; moduleId: string } | null;
+}> {
   return request("/api/progress");
 }
 
 export function setLessonProgress(lessonId: string, completed: boolean): Promise<{ completedLessonIds: string[] }> {
   return request(`/api/progress/lessons/${lessonId}`, { method: "PUT", body: JSON.stringify({ completed }) });
+}
+
+// Fire-and-forget from the student's perspective - records the module they
+// just opened so Home's "Continue where you left off" can deep-link to it.
+export async function setLastVisited(courseId: string, moduleId: string): Promise<void> {
+  await request("/api/progress/last-visited", { method: "PUT", body: JSON.stringify({ courseId, moduleId }) });
 }
 
 export function getPreferences(): Promise<{

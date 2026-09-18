@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import type { Course, Lesson, Module } from "../types.js";
-import { getCourse, getModule, getProgress, listModulesByCourse, setLessonProgress } from "../api.js";
+import { getCourse, getModule, getProgress, listModulesByCourse, setLastVisited, setLessonProgress } from "../api.js";
 import { BackButton } from "../components/BackButton.js";
 import { Breadcrumb } from "../components/Breadcrumb.js";
 import { LessonCarousel } from "../components/LessonCarousel.js";
@@ -34,7 +34,10 @@ export function StudentModule() {
     if (!courseId || !moduleId) return;
     getCourse(courseId).then(setCourse);
     getModule(moduleId)
-      .then(setModule)
+      .then((m) => {
+        setModule(m);
+        setLastVisited(courseId, moduleId).catch(() => {});
+      })
       .catch((err) => setAccessError(err instanceof Error ? err.message : "Couldn't load this module."));
     getProgress().then((p) => setCompletedIds(new Set(p.completedLessonIds)));
     listModulesByCourse(courseId)
