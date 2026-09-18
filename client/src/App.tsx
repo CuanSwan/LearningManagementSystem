@@ -1,5 +1,6 @@
 import { BrowserRouter, Outlet, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./auth.js";
+import { AccessibilityMenu } from "./components/AccessibilityMenu.js";
 import { DisplayPreferenceChooser } from "./components/DisplayPreferenceChooser.js";
 import { RequireAuth } from "./components/RequireAuth.js";
 import { RequireRole } from "./components/RequireRole.js";
@@ -33,6 +34,7 @@ function LayoutInner() {
     <div className="app-shell">
       <TopBar />
       <Outlet />
+      <AccessibilityMenu />
     </div>
   );
 }
