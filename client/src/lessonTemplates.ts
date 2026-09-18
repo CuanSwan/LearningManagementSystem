@@ -1,3 +1,4 @@
+import DOMPurify from "dompurify";
 import type { Lesson, LessonType, Module } from "./types.js";
 
 // Exam breakdown is deliberately excluded here - it's not a general-purpose
@@ -35,10 +36,18 @@ export function lessonTypeLabel(type: LessonType): string {
   return LESSON_TYPE_LABELS[type];
 }
 
+// Both "text" and "html" lesson bodies are markup, not plain text - a
+// preview showing raw tags ("<h2>Study Plan</h2><p>...") instead of
+// readable text is worse than useless. DOMPurify with an empty allow-list
+// strips every tag safely (no XSS-prone regex) and leaves just the text.
+function textPreview(html: string): string {
+  return DOMPurify.sanitize(html, { ALLOWED_TAGS: [] }).trim();
+}
+
 export function describeLesson(lesson: Lesson): string {
   switch (lesson.type) {
     case "text":
-      return lesson.content.body || "(empty)";
+      return textPreview(lesson.content.body) || "(empty)";
     case "video":
       return lesson.content.videoUrl || "(empty)";
     case "quiz":
@@ -54,7 +63,7 @@ export function describeLesson(lesson: Lesson): string {
     case "matching":
       return lesson.content.pairs[0]?.prompt || "(empty)";
     case "html":
-      return lesson.content.html || "(empty)";
+      return textPreview(lesson.content.html) || "(empty)";
     case "embed":
       return lesson.content.url || "(empty)";
     case "examBreakdown": {
