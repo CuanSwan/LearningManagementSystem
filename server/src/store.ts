@@ -22,9 +22,63 @@ export async function getCourse(courseId: string): Promise<Course | undefined> {
   return (await courses.get(courseId)) ?? undefined;
 }
 
+// Every course, however it's created (the admin "Create a course" form or a
+// Rise import), starts with these required lessons - exam breakdown,
+// orientation video, study plan, additional resources, in that order - as a
+// mandatory first module. They're blank for the admin to fill in, not
+// shared boilerplate text: each course's orientation content is its own.
+// The exam breakdown's defaults describe a placeholder exam, not "no exam" -
+// an admin who leaves it untouched still sees a plausible, editable
+// structure rather than zeros. It leads the module (rather than the video)
+// so a student sees what they're working toward before anything else.
+const ORIENTATION_MODULE_TITLE = "Course Orientation";
+const ORIENTATION_MODULE_OBJECTIVE =
+  "Review the exam breakdown, then watch the orientation video and the study plan and additional resources before starting the course.";
+
+function orientationLesson(order: number, type: "video", content: { videoUrl: string }): unknown;
+function orientationLesson(order: number, type: "text", content: { body: string }): unknown;
+function orientationLesson(
+  order: number,
+  type: "examBreakdown",
+  content: { passMarkPercent: number; timeLimitMinutes: number; questionCount: number; openBook: boolean }
+): unknown;
+function orientationLesson(order: number, type: "video" | "text" | "examBreakdown", content: unknown): unknown {
+  return {
+    lessonId: crypto.randomUUID(),
+    schemaVersion: 1,
+    source: "human",
+    wordingStyle: "shortened",
+    order,
+    type,
+    content,
+  };
+}
+
+async function createOrientationModule(courseId: string): Promise<void> {
+  const module = parseModule({
+    moduleId: crypto.randomUUID(),
+    courseId,
+    status: "draft",
+    seed: { title: ORIENTATION_MODULE_TITLE, objective: ORIENTATION_MODULE_OBJECTIVE },
+    lessons: [
+      orientationLesson(1, "examBreakdown", {
+        passMarkPercent: 50,
+        timeLimitMinutes: 60,
+        questionCount: 20,
+        openBook: false,
+      }),
+      orientationLesson(2, "video", { videoUrl: "" }),
+      orientationLesson(3, "text", { body: "<h2>Study Plan</h2>" }),
+      orientationLesson(4, "text", { body: "<h2>Additional Resources</h2>" }),
+    ],
+  });
+  await modules.set(module.moduleId, module);
+}
+
 export async function createCourse(data: unknown): Promise<Course> {
   const course = parseCourse(data);
   await courses.set(course.courseId, course);
+  await createOrientationModule(course.courseId);
   return course;
 }
 

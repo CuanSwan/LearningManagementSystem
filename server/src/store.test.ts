@@ -7,11 +7,13 @@ import type { Database } from "./db/index.js";
 import { parseCourse, parseLearningPath, parseModule } from "./schemas.js";
 import type { User } from "./userSchema.js";
 import {
+  createCourse,
   createLearningPath,
   getCourse,
   getLearningPath,
   getModule,
   initStore,
+  listModulesByCourse,
   patchCourse,
   patchLearningPath,
   saveModule,
@@ -46,6 +48,30 @@ beforeEach(async () => {
 
 afterEach(async () => {
   await rm(dir, { recursive: true, force: true });
+});
+
+describe("createCourse", () => {
+  it("automatically creates a mandatory orientation module with the required lessons", async () => {
+    const course = await createCourse({ courseId: "c1", title: "New Course" });
+    const modules = await listModulesByCourse(course.courseId);
+
+    expect(modules).toHaveLength(1);
+    const orientation = modules[0];
+    expect(orientation.seed.title).toBe("Course Orientation");
+    expect(orientation.status).toBe("draft");
+    expect(orientation.lessons.map((l) => l.type)).toEqual(["examBreakdown", "video", "text", "text"]);
+    expect(orientation.lessons.map((l) => l.order)).toEqual([1, 2, 3, 4]);
+  });
+
+  it("gives each new course its own independent orientation module and content", async () => {
+    const a = await createCourse({ courseId: "a", title: "Course A" });
+    const b = await createCourse({ courseId: "b", title: "Course B" });
+
+    const [modulesA, modulesB] = await Promise.all([listModulesByCourse(a.courseId), listModulesByCourse(b.courseId)]);
+    expect(modulesA[0].moduleId).not.toBe(modulesB[0].moduleId);
+    expect(modulesA[0].courseId).toBe("a");
+    expect(modulesB[0].courseId).toBe("b");
+  });
 });
 
 describe("seedCourse", () => {

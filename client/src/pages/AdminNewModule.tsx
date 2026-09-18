@@ -4,6 +4,7 @@ import type { Lesson, LessonType } from "../types.js";
 import { createModule } from "../api.js";
 import { ComponentLibrary } from "../components/ComponentLibrary.js";
 import { DraggableLessonBlock } from "../components/DraggableLessonBlock.js";
+import { LibrarySidebar } from "../components/LibrarySidebar.js";
 import { LIBRARY_LESSON_MIME, NEW_LESSON_MIME, SAVED_LESSON_MIME } from "../dnd.js";
 import { useLessonListEditor } from "../useLessonListEditor.js";
 
@@ -115,7 +116,8 @@ export function AdminNewModule() {
           </div>
         </div>
 
-        <ComponentLibrary savedLessons={editor.savedLessons} onDropRemove={editor.remove} onImportLesson={editor.importLesson} />
+        <ComponentLibrary savedLessons={editor.savedLessons} onDropRemove={editor.remove} />
+        <LibrarySidebar onImportLesson={editor.importLesson} />
       </div>
     </main>
   );
