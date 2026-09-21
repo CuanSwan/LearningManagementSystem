@@ -289,6 +289,25 @@ describe("ModuleSchema", () => {
     expect(result.success).toBe(false);
   });
 
+  it("rejects a dial lesson with more than 20 stages", () => {
+    const invalid = {
+      ...validModule,
+      lessons: [
+        {
+          lessonId: "l12",
+          type: "dial",
+          schemaVersion: 1,
+          source: "human",
+          wordingStyle: "official",
+          order: 1,
+          content: { stages: Array.from({ length: 21 }, (_, i) => ({ title: `Stage ${i}`, body: "Too many." })) },
+        },
+      ],
+    };
+    const result = ModuleSchema.safeParse(invalid);
+    expect(result.success).toBe(false);
+  });
+
   it("rejects a lesson with an unknown type", () => {
     const invalid = {
       ...validModule,

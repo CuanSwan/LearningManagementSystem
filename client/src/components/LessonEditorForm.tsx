@@ -279,6 +279,9 @@ function MatchingEditor({
   );
 }
 
+const DIAL_MIN_STAGES = 2;
+const DIAL_MAX_STAGES = 20;
+
 function DialEditor({
   content,
   onChange,
@@ -291,18 +294,20 @@ function DialEditor({
   }
 
   function addStage() {
+    if (content.stages.length >= DIAL_MAX_STAGES) return;
     onChange({ stages: [...content.stages, { title: "", body: "" }] });
   }
 
   function removeStage(i: number) {
-    if (content.stages.length <= 2) return;
+    if (content.stages.length <= DIAL_MIN_STAGES) return;
     onChange({ stages: content.stages.filter((_, idx) => idx !== i) });
   }
 
   return (
     <div className="field-group">
       <span className="field-hint">
-        The dial shows one circle per stage below - add or remove stages to change how many circles it has.
+        The dial shows one circle per stage below - add or remove stages ({DIAL_MIN_STAGES}-{DIAL_MAX_STAGES}) to
+        change how many circles it has.
       </span>
       {content.stages.map((stage, i) => (
         <fieldset key={i} className="editor-question">
@@ -315,13 +320,13 @@ function DialEditor({
             <textarea rows={3} value={stage.body} onChange={(e) => updateStage(i, { body: e.target.value })} />
           </label>
           <div className="editor-row-actions">
-            <button type="button" onClick={() => removeStage(i)} disabled={content.stages.length <= 2}>
+            <button type="button" onClick={() => removeStage(i)} disabled={content.stages.length <= DIAL_MIN_STAGES}>
               Remove stage
             </button>
           </div>
         </fieldset>
       ))}
-      <button type="button" onClick={addStage}>
+      <button type="button" onClick={addStage} disabled={content.stages.length >= DIAL_MAX_STAGES}>
         Add stage
       </button>
     </div>

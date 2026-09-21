@@ -61,9 +61,10 @@ const MatchingContentSchema = z.object({
 
 // The number of stages *is* the number of circles on the dial - there's no
 // separate "circle count" field, it's just stages.length. At least 2 so the
-// dial has something to step between.
+// dial has something to step between; at most 20 so the ring stays legible
+// even as each node's size shrinks to fit them all.
 const DialContentSchema = z.object({
-  stages: z.array(z.object({ title: z.string(), body: z.string() })).min(2),
+  stages: z.array(z.object({ title: z.string(), body: z.string() })).min(2).max(20),
 });
 
 const CustomHtmlContentSchema = z.object({
