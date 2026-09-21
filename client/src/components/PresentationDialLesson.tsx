@@ -1,24 +1,27 @@
 import { useState } from "react";
 import type { PresentationDialLesson as PresentationDialLessonType } from "../types.js";
 
-// A fixed-size ring (not full 360° - only the arc these 4 slots occupy)
-// sits behind a concentric card, mirroring the source mockup's dial-wrap
-// + card-zone overlap. Kept to a single fixed size (matching DialLesson's
-// 260px ring) rather than a responsive multi-size scheme.
+// A fixed-size ring sits behind a concentric card, mirroring the source
+// mockup's dial-wrap + card-zone overlap. Kept to a single fixed size
+// (matching DialLesson's 260px ring) rather than a responsive multi-size
+// scheme.
 const WINDOW_SIZE = 4;
 const CENTER = 130;
 const NODE_RADIUS = 118;
 const NODE_SIZE = 30;
-const ANGLE_STEP = 26;
+// Spread the (up to) 4 visible dots evenly around the full circle - the
+// same 360/n spacing the source mockup uses for its own n nodes - rather
+// than clustering them into one quadrant.
+const ANGLE_STEP = 360 / WINDOW_SIZE;
 
 function pad(n: number): string {
   return String(n).padStart(2, "0");
 }
 
 // distance 0 = current (rightmost, angle 0° = straight right), distance 3 =
-// the oldest stage still in the window (furthest counter-clockwise, upper
-// left of the arc) - so the 4 dots always read, left to right, oldest to
-// current.
+// the oldest stage still in the window (three quarter-turns counter-
+// clockwise from current) - so the ring's 4 equidistant slots always end
+// with the current stage on the right.
 function nodePosition(distance: number): { left: number; top: number } {
   const rad = (distance * ANGLE_STEP * Math.PI) / 180;
   const x = CENTER + NODE_RADIUS * Math.cos(rad);
