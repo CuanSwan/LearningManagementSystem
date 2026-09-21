@@ -76,6 +76,18 @@ export interface MatchingLesson extends LessonBase {
   content: { pairs: MatchingPair[] };
 }
 
+export interface DialStage {
+  title: string;
+  body: string;
+}
+
+// A ring of selectable stages arranged around a dial - the number of
+// stages *is* the number of circles, there's no separate count field.
+export interface DialLesson extends LessonBase {
+  type: "dial";
+  content: { stages: DialStage[] };
+}
+
 export interface CustomHtmlLesson extends LessonBase {
   type: "html";
   content: { html: string };
@@ -100,6 +112,7 @@ export type Lesson =
   | FlashcardLesson
   | AccordionLesson
   | MatchingLesson
+  | DialLesson
   | CustomHtmlLesson
   | EmbedLesson
   | ExamBreakdownLesson;

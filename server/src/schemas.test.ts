@@ -97,6 +97,20 @@ const validModule = {
       },
     },
     {
+      lessonId: "l12",
+      type: "dial",
+      schemaVersion: 1,
+      source: "human",
+      wordingStyle: "official",
+      order: 12,
+      content: {
+        stages: [
+          { title: "Anchoring", body: "Setting the first offer to influence the negotiation range." },
+          { title: "Reciprocity", body: "Concessions tend to be met with concessions." },
+        ],
+      },
+    },
+    {
       lessonId: "l9",
       type: "html",
       schemaVersion: 1,
@@ -127,7 +141,7 @@ const validModule = {
 };
 
 describe("ModuleSchema", () => {
-  it("accepts a module with all eleven lesson types", () => {
+  it("accepts a module with all twelve lesson types", () => {
     expect(() => parseModule(validModule)).not.toThrow();
   });
 
@@ -249,6 +263,25 @@ describe("ModuleSchema", () => {
           wordingStyle: "official",
           order: 1,
           content: { pairs: [{ prompt: "BATNA", match: "Best Alternative To a Negotiated Agreement" }] },
+        },
+      ],
+    };
+    const result = ModuleSchema.safeParse(invalid);
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a dial lesson with fewer than 2 stages", () => {
+    const invalid = {
+      ...validModule,
+      lessons: [
+        {
+          lessonId: "l12",
+          type: "dial",
+          schemaVersion: 1,
+          source: "human",
+          wordingStyle: "official",
+          order: 1,
+          content: { stages: [{ title: "Only stage", body: "Not enough to step between." }] },
         },
       ],
     };

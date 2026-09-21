@@ -2,6 +2,7 @@ import type { Lesson } from "../types.js";
 import { AccordionLesson } from "./AccordionLesson.js";
 import { CustomHtmlLesson } from "./CustomHtmlLesson.js";
 import { DiagramLesson } from "./DiagramLesson.js";
+import { DialLesson } from "./DialLesson.js";
 import { EmbedLesson } from "./EmbedLesson.js";
 import { ExamBreakdownLesson } from "./ExamBreakdownLesson.js";
 import { FlashcardLesson } from "./FlashcardLesson.js";
@@ -29,6 +30,8 @@ function renderContent(lesson: Lesson, isComplete: boolean, onComplete: () => vo
       return <AccordionLesson content={lesson.content} isComplete={isComplete} onComplete={onComplete} />;
     case "matching":
       return <MatchingLesson content={lesson.content} isComplete={isComplete} onComplete={onComplete} />;
+    case "dial":
+      return <DialLesson content={lesson.content} isComplete={isComplete} onComplete={onComplete} />;
     case "html":
       return <CustomHtmlLesson content={lesson.content} isComplete={isComplete} onComplete={onComplete} />;
     case "embed":

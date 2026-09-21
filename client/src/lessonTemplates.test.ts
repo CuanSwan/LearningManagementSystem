@@ -59,6 +59,12 @@ describe("describeLesson", () => {
 });
 
 describe("createBlankLesson", () => {
+  it("creates a dial lesson with two blank stages, matching the minimum circle count", () => {
+    const lesson = createBlankLesson("dial", 1);
+    expect(lesson.type).toBe("dial");
+    expect(lesson.content).toEqual({ stages: [{ title: "", body: "" }, { title: "", body: "" }] });
+  });
+
   it("creates an exam breakdown lesson with sensible closed-book defaults", () => {
     const lesson = createBlankLesson("examBreakdown", 1);
     expect(lesson.type).toBe("examBreakdown");

@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import type {
   AccordionLesson,
+  DialLesson,
   ExamBreakdownLesson,
   FlashcardLesson,
   Lesson,
@@ -278,6 +279,55 @@ function MatchingEditor({
   );
 }
 
+function DialEditor({
+  content,
+  onChange,
+}: {
+  content: DialLesson["content"];
+  onChange: (content: DialLesson["content"]) => void;
+}) {
+  function updateStage(i: number, patch: Partial<DialLesson["content"]["stages"][number]>) {
+    onChange({ stages: content.stages.map((s, idx) => (idx === i ? { ...s, ...patch } : s)) });
+  }
+
+  function addStage() {
+    onChange({ stages: [...content.stages, { title: "", body: "" }] });
+  }
+
+  function removeStage(i: number) {
+    if (content.stages.length <= 2) return;
+    onChange({ stages: content.stages.filter((_, idx) => idx !== i) });
+  }
+
+  return (
+    <div className="field-group">
+      <span className="field-hint">
+        The dial shows one circle per stage below - add or remove stages to change how many circles it has.
+      </span>
+      {content.stages.map((stage, i) => (
+        <fieldset key={i} className="editor-question">
+          <label className="field">
+            Title
+            <input value={stage.title} onChange={(e) => updateStage(i, { title: e.target.value })} />
+          </label>
+          <label className="field">
+            Text
+            <textarea rows={3} value={stage.body} onChange={(e) => updateStage(i, { body: e.target.value })} />
+          </label>
+          <div className="editor-row-actions">
+            <button type="button" onClick={() => removeStage(i)} disabled={content.stages.length <= 2}>
+              Remove stage
+            </button>
+          </div>
+        </fieldset>
+      ))}
+      <button type="button" onClick={addStage}>
+        Add stage
+      </button>
+    </div>
+  );
+}
+
 function ExamBreakdownEditor({
   content,
   onChange,
@@ -387,6 +437,8 @@ export function LessonEditorForm({
       return <AccordionEditor content={lesson.content} onChange={onChange} />;
     case "matching":
       return <MatchingEditor content={lesson.content} onChange={onChange} />;
+    case "dial":
+      return <DialEditor content={lesson.content} onChange={onChange} />;
     case "html":
       return (
         <label className="field">

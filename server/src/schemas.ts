@@ -59,6 +59,13 @@ const MatchingContentSchema = z.object({
   pairs: z.array(z.object({ prompt: z.string(), match: z.string() })).min(2),
 });
 
+// The number of stages *is* the number of circles on the dial - there's no
+// separate "circle count" field, it's just stages.length. At least 2 so the
+// dial has something to step between.
+const DialContentSchema = z.object({
+  stages: z.array(z.object({ title: z.string(), body: z.string() })).min(2),
+});
+
 const CustomHtmlContentSchema = z.object({
   // Sanitized as part of parsing itself, not in a separate step someone
   // could forget to call - every write path (create, save, seed, the Rise
@@ -128,6 +135,11 @@ export const MatchingLessonSchema = LessonBaseSchema.extend({
   content: MatchingContentSchema,
 });
 
+export const DialLessonSchema = LessonBaseSchema.extend({
+  type: z.literal("dial"),
+  content: DialContentSchema,
+});
+
 export const CustomHtmlLessonSchema = LessonBaseSchema.extend({
   type: z.literal("html"),
   content: CustomHtmlContentSchema,
@@ -152,6 +164,7 @@ export const LessonSchema = z.discriminatedUnion("type", [
   FlashcardLessonSchema,
   AccordionLessonSchema,
   MatchingLessonSchema,
+  DialLessonSchema,
   CustomHtmlLessonSchema,
   EmbedLessonSchema,
   ExamBreakdownLessonSchema,
@@ -166,6 +179,7 @@ export type DiagramLesson = z.infer<typeof DiagramLessonSchema>;
 export type FlashcardLesson = z.infer<typeof FlashcardLessonSchema>;
 export type AccordionLesson = z.infer<typeof AccordionLessonSchema>;
 export type MatchingLesson = z.infer<typeof MatchingLessonSchema>;
+export type DialLesson = z.infer<typeof DialLessonSchema>;
 export type CustomHtmlLesson = z.infer<typeof CustomHtmlLessonSchema>;
 export type EmbedLesson = z.infer<typeof EmbedLessonSchema>;
 export type ExamBreakdownLesson = z.infer<typeof ExamBreakdownLessonSchema>;

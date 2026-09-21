@@ -1475,6 +1475,115 @@ a.path-snake-link:hover .path-snake-bubble {
   color: var(--theme-primary, #3e6259);
 }
 
+/* --- Dial lesson: a ring of selectable stages --- */
+
+.dial-lesson {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 2.5rem;
+  align-items: center;
+  width: 100%;
+}
+
+.dial-lesson-dial {
+  position: relative;
+  width: 260px;
+  height: 260px;
+}
+
+.dial-lesson-ring {
+  position: absolute;
+  inset: 17px;
+  border-radius: 999px;
+  border: 1px dashed var(--border-strong);
+}
+
+.dial-lesson-node {
+  position: absolute;
+  width: 35px;
+  height: 35px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-family: "Fira Code", monospace;
+  font-size: 0.7rem;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-sunken);
+  color: var(--text-primary);
+  transition: background 180ms ease, color 180ms ease, border-color 180ms ease;
+}
+
+.dial-lesson-node:hover {
+  border-color: var(--theme-primary, #3e6259);
+}
+
+.dial-lesson-node[aria-selected="true"] {
+  background: var(--theme-primary, #3e6259);
+  color: #fff;
+  border-color: var(--theme-primary, #3e6259);
+}
+
+.dial-lesson-hub {
+  position: absolute;
+  left: 68px;
+  top: 99px;
+  width: 124px;
+  height: 62px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.dial-lesson-hub-count {
+  font-family: "Oranienbaum", serif;
+  font-size: 1.1rem;
+  line-height: 1.15;
+}
+
+.dial-lesson-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.dial-lesson-counter {
+  font-family: "Fira Code", monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--theme-primary, #3e6259);
+}
+
+.dial-lesson-title {
+  font-family: "Oranienbaum", serif;
+  font-size: 1.6rem;
+  line-height: 1.15;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.dial-lesson-body {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.dial-lesson-hint {
+  font-size: 0.82rem;
+  color: var(--text-tertiary);
+}
+
+@media (max-width: 640px) {
+  .dial-lesson {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+}
+
 .matching-item.is-selected {
   border-color: var(--theme-primary, #3e6259);
 }
