@@ -2101,6 +2101,126 @@ a.path-snake-link:hover .path-snake-bubble {
   }
 }
 
+/* --- Tree scrub lesson: a tall scroll-driven wrapper with a sticky inner
+   box. The box's aspect-ratio matches the SVG's fixed coordinate space
+   (640/820) exactly, since the HTML bubble layer reprojects each node's
+   position into the SVG's current (zooming) viewBox as a left/top
+   percentage - any mismatch between the box's rendered aspect ratio and
+   the coordinate space's would throw that off. --- */
+
+.treescrub-lesson {
+  width: 100%;
+}
+
+.treescrub-lesson-wrapper {
+  position: relative;
+}
+
+.treescrub-lesson-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.treescrub-lesson-box {
+  position: relative;
+  width: min(92vw, 640px);
+  aspect-ratio: 640 / 820;
+  max-height: 86vh;
+  background: var(--surface-card);
+  border-radius: 16px;
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 16px 40px var(--shadow-color);
+  overflow: hidden;
+  /* Half the bubble's own width, used to clamp its centered position away
+     from the box's edges (see .treescrub-lesson-bubble's left/top) - a
+     pure percentage doesn't account for the bubble's fixed pixel width,
+     so on a narrower box (mobile) a bubble positioned near an edge would
+     otherwise get clipped by the overflow:hidden above. */
+  --treescrub-bubble-half: 78px;
+}
+
+.treescrub-lesson-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.treescrub-lesson-branch {
+  stroke: var(--theme-primary, #3e6259);
+  stroke-linecap: round;
+  fill: none;
+  opacity: 0.75;
+}
+
+.treescrub-lesson-dot {
+  fill: var(--theme-primary, #3e6259);
+  stroke: var(--surface-card);
+  stroke-width: 2;
+}
+
+.treescrub-lesson-bubbles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.treescrub-lesson-bubble {
+  position: absolute;
+  width: 150px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-medium);
+  border-radius: 10px;
+  padding: 0.55rem 0.7rem;
+  box-shadow: 0 8px 20px var(--shadow-color);
+  text-align: center;
+}
+
+.treescrub-lesson-bubble-title {
+  font-family: "Oranienbaum", serif;
+  font-size: 0.85rem;
+  line-height: 1.2;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.treescrub-lesson-bubble-body {
+  font-size: 0.7rem;
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
+
+.treescrub-lesson-progress {
+  position: absolute;
+  bottom: 0.75rem;
+  right: 0.9rem;
+  font-family: "Fira Code", monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+@media (max-width: 640px) {
+  .treescrub-lesson-box {
+    width: 96vw;
+    --treescrub-bubble-half: 62px;
+  }
+
+  .treescrub-lesson-bubble {
+    width: 120px;
+    padding: 0.45rem 0.55rem;
+  }
+
+  .treescrub-lesson-bubble-body {
+    display: none;
+  }
+}
+
 .matching-item.is-selected {
   border-color: var(--theme-primary, #3e6259);
 }

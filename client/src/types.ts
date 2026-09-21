@@ -141,6 +141,23 @@ export interface HotspotsLesson extends LessonBase {
   content: { tiles: HotspotTile[] };
 }
 
+export interface TreeScrubNode {
+  title: string;
+  body: string;
+  // Index into the same nodes array. Node 0 is always the root (its own
+  // parentIndex is unused); every other node's parentIndex must be an
+  // earlier index, which is what makes a cycle structurally impossible.
+  parentIndex: number;
+}
+
+// A scroll-scrubbed tree: branches grow and nodes fade in as the page
+// scrolls through a tall wrapper, with the view zooming out to keep
+// pace as more of the tree is revealed.
+export interface TreeScrubLesson extends LessonBase {
+  type: "treeScrub";
+  content: { nodes: TreeScrubNode[] };
+}
+
 export interface CustomHtmlLesson extends LessonBase {
   type: "html";
   content: { html: string };
@@ -170,6 +187,7 @@ export type Lesson =
   | PresentationDialLesson
   | CardGridLesson
   | HotspotsLesson
+  | TreeScrubLesson
   | CustomHtmlLesson
   | EmbedLesson
   | ExamBreakdownLesson;

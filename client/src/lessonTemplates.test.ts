@@ -91,6 +91,17 @@ describe("createBlankLesson", () => {
     expect(lesson.content).toEqual({ tiles: [blankTile, blankTile] });
   });
 
+  it("creates a tree scrub lesson with a root and one child, matching the minimum node count", () => {
+    const lesson = createBlankLesson("treeScrub", 1);
+    expect(lesson.type).toBe("treeScrub");
+    expect(lesson.content).toEqual({
+      nodes: [
+        { title: "", body: "", parentIndex: 0 },
+        { title: "", body: "", parentIndex: 0 },
+      ],
+    });
+  });
+
   it("creates an exam breakdown lesson with sensible closed-book defaults", () => {
     const lesson = createBlankLesson("examBreakdown", 1);
     expect(lesson.type).toBe("examBreakdown");

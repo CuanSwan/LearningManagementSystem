@@ -12,6 +12,7 @@ const DYNAMIC_COMPONENT_TYPES: Set<LessonType> = new Set([
   "presentationDial",
   "cardGrid",
   "hotspots",
+  "treeScrub",
 ]);
 
 export function StudentLessonBlock({

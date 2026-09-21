@@ -12,6 +12,7 @@ import type {
   PracticalLesson,
   PresentationDialLesson,
   QuizLesson,
+  TreeScrubLesson,
 } from "../types.js";
 
 // TipTap/ProseMirror are the single largest dependency in this app's bundle
@@ -574,6 +575,101 @@ function HotspotsEditor({
   );
 }
 
+const TREE_SCRUB_MIN_NODES = 2;
+const TREE_SCRUB_MAX_NODES = 20;
+
+function TreeScrubEditor({
+  content,
+  onChange,
+}: {
+  content: TreeScrubLesson["content"];
+  onChange: (content: TreeScrubLesson["content"]) => void;
+}) {
+  function updateNode(i: number, patch: Partial<TreeScrubLesson["content"]["nodes"][number]>) {
+    onChange({ nodes: content.nodes.map((n, idx) => (idx === i ? { ...n, ...patch } : n)) });
+  }
+
+  function addNode() {
+    if (content.nodes.length >= TREE_SCRUB_MAX_NODES) return;
+    // Defaults to a child of the root - always a valid parentIndex for
+    // any position the new node lands in.
+    onChange({ nodes: [...content.nodes, { title: "", body: "", parentIndex: 0 }] });
+  }
+
+  function removeNode(i: number) {
+    if (i === 0) return; // the root is permanent
+    if (content.nodes.length <= TREE_SCRUB_MIN_NODES) return;
+    const hasChildren = content.nodes.some((n, idx) => idx !== i && n.parentIndex === i);
+    if (hasChildren) return;
+    // Nothing points at i (checked above), so every other parentIndex is
+    // either already below i (untouched) or above it and needs to shift
+    // down by one to stay correct once the array closes the gap.
+    const nodes = content.nodes
+      .filter((_, idx) => idx !== i)
+      .map((n) => ({ ...n, parentIndex: n.parentIndex > i ? n.parentIndex - 1 : n.parentIndex }));
+    onChange({ nodes });
+  }
+
+  function nodeLabel(i: number): string {
+    return content.nodes[i]?.title || `Node ${i + 1}`;
+  }
+
+  return (
+    <div className="field-group">
+      <span className="field-hint">
+        The first entry is always the root. Every other entry picks a parent from the entries above it - add several
+        with the same parent to branch the tree. Add or remove entries ({TREE_SCRUB_MIN_NODES}-{TREE_SCRUB_MAX_NODES}
+        ) to change how many there are.
+      </span>
+      {content.nodes.map((node, i) => {
+        const hasChildren = content.nodes.some((n, idx) => idx !== i && n.parentIndex === i);
+        return (
+          <fieldset key={i} className="editor-question">
+            <label className="field">
+              Title
+              <input value={node.title} onChange={(e) => updateNode(i, { title: e.target.value })} />
+            </label>
+            <label className="field">
+              Text
+              <textarea rows={3} value={node.body} onChange={(e) => updateNode(i, { body: e.target.value })} />
+            </label>
+            {i === 0 ? (
+              <span className="field-hint">Root - every other entry traces back to this one.</span>
+            ) : (
+              <label className="field">
+                Parent
+                <select
+                  value={node.parentIndex}
+                  onChange={(e) => updateNode(i, { parentIndex: Number(e.target.value) })}
+                >
+                  {Array.from({ length: i }, (_, parentIdx) => (
+                    <option key={parentIdx} value={parentIdx}>
+                      {nodeLabel(parentIdx)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+            <div className="editor-row-actions">
+              <button
+                type="button"
+                onClick={() => removeNode(i)}
+                disabled={i === 0 || content.nodes.length <= TREE_SCRUB_MIN_NODES || hasChildren}
+                title={hasChildren ? "Remove or reassign this entry's children first" : undefined}
+              >
+                Remove entry
+              </button>
+            </div>
+          </fieldset>
+        );
+      })}
+      <button type="button" onClick={addNode} disabled={content.nodes.length >= TREE_SCRUB_MAX_NODES}>
+        Add entry
+      </button>
+    </div>
+  );
+}
+
 function ExamBreakdownEditor({
   content,
   onChange,
@@ -693,6 +789,8 @@ export function LessonEditorForm({
       return <CardGridEditor content={lesson.content} onChange={onChange} />;
     case "hotspots":
       return <HotspotsEditor content={lesson.content} onChange={onChange} />;
+    case "treeScrub":
+      return <TreeScrubEditor content={lesson.content} onChange={onChange} />;
     case "html":
       return (
         <label className="field">

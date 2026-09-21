@@ -161,6 +161,20 @@ const validModule = {
       },
     },
     {
+      lessonId: "l17",
+      type: "treeScrub",
+      schemaVersion: 1,
+      source: "human",
+      wordingStyle: "official",
+      order: 17,
+      content: {
+        nodes: [
+          { title: "Data Owner", body: "Accountable for a specific data domain.", parentIndex: 0 },
+          { title: "Data Steward", body: "Defines business rules, resolves quality disputes.", parentIndex: 0 },
+        ],
+      },
+    },
+    {
       lessonId: "l14",
       type: "cardGrid",
       schemaVersion: 1,
@@ -217,7 +231,7 @@ const validModule = {
 };
 
 describe("ModuleSchema", () => {
-  it("accepts a module with all sixteen lesson types", () => {
+  it("accepts a module with all seventeen lesson types", () => {
     expect(() => parseModule(validModule)).not.toThrow();
   });
 
@@ -458,6 +472,124 @@ describe("ModuleSchema", () => {
     };
     const result = ModuleSchema.safeParse(invalid);
     expect(result.success).toBe(false);
+  });
+
+  it("rejects a tree scrub lesson with fewer than 2 nodes", () => {
+    const invalid = {
+      ...validModule,
+      lessons: [
+        {
+          lessonId: "l17",
+          type: "treeScrub",
+          schemaVersion: 1,
+          source: "human",
+          wordingStyle: "official",
+          order: 1,
+          content: { nodes: [{ title: "Root only", body: "Not a tree by itself.", parentIndex: 0 }] },
+        },
+      ],
+    };
+    const result = ModuleSchema.safeParse(invalid);
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a tree scrub lesson with more than 20 nodes", () => {
+    const invalid = {
+      ...validModule,
+      lessons: [
+        {
+          lessonId: "l17",
+          type: "treeScrub",
+          schemaVersion: 1,
+          source: "human",
+          wordingStyle: "official",
+          order: 1,
+          content: {
+            nodes: Array.from({ length: 21 }, (_, i) => ({
+              title: `Node ${i}`,
+              body: "Too many.",
+              parentIndex: 0,
+            })),
+          },
+        },
+      ],
+    };
+    const result = ModuleSchema.safeParse(invalid);
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a tree scrub lesson where a node's parentIndex points at itself or a later node", () => {
+    const invalid = {
+      ...validModule,
+      lessons: [
+        {
+          lessonId: "l17",
+          type: "treeScrub",
+          schemaVersion: 1,
+          source: "human",
+          wordingStyle: "official",
+          order: 1,
+          content: {
+            nodes: [
+              { title: "Root", body: "The root.", parentIndex: 0 },
+              { title: "Self-referencing", body: "Points at itself.", parentIndex: 1 },
+            ],
+          },
+        },
+      ],
+    };
+    const result = ModuleSchema.safeParse(invalid);
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a tree scrub lesson where a node's parentIndex points forward at a node defined later", () => {
+    const invalid = {
+      ...validModule,
+      lessons: [
+        {
+          lessonId: "l17",
+          type: "treeScrub",
+          schemaVersion: 1,
+          source: "human",
+          wordingStyle: "official",
+          order: 1,
+          content: {
+            nodes: [
+              { title: "Root", body: "The root.", parentIndex: 0 },
+              { title: "Points ahead", body: "References node 2, which comes later.", parentIndex: 2 },
+              { title: "Later node", body: "Defined after the node pointing at it.", parentIndex: 0 },
+            ],
+          },
+        },
+      ],
+    };
+    const result = ModuleSchema.safeParse(invalid);
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts a tree scrub lesson with several nodes sharing the same parentIndex", () => {
+    const valid = {
+      ...validModule,
+      lessons: [
+        {
+          lessonId: "l17",
+          type: "treeScrub",
+          schemaVersion: 1,
+          source: "human",
+          wordingStyle: "official",
+          order: 1,
+          content: {
+            nodes: [
+              { title: "Root", body: "The root.", parentIndex: 0 },
+              { title: "Child A", body: "First sibling.", parentIndex: 0 },
+              { title: "Child B", body: "Second sibling.", parentIndex: 0 },
+              { title: "Child C", body: "Third sibling.", parentIndex: 0 },
+            ],
+          },
+        },
+      ],
+    };
+    expect(ModuleSchema.safeParse(valid).success).toBe(true);
   });
 
   it("rejects a hotspots lesson with fewer than 2 tiles", () => {

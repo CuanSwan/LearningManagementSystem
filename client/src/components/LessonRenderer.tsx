@@ -14,6 +14,7 @@ import { PracticalLesson } from "./PracticalLesson.js";
 import { PresentationDialLesson } from "./PresentationDialLesson.js";
 import { QuizLesson } from "./QuizLesson.js";
 import { TextLesson } from "./TextLesson.js";
+import { TreeScrubLesson } from "./TreeScrubLesson.js";
 import { VideoLesson } from "./VideoLesson.js";
 
 function renderContent(lesson: Lesson, isComplete: boolean, onComplete: () => void) {
@@ -44,6 +45,8 @@ function renderContent(lesson: Lesson, isComplete: boolean, onComplete: () => vo
       return <CardGridLesson content={lesson.content} isComplete={isComplete} onComplete={onComplete} />;
     case "hotspots":
       return <HotspotsLesson content={lesson.content} isComplete={isComplete} onComplete={onComplete} />;
+    case "treeScrub":
+      return <TreeScrubLesson content={lesson.content} isComplete={isComplete} onComplete={onComplete} />;
     case "html":
       return <CustomHtmlLesson content={lesson.content} isComplete={isComplete} onComplete={onComplete} />;
     case "embed":
