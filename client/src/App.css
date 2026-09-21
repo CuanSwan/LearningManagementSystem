@@ -1770,6 +1770,16 @@ a.path-snake-link:hover .path-snake-bubble {
   border: 1px dashed var(--border-strong);
 }
 
+/* The nodes themselves sit at fixed positions (see nodeBasePosition in
+   the component) - it's this wrapper that physically rotates them into
+   place each step, exactly like the source mockup's dial-wrap, so the
+   surviving nodes swing around the ring instead of jumping. */
+.presentationdial-lesson-nodes {
+  position: absolute;
+  inset: 0;
+  transition: transform 650ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 .presentationdial-lesson-node {
   position: absolute;
   width: 30px;
@@ -1791,6 +1801,13 @@ a.path-snake-link:hover .path-snake-bubble {
   color: #fff;
   border-color: var(--theme-primary, #3e6259);
   transform: scale(1.15);
+}
+
+/* Counter-rotates against the wrapper's spin so the digits stay upright
+   while the ring turns underneath them. */
+.presentationdial-lesson-node span {
+  display: inline-block;
+  transition: transform 650ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .presentationdial-lesson-card {

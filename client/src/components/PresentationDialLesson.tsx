@@ -18,14 +18,16 @@ function pad(n: number): string {
   return String(n).padStart(2, "0");
 }
 
-// distance 0 = current (rightmost, angle 0° = straight right), distance 3 =
-// the oldest stage still in the window (three quarter-turns counter-
-// clockwise from current) - so the ring's 4 equidistant slots always end
-// with the current stage on the right.
-function nodePosition(distance: number): { left: number; top: number } {
-  const rad = (distance * ANGLE_STEP * Math.PI) / 180;
+// Each node's own position is fixed by its stage index, never by how far
+// it currently is from "current" - it's the wrapping element around all
+// of them that rotates (see wrapperRotateDeg below), exactly like the
+// source mockup's dial-wrap. That's what makes the surviving nodes swing
+// smoothly around the ring each step instead of jumping straight to
+// their new spot.
+function nodeBasePosition(i: number): { left: number; top: number } {
+  const rad = (i * ANGLE_STEP * Math.PI) / 180;
   const x = CENTER + NODE_RADIUS * Math.cos(rad);
-  const y = CENTER - NODE_RADIUS * Math.sin(rad);
+  const y = CENTER + NODE_RADIUS * Math.sin(rad);
   return { left: x - NODE_SIZE / 2, top: y - NODE_SIZE / 2 };
 }
 
@@ -35,6 +37,12 @@ export function PresentationDialLesson({ content, isComplete = false, onComplete
   onComplete?: () => void;
 }) {
   const [current, setCurrent] = useState(0);
+  // The ring starts turning the instant a nav button is clicked, same as
+  // the source mockup - only the card's content swap waits for the shrink
+  // transition to finish. Tracking the rotation target separately from
+  // `current` (which drives the card + which 4 nodes are mounted) is what
+  // lets the ring's spin lead the card swap instead of waiting on it.
+  const [rotationIndex, setRotationIndex] = useState(0);
   const [seen, setSeen] = useState<Set<number>>(new Set([0]));
   const [collapsed, setCollapsed] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -43,6 +51,7 @@ export function PresentationDialLesson({ content, isComplete = false, onComplete
   function goTo(index: number) {
     if (busy || index < 0 || index >= total) return;
     setBusy(true);
+    setRotationIndex(index);
     setCollapsed(true);
     setTimeout(() => {
       setCurrent(index);
@@ -64,6 +73,15 @@ export function PresentationDialLesson({ content, isComplete = false, onComplete
 
   const stage = content.stages[current];
 
+  // Rotating the wrapper by -rotationIndex * ANGLE_STEP brings that
+  // stage's own fixed position around to the rightmost slot (see
+  // nodeBasePosition) - and every other mounted node along with it,
+  // sweeping around the ring rather than teleporting. The label spans
+  // counter-rotate by the same amount in reverse so the digits stay
+  // upright.
+  const wrapperRotateDeg = -rotationIndex * ANGLE_STEP;
+  const labelRotateDeg = rotationIndex * ANGLE_STEP;
+
   return (
     <div className="presentationdial-lesson">
       <div className="presentationdial-lesson-stage">
@@ -81,19 +99,21 @@ export function PresentationDialLesson({ content, isComplete = false, onComplete
 
         <div className="presentationdial-lesson-centerzone">
           <div className="presentationdial-lesson-ring" />
-          {windowIndices.map((i, distance) => {
-            const { left, top } = nodePosition(distance);
-            return (
-              <div
-                key={i}
-                className={`presentationdial-lesson-node${i === current ? " active" : ""}`}
-                style={{ left: `${left}px`, top: `${top}px` }}
-                aria-hidden="true"
-              >
-                {pad(i + 1)}
-              </div>
-            );
-          })}
+          <div className="presentationdial-lesson-nodes" style={{ transform: `rotate(${wrapperRotateDeg}deg)` }}>
+            {windowIndices.map((i) => {
+              const { left, top } = nodeBasePosition(i);
+              return (
+                <div
+                  key={i}
+                  className={`presentationdial-lesson-node${i === current ? " active" : ""}`}
+                  style={{ left: `${left}px`, top: `${top}px` }}
+                  aria-hidden="true"
+                >
+                  <span style={{ transform: `rotate(${labelRotateDeg}deg)` }}>{pad(i + 1)}</span>
+                </div>
+              );
+            })}
+          </div>
           <div className={`presentationdial-lesson-card${collapsed ? " is-collapsed" : ""}`}>
             <span className="presentationdial-lesson-counter">
               {pad(current + 1)} / {pad(total)}
