@@ -1723,63 +1723,115 @@ a.path-snake-link:hover .path-snake-bubble {
   }
 }
 
-/* --- Presentation dial lesson: a "current stage" card flanked by
-   prev/next buttons, with a 4-wide trailing window of stage numbers
-   above it - the window's fixed slots never move, only the numbers in
-   them change, always ending with the current stage on the right. --- */
+/* --- Presentation dial lesson: a ring of up to 4 visible stage-number
+   dots sitting behind a concentric card, the two centered on the same
+   point (like the source mockup's overlapping dial-wrap + card-zone),
+   flanked by round prev/next buttons. Only 4 dots ever exist - they sit
+   on an arc from upper-left down to the rightmost point (the current
+   stage), rather than a full ring, so the numbers they show "cycle"
+   through those 4 fixed slots as you page through up to 20 stages
+   instead of ringing every stage around a full circle at once. --- */
 
 .presentationdial-lesson {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1.5rem;
   width: 100%;
-  max-width: 640px;
-  margin: 0 auto;
-}
-
-.presentationdial-lesson-track {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 0.6rem;
-  width: 100%;
-}
-
-.presentationdial-lesson-node {
-  width: 34px;
-  height: 34px;
-  flex: none;
-  border-radius: 999px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: "Fira Code", monospace;
-  font-size: 0.72rem;
-  border: 1px solid var(--border-strong);
-  background: var(--surface-sunken);
-  color: var(--text-secondary);
-  transition: background 180ms ease, color 180ms ease, border-color 180ms ease;
-}
-
-.presentationdial-lesson-node.active {
-  background: var(--theme-primary, #3e6259);
-  color: #fff;
-  border-color: var(--theme-primary, #3e6259);
 }
 
 .presentationdial-lesson-stage {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1.25rem;
+  gap: 0.75rem;
   width: 100%;
+  padding: 1rem 0;
+}
+
+.presentationdial-lesson-centerzone {
+  position: relative;
+  flex: none;
+  width: 260px;
+  height: 260px;
+}
+
+.presentationdial-lesson-ring {
+  position: absolute;
+  inset: 12px;
+  border-radius: 999px;
+  border: 1px dashed var(--border-strong);
+}
+
+.presentationdial-lesson-node {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Fira Code", monospace;
+  font-size: 0.66rem;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-sunken);
+  color: var(--text-secondary);
+  transition: background 180ms ease, color 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+
+.presentationdial-lesson-node.active {
+  background: var(--theme-primary, #3e6259);
+  color: #fff;
+  border-color: var(--theme-primary, #3e6259);
+  transform: scale(1.15);
+}
+
+.presentationdial-lesson-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  box-sizing: border-box;
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+  width: 200px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  box-shadow: 0 16px 40px var(--shadow-color);
+  padding: 1.5rem 1.5rem;
+  text-align: center;
+  transition: transform 320ms cubic-bezier(0.4, 0, 0.2, 1), opacity 320ms ease;
+}
+
+.presentationdial-lesson-card.is-collapsed {
+  transform: translate(-50%, -50%) scale(0.08);
+  opacity: 0;
+}
+
+.presentationdial-lesson-counter {
+  display: block;
+  font-family: "Fira Code", monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  color: var(--text-tertiary);
+  margin-bottom: 0.6rem;
+}
+
+.presentationdial-lesson-title {
+  margin: 0 0 0.6rem;
+  font-family: "Oranienbaum", serif;
+  font-size: 1.15rem;
+  line-height: 1.2;
+  color: var(--text-primary);
+}
+
+.presentationdial-lesson-body {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
 }
 
 .presentationdial-lesson-nav {
   flex: none;
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   border-radius: 999px;
   border: 1px solid var(--border-medium);
   background: var(--surface-card);
@@ -1792,8 +1844,8 @@ a.path-snake-link:hover .path-snake-bubble {
 }
 
 .presentationdial-lesson-nav svg {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
 }
 
 .presentationdial-lesson-nav:hover:not(:disabled) {
@@ -1804,56 +1856,6 @@ a.path-snake-link:hover .path-snake-bubble {
 .presentationdial-lesson-nav:disabled {
   opacity: 0.3;
   cursor: not-allowed;
-}
-
-.presentationdial-lesson-card {
-  flex: 1 1 auto;
-  min-width: 0;
-  background: var(--surface-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: 14px;
-  box-shadow: 0 12px 32px var(--shadow-color);
-  padding: 2rem 2.25rem;
-  text-align: center;
-}
-
-.presentationdial-lesson-counter {
-  display: block;
-  font-family: "Fira Code", monospace;
-  font-size: 0.7rem;
-  letter-spacing: 0.1em;
-  color: var(--text-tertiary);
-  margin-bottom: 0.75rem;
-}
-
-.presentationdial-lesson-title {
-  margin: 0 0 0.75rem;
-  font-family: "Oranienbaum", serif;
-  font-size: 1.4rem;
-  line-height: 1.2;
-  color: var(--text-primary);
-}
-
-.presentationdial-lesson-body {
-  margin: 0;
-  font-size: 0.95rem;
-  line-height: 1.65;
-  color: var(--text-secondary);
-}
-
-@media (max-width: 640px) {
-  .presentationdial-lesson-stage {
-    gap: 0.6rem;
-  }
-
-  .presentationdial-lesson-nav {
-    width: 36px;
-    height: 36px;
-  }
-
-  .presentationdial-lesson-card {
-    padding: 1.5rem 1.25rem;
-  }
 }
 
 /* --- Card grid lesson: a wrapping, always-centered grid of comparison
