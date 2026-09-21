@@ -1499,16 +1499,15 @@ a.path-snake-link:hover .path-snake-bubble {
 }
 
 .dial-lesson-node {
+  /* width/height/font-size are set inline per node - they shrink as the
+     stage count grows, since the ring's radius is fixed. */
   position: absolute;
-  width: 35px;
-  height: 35px;
   border-radius: 999px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   font-family: "Fira Code", monospace;
-  font-size: 0.7rem;
   border: 1px solid var(--border-strong);
   background: var(--surface-sunken);
   color: var(--text-primary);
