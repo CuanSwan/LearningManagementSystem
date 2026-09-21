@@ -54,11 +54,21 @@
   --overlay-scrim: rgba(0, 0, 0, 0.7);
 }
 
+/* A safety net, not the fix itself (that's each component's own layout
+   below) - keeps any one unconstrained element from ever forcing a
+   page-wide horizontal scroll on narrow viewports. Needs to be on both
+   html and body: the viewport scrolls html, not body, so overflow-x
+   hidden on body alone doesn't actually stop the page from scrolling. */
+html {
+  overflow-x: hidden;
+}
+
 body {
   font-family: "Poppins", sans-serif;
   margin: 0;
   background: var(--surface-app);
   color: var(--text-primary);
+  overflow-x: hidden;
 }
 
 input,
@@ -662,7 +672,12 @@ main {
 
 .home-choices {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  /* auto-fit + minmax reflows to fewer columns as space gets tight, instead
+     of a fixed 3-column grid whose columns can't shrink below the cards'
+     own content width (their fixed padding + heading) - that's what let
+     the grid overflow the page in the gap between the old single mobile
+     breakpoint and the width 3 columns actually have room for. */
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 2.25rem;
 }
 
@@ -1632,6 +1647,7 @@ a.path-snake-link:hover .path-snake-bubble {
 /* --- Auth: top bar, login/register, user management --- */
 
 .top-bar {
+  position: relative;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1677,6 +1693,52 @@ a.path-snake-link:hover .path-snake-bubble {
   letter-spacing: 0.04em;
   font-size: 0.78rem;
   cursor: pointer;
+}
+
+/* The toggle stays hidden (and the nav stays a plain inline row) above the
+   breakpoint - only below it does the nav become a dropdown panel, so
+   desktop/tablet layout is unchanged. */
+.top-bar-menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: #fff;
+  padding: 0.25rem;
+  cursor: pointer;
+}
+
+@media (max-width: 720px) {
+  .top-bar-menu-toggle {
+    display: flex;
+  }
+
+  .top-bar-nav {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 0.25rem 1.5rem 0.75rem;
+    background: #0d0d0d;
+    box-shadow: 0 12px 24px var(--shadow-color-strong);
+    z-index: 20;
+  }
+
+  .top-bar-nav.is-open {
+    display: flex;
+  }
+
+  .top-bar-nav a,
+  .top-bar-user,
+  .top-bar-logout {
+    width: 100%;
+    padding: 0.75rem 0;
+    text-align: left;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+  }
 }
 
 .auth-page {
