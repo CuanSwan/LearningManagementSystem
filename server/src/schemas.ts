@@ -67,6 +67,13 @@ const DialContentSchema = z.object({
   stages: z.array(z.object({ title: z.string(), body: z.string() })).min(2).max(20),
 });
 
+// A horizontal progress track - the same one-title-one-body-per-step shape
+// as the dial, just capped much lower (7) since every step's label sits
+// inline in a single row rather than shrinking into a small ring.
+const PipelineContentSchema = z.object({
+  steps: z.array(z.object({ title: z.string(), body: z.string() })).min(2).max(7),
+});
+
 const CustomHtmlContentSchema = z.object({
   // Sanitized as part of parsing itself, not in a separate step someone
   // could forget to call - every write path (create, save, seed, the Rise
@@ -141,6 +148,11 @@ export const DialLessonSchema = LessonBaseSchema.extend({
   content: DialContentSchema,
 });
 
+export const PipelineLessonSchema = LessonBaseSchema.extend({
+  type: z.literal("pipeline"),
+  content: PipelineContentSchema,
+});
+
 export const CustomHtmlLessonSchema = LessonBaseSchema.extend({
   type: z.literal("html"),
   content: CustomHtmlContentSchema,
@@ -166,6 +178,7 @@ export const LessonSchema = z.discriminatedUnion("type", [
   AccordionLessonSchema,
   MatchingLessonSchema,
   DialLessonSchema,
+  PipelineLessonSchema,
   CustomHtmlLessonSchema,
   EmbedLessonSchema,
   ExamBreakdownLessonSchema,
@@ -181,6 +194,7 @@ export type FlashcardLesson = z.infer<typeof FlashcardLessonSchema>;
 export type AccordionLesson = z.infer<typeof AccordionLessonSchema>;
 export type MatchingLesson = z.infer<typeof MatchingLessonSchema>;
 export type DialLesson = z.infer<typeof DialLessonSchema>;
+export type PipelineLesson = z.infer<typeof PipelineLessonSchema>;
 export type CustomHtmlLesson = z.infer<typeof CustomHtmlLessonSchema>;
 export type EmbedLesson = z.infer<typeof EmbedLessonSchema>;
 export type ExamBreakdownLesson = z.infer<typeof ExamBreakdownLessonSchema>;

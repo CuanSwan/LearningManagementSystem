@@ -111,6 +111,20 @@ const validModule = {
       },
     },
     {
+      lessonId: "l13",
+      type: "pipeline",
+      schemaVersion: 1,
+      source: "human",
+      wordingStyle: "official",
+      order: 13,
+      content: {
+        steps: [
+          { title: "Source systems", body: "CRM, ERP, websites, IoT sensors, manual entry." },
+          { title: "Data integration", body: "Moves data into a central location." },
+        ],
+      },
+    },
+    {
       lessonId: "l9",
       type: "html",
       schemaVersion: 1,
@@ -141,7 +155,7 @@ const validModule = {
 };
 
 describe("ModuleSchema", () => {
-  it("accepts a module with all twelve lesson types", () => {
+  it("accepts a module with all thirteen lesson types", () => {
     expect(() => parseModule(validModule)).not.toThrow();
   });
 
@@ -301,6 +315,44 @@ describe("ModuleSchema", () => {
           wordingStyle: "official",
           order: 1,
           content: { stages: Array.from({ length: 21 }, (_, i) => ({ title: `Stage ${i}`, body: "Too many." })) },
+        },
+      ],
+    };
+    const result = ModuleSchema.safeParse(invalid);
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a pipeline lesson with fewer than 2 steps", () => {
+    const invalid = {
+      ...validModule,
+      lessons: [
+        {
+          lessonId: "l13",
+          type: "pipeline",
+          schemaVersion: 1,
+          source: "human",
+          wordingStyle: "official",
+          order: 1,
+          content: { steps: [{ title: "Only step", body: "Not enough to track progress across." }] },
+        },
+      ],
+    };
+    const result = ModuleSchema.safeParse(invalid);
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a pipeline lesson with more than 7 steps", () => {
+    const invalid = {
+      ...validModule,
+      lessons: [
+        {
+          lessonId: "l13",
+          type: "pipeline",
+          schemaVersion: 1,
+          source: "human",
+          wordingStyle: "official",
+          order: 1,
+          content: { steps: Array.from({ length: 8 }, (_, i) => ({ title: `Step ${i}`, body: "Too many." })) },
         },
       ],
     };

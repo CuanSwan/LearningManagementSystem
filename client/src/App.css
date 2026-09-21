@@ -1583,6 +1583,146 @@ a.path-snake-link:hover .path-snake-bubble {
   }
 }
 
+/* --- Pipeline lesson: a horizontal track of selectable steps --- */
+
+.pipeline-lesson {
+  width: 100%;
+}
+
+.pipeline-lesson-track {
+  position: relative;
+  padding-top: 0.4rem;
+}
+
+.pipeline-lesson-rail,
+.pipeline-lesson-fill {
+  position: absolute;
+  top: 1rem;
+  height: 2px;
+}
+
+.pipeline-lesson-rail {
+  left: 8%;
+  right: 8%;
+  background: var(--border-strong);
+}
+
+.pipeline-lesson-fill {
+  left: 8%;
+  width: 0;
+  background: var(--theme-primary, #3e6259);
+  transition: width 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.pipeline-lesson-stations {
+  position: relative;
+  display: grid;
+  /* grid-template-columns is set inline per render - it depends on the
+     step count, so the spacing stays even whether there are 2 or 7. */
+  gap: 1rem;
+}
+
+.pipeline-lesson-station {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.6rem;
+  padding: 0 0.25rem 0.4rem;
+  border-radius: 8px;
+  cursor: pointer;
+  opacity: 0.5;
+  background: none;
+  border: 0;
+  font: inherit;
+  transition: opacity 180ms ease-out;
+}
+
+.pipeline-lesson-station:hover,
+.pipeline-lesson-station.reached {
+  opacity: 1;
+}
+
+.pipeline-lesson-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  border: 3px solid var(--theme-primary, #3e6259);
+  background: var(--surface-card);
+  transition: background 180ms ease-out, box-shadow 180ms ease-out;
+}
+
+.pipeline-lesson-station.reached .pipeline-lesson-dot {
+  background: var(--theme-primary, #3e6259);
+}
+
+.pipeline-lesson-station.active .pipeline-lesson-dot {
+  box-shadow:
+    0 0 0 3px var(--surface-card),
+    0 0 0 5px var(--theme-primary, #3e6259);
+}
+
+.pipeline-lesson-meta {
+  font-family: "Fira Code", monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.pipeline-lesson-station.active .pipeline-lesson-meta {
+  color: var(--theme-primary, #3e6259);
+}
+
+.pipeline-lesson-title {
+  font-size: 0.92rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+
+.pipeline-lesson-body {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.pipeline-lesson-actions {
+  margin-top: 1.75rem;
+  display: flex;
+  justify-content: center;
+}
+
+.pipeline-lesson-next {
+  font-family: "Fira Code", monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--theme-primary, #3e6259);
+  border: 1px solid var(--theme-primary, #3e6259);
+  border-radius: 999px;
+  padding: 0.45rem 1rem;
+  cursor: pointer;
+  transition: opacity 180ms ease-out;
+}
+
+.pipeline-lesson-next:hover {
+  opacity: 0.85;
+}
+
+@media (max-width: 640px) {
+  .pipeline-lesson-stations {
+    grid-template-columns: 1fr 1fr !important;
+    row-gap: 1.75rem;
+  }
+
+  .pipeline-lesson-rail,
+  .pipeline-lesson-fill {
+    display: none;
+  }
+}
+
 .matching-item.is-selected {
   border-color: var(--theme-primary, #3e6259);
 }

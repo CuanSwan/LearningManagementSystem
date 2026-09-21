@@ -88,6 +88,18 @@ export interface DialLesson extends LessonBase {
   content: { stages: DialStage[] };
 }
 
+export interface PipelineStep {
+  title: string;
+  body: string;
+}
+
+// A horizontal progress track - the same title/body-per-step shape as the
+// dial, capped lower (7) since every step's label sits inline in one row.
+export interface PipelineLesson extends LessonBase {
+  type: "pipeline";
+  content: { steps: PipelineStep[] };
+}
+
 export interface CustomHtmlLesson extends LessonBase {
   type: "html";
   content: { html: string };
@@ -113,6 +125,7 @@ export type Lesson =
   | AccordionLesson
   | MatchingLesson
   | DialLesson
+  | PipelineLesson
   | CustomHtmlLesson
   | EmbedLesson
   | ExamBreakdownLesson;

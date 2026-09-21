@@ -65,6 +65,12 @@ describe("createBlankLesson", () => {
     expect(lesson.content).toEqual({ stages: [{ title: "", body: "" }, { title: "", body: "" }] });
   });
 
+  it("creates a pipeline lesson with two blank steps, matching the minimum station count", () => {
+    const lesson = createBlankLesson("pipeline", 1);
+    expect(lesson.type).toBe("pipeline");
+    expect(lesson.content).toEqual({ steps: [{ title: "", body: "" }, { title: "", body: "" }] });
+  });
+
   it("creates an exam breakdown lesson with sensible closed-book defaults", () => {
     const lesson = createBlankLesson("examBreakdown", 1);
     expect(lesson.type).toBe("examBreakdown");

@@ -7,6 +7,7 @@ import { EmbedLesson } from "./EmbedLesson.js";
 import { ExamBreakdownLesson } from "./ExamBreakdownLesson.js";
 import { FlashcardLesson } from "./FlashcardLesson.js";
 import { MatchingLesson } from "./MatchingLesson.js";
+import { PipelineLesson } from "./PipelineLesson.js";
 import { PracticalLesson } from "./PracticalLesson.js";
 import { QuizLesson } from "./QuizLesson.js";
 import { TextLesson } from "./TextLesson.js";
@@ -32,6 +33,8 @@ function renderContent(lesson: Lesson, isComplete: boolean, onComplete: () => vo
       return <MatchingLesson content={lesson.content} isComplete={isComplete} onComplete={onComplete} />;
     case "dial":
       return <DialLesson content={lesson.content} isComplete={isComplete} onComplete={onComplete} />;
+    case "pipeline":
+      return <PipelineLesson content={lesson.content} isComplete={isComplete} onComplete={onComplete} />;
     case "html":
       return <CustomHtmlLesson content={lesson.content} isComplete={isComplete} onComplete={onComplete} />;
     case "embed":

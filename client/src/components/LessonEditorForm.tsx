@@ -6,6 +6,7 @@ import type {
   FlashcardLesson,
   Lesson,
   MatchingLesson,
+  PipelineLesson,
   PracticalLesson,
   QuizLesson,
 } from "../types.js";
@@ -333,6 +334,60 @@ function DialEditor({
   );
 }
 
+const PIPELINE_MIN_STEPS = 2;
+const PIPELINE_MAX_STEPS = 7;
+
+function PipelineEditor({
+  content,
+  onChange,
+}: {
+  content: PipelineLesson["content"];
+  onChange: (content: PipelineLesson["content"]) => void;
+}) {
+  function updateStep(i: number, patch: Partial<PipelineLesson["content"]["steps"][number]>) {
+    onChange({ steps: content.steps.map((s, idx) => (idx === i ? { ...s, ...patch } : s)) });
+  }
+
+  function addStep() {
+    if (content.steps.length >= PIPELINE_MAX_STEPS) return;
+    onChange({ steps: [...content.steps, { title: "", body: "" }] });
+  }
+
+  function removeStep(i: number) {
+    if (content.steps.length <= PIPELINE_MIN_STEPS) return;
+    onChange({ steps: content.steps.filter((_, idx) => idx !== i) });
+  }
+
+  return (
+    <div className="field-group">
+      <span className="field-hint">
+        The pipeline shows one station per step below - add or remove steps ({PIPELINE_MIN_STEPS}-
+        {PIPELINE_MAX_STEPS}) to change how many stations it has.
+      </span>
+      {content.steps.map((step, i) => (
+        <fieldset key={i} className="editor-question">
+          <label className="field">
+            Title
+            <input value={step.title} onChange={(e) => updateStep(i, { title: e.target.value })} />
+          </label>
+          <label className="field">
+            Text
+            <textarea rows={3} value={step.body} onChange={(e) => updateStep(i, { body: e.target.value })} />
+          </label>
+          <div className="editor-row-actions">
+            <button type="button" onClick={() => removeStep(i)} disabled={content.steps.length <= PIPELINE_MIN_STEPS}>
+              Remove step
+            </button>
+          </div>
+        </fieldset>
+      ))}
+      <button type="button" onClick={addStep} disabled={content.steps.length >= PIPELINE_MAX_STEPS}>
+        Add step
+      </button>
+    </div>
+  );
+}
+
 function ExamBreakdownEditor({
   content,
   onChange,
@@ -444,6 +499,8 @@ export function LessonEditorForm({
       return <MatchingEditor content={lesson.content} onChange={onChange} />;
     case "dial":
       return <DialEditor content={lesson.content} onChange={onChange} />;
+    case "pipeline":
+      return <PipelineEditor content={lesson.content} onChange={onChange} />;
     case "html":
       return (
         <label className="field">
