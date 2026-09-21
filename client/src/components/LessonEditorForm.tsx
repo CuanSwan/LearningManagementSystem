@@ -519,7 +519,6 @@ function CardGridEditor({
 }
 
 const HOTSPOTS_MIN_TILES = 2;
-const HOTSPOTS_MAX_TILES = 8;
 
 function HotspotsEditor({
   content,
@@ -533,7 +532,6 @@ function HotspotsEditor({
   }
 
   function addTile() {
-    if (content.tiles.length >= HOTSPOTS_MAX_TILES) return;
     onChange({ tiles: [...content.tiles, { title: "", body: "", example: "" }] });
   }
 
@@ -545,8 +543,8 @@ function HotspotsEditor({
   return (
     <div className="field-group">
       <span className="field-hint">
-        The tiles sit in a single row - add or remove tiles ({HOTSPOTS_MIN_TILES}-{HOTSPOTS_MAX_TILES}) to change how
-        many there are.
+        The grid always lays out 5 tiles per row and wraps (centering any leftover row) beyond that - add as many
+        tiles as you like, at least {HOTSPOTS_MIN_TILES}.
       </span>
       {content.tiles.map((tile, i) => (
         <fieldset key={i} className="editor-question">
@@ -569,7 +567,7 @@ function HotspotsEditor({
           </div>
         </fieldset>
       ))}
-      <button type="button" onClick={addTile} disabled={content.tiles.length >= HOTSPOTS_MAX_TILES}>
+      <button type="button" onClick={addTile}>
         Add tile
       </button>
     </div>

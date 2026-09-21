@@ -102,15 +102,12 @@ const CardGridContentSchema = z.object({
     .min(2),
 });
 
-// A single-row grid of clickable tiles, each popping open a note above
-// itself on click (only one open at a time). Capped at 8 - unlike the
-// card grid, this stays a single row (no wrapping), so too many tiles
-// would squeeze each one down to nothing.
+// A grid of clickable tiles (5 per row, wrapping and centering beyond
+// that, like the card grid), each popping open a note above itself on
+// click. At least 2 to be worth a grid; no upper cap since extra tiles
+// just add rows rather than crowding a fixed shape.
 const HotspotsContentSchema = z.object({
-  tiles: z
-    .array(z.object({ title: z.string(), body: z.string(), example: z.string() }))
-    .min(2)
-    .max(8),
+  tiles: z.array(z.object({ title: z.string(), body: z.string(), example: z.string() })).min(2),
 });
 
 const CustomHtmlContentSchema = z.object({

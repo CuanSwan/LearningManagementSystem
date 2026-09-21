@@ -479,8 +479,8 @@ describe("ModuleSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("rejects a hotspots lesson with more than 8 tiles", () => {
-    const invalid = {
+  it("accepts a hotspots lesson with more than 8 tiles (wraps rather than crowds)", () => {
+    const valid = {
       ...validModule,
       lessons: [
         {
@@ -491,13 +491,12 @@ describe("ModuleSchema", () => {
           wordingStyle: "official",
           order: 1,
           content: {
-            tiles: Array.from({ length: 9 }, (_, i) => ({ title: `Tile ${i}`, body: "Too many.", example: "N/A" })),
+            tiles: Array.from({ length: 12 }, (_, i) => ({ title: `Tile ${i}`, body: "Plenty.", example: "N/A" })),
           },
         },
       ],
     };
-    const result = ModuleSchema.safeParse(invalid);
-    expect(result.success).toBe(false);
+    expect(ModuleSchema.safeParse(valid).success).toBe(true);
   });
 
   it("rejects a card grid lesson with fewer than 2 cards", () => {

@@ -1989,19 +1989,22 @@ a.path-snake-link:hover .path-snake-bubble {
   }
 }
 
-/* --- Hotspots lesson: a single row of clickable tiles, each popping
-   open a note above itself (only one open at a time). The popover's
-   background stays a fixed dark tone in both themes - an inverted
-   callout, not a themed surface, same idea as a native tooltip. --- */
+/* --- Hotspots lesson: a wrapping, always-centered grid of clickable
+   tiles (5 per row, same flex-wrap + justify-content: center technique
+   as the card grid lesson, just 5 columns instead of 3), each popping
+   open a note above itself on click (only one open at a time). The
+   popover's background stays a fixed dark tone in both themes - an
+   inverted callout, not a themed surface, same idea as a native
+   tooltip. --- */
 
 .hotspots-lesson {
   width: 100%;
 }
 
 .hotspots-lesson-grid {
-  display: grid;
-  /* grid-template-columns is set inline per render - it depends on the
-     tile count, so the spacing stays even whether there are 2 or 8. */
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 0.6rem;
 }
 
@@ -2011,6 +2014,9 @@ a.path-snake-link:hover .path-snake-bubble {
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
+  flex: 0 1 calc((100% - 4 * 0.6rem) / 5);
+  min-width: 100px;
+  max-width: calc((100% - 4 * 0.6rem) / 5);
 }
 
 .hotspots-lesson-tile {
@@ -2051,9 +2057,11 @@ a.path-snake-link:hover .path-snake-bubble {
 .hotspots-lesson-popover {
   position: absolute;
   bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
   margin-bottom: 0.85rem;
   width: 240px;
-  max-width: 80vw;
+  max-width: min(240px, calc(100vw - 2rem));
   background: #1a1a18;
   color: #f4f1ec;
   border-radius: 10px;
@@ -2087,9 +2095,9 @@ a.path-snake-link:hover .path-snake-bubble {
 }
 
 @media (max-width: 640px) {
-  .hotspots-lesson-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-    row-gap: 1.5rem;
+  .hotspots-lesson-tile-wrap {
+    flex-basis: calc((100% - 0.6rem) / 2);
+    max-width: calc((100% - 0.6rem) / 2);
   }
 }
 
