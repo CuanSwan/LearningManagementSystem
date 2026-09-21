@@ -9,10 +9,16 @@ const WINDOW_SIZE = 4;
 const CENTER = 130;
 const NODE_RADIUS = 118;
 const NODE_SIZE = 30;
-// Spread the (up to) 4 visible dots evenly around the full circle - the
-// same 360/n spacing the source mockup uses for its own n nodes - rather
-// than clustering them into one quadrant.
+// Spread the 4 dots evenly around the full circle - the same 360/n
+// spacing the source mockup uses for its own n nodes - rather than
+// clustering them into one quadrant.
 const ANGLE_STEP = 360 / WINDOW_SIZE;
+// The ring always shows one stage back (top), the current stage (right),
+// and two stages ahead (bottom, then left) - so the current position's
+// mod-4 base angle lands them there (see nodeBasePosition). A slot whose
+// stage index falls outside [0, total) is rendered blank rather than
+// omitted, so the ring keeps its 4 fixed positions.
+const OFFSETS = [-1, 0, 1, 2];
 
 function pad(n: number): string {
   return String(n).padStart(2, "0");
@@ -67,10 +73,6 @@ export function PresentationDialLesson({ content, isComplete = false, onComplete
     }, 340);
   }
 
-  const windowStart = Math.max(0, current - (WINDOW_SIZE - 1));
-  const windowIndices: number[] = [];
-  for (let i = current; i >= windowStart; i--) windowIndices.push(i);
-
   const stage = content.stages[current];
 
   // Rotating the wrapper by -rotationIndex * ANGLE_STEP brings that
@@ -100,16 +102,18 @@ export function PresentationDialLesson({ content, isComplete = false, onComplete
         <div className="presentationdial-lesson-centerzone">
           <div className="presentationdial-lesson-ring" />
           <div className="presentationdial-lesson-nodes" style={{ transform: `rotate(${wrapperRotateDeg}deg)` }}>
-            {windowIndices.map((i) => {
+            {OFFSETS.map((offset) => {
+              const i = current + offset;
+              const valid = i >= 0 && i < total;
               const { left, top } = nodeBasePosition(i);
               return (
                 <div
                   key={i}
-                  className={`presentationdial-lesson-node${i === current ? " active" : ""}`}
+                  className={`presentationdial-lesson-node${i === current ? " active" : ""}${valid ? "" : " is-blank"}`}
                   style={{ left: `${left}px`, top: `${top}px` }}
                   aria-hidden="true"
                 >
-                  <span style={{ transform: `rotate(${labelRotateDeg}deg)` }}>{pad(i + 1)}</span>
+                  {valid && <span style={{ transform: `rotate(${labelRotateDeg}deg)` }}>{pad(i + 1)}</span>}
                 </div>
               );
             })}

@@ -1803,6 +1803,16 @@ a.path-snake-link:hover .path-snake-bubble {
   transform: scale(1.15);
 }
 
+/* A slot whose offset falls outside the stage list (no "before the
+   first" stage, or running out of "ahead" stages near the end) - the
+   circle stays in place to keep the ring's 4 fixed positions, just with
+   no number in it. */
+.presentationdial-lesson-node.is-blank {
+  border-style: dashed;
+  border-color: var(--border-subtle);
+  background: none;
+}
+
 /* Counter-rotates against the wrapper's spin so the digits stay upright
    while the ring turns underneath them. */
 .presentationdial-lesson-node span {
