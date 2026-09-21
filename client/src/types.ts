@@ -100,6 +100,21 @@ export interface PipelineLesson extends LessonBase {
   content: { steps: PipelineStep[] };
 }
 
+export interface CardGridCard {
+  title: string;
+  useWhen: string;
+  looksLike: string;
+  noteLabel: string;
+  noteBody: string;
+}
+
+// A grid of comparison cards, always laid out 3 per row and wrapping (and
+// centering incomplete rows) beyond that.
+export interface CardGridLesson extends LessonBase {
+  type: "cardGrid";
+  content: { cards: CardGridCard[] };
+}
+
 export interface CustomHtmlLesson extends LessonBase {
   type: "html";
   content: { html: string };
@@ -126,6 +141,7 @@ export type Lesson =
   | MatchingLesson
   | DialLesson
   | PipelineLesson
+  | CardGridLesson
   | CustomHtmlLesson
   | EmbedLesson
   | ExamBreakdownLesson;

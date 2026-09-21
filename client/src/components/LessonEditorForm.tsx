@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import type {
   AccordionLesson,
+  CardGridLesson,
   DialLesson,
   ExamBreakdownLesson,
   FlashcardLesson,
@@ -388,6 +389,74 @@ function PipelineEditor({
   );
 }
 
+const CARD_GRID_MIN_CARDS = 2;
+
+function CardGridEditor({
+  content,
+  onChange,
+}: {
+  content: CardGridLesson["content"];
+  onChange: (content: CardGridLesson["content"]) => void;
+}) {
+  function updateCard(i: number, patch: Partial<CardGridLesson["content"]["cards"][number]>) {
+    onChange({ cards: content.cards.map((c, idx) => (idx === i ? { ...c, ...patch } : c)) });
+  }
+
+  function addCard() {
+    onChange({ cards: [...content.cards, { title: "", useWhen: "", looksLike: "", noteLabel: "", noteBody: "" }] });
+  }
+
+  function removeCard(i: number) {
+    if (content.cards.length <= CARD_GRID_MIN_CARDS) return;
+    onChange({ cards: content.cards.filter((_, idx) => idx !== i) });
+  }
+
+  return (
+    <div className="field-group">
+      <span className="field-hint">
+        The grid always lays out 3 cards per row and wraps (centering any leftover row) beyond that - add as many
+        cards as you like, at least {CARD_GRID_MIN_CARDS}.
+      </span>
+      {content.cards.map((card, i) => (
+        <fieldset key={i} className="editor-question">
+          <label className="field">
+            Title
+            <input value={card.title} onChange={(e) => updateCard(i, { title: e.target.value })} />
+          </label>
+          <label className="field">
+            Use when
+            <textarea rows={2} value={card.useWhen} onChange={(e) => updateCard(i, { useWhen: e.target.value })} />
+          </label>
+          <label className="field">
+            Looks like
+            <textarea
+              rows={2}
+              value={card.looksLike}
+              onChange={(e) => updateCard(i, { looksLike: e.target.value })}
+            />
+          </label>
+          <label className="field">
+            Note label
+            <input value={card.noteLabel} onChange={(e) => updateCard(i, { noteLabel: e.target.value })} />
+          </label>
+          <label className="field">
+            Note text
+            <textarea rows={2} value={card.noteBody} onChange={(e) => updateCard(i, { noteBody: e.target.value })} />
+          </label>
+          <div className="editor-row-actions">
+            <button type="button" onClick={() => removeCard(i)} disabled={content.cards.length <= CARD_GRID_MIN_CARDS}>
+              Remove card
+            </button>
+          </div>
+        </fieldset>
+      ))}
+      <button type="button" onClick={addCard}>
+        Add card
+      </button>
+    </div>
+  );
+}
+
 function ExamBreakdownEditor({
   content,
   onChange,
@@ -501,6 +570,8 @@ export function LessonEditorForm({
       return <DialEditor content={lesson.content} onChange={onChange} />;
     case "pipeline":
       return <PipelineEditor content={lesson.content} onChange={onChange} />;
+    case "cardGrid":
+      return <CardGridEditor content={lesson.content} onChange={onChange} />;
     case "html":
       return (
         <label className="field">

@@ -74,6 +74,24 @@ const PipelineContentSchema = z.object({
   steps: z.array(z.object({ title: z.string(), body: z.string() })).min(2).max(7),
 });
 
+// A grid of comparison cards, always laid out 3 per row and wrapping (and
+// centering incomplete rows) beyond that - so at least 2 cards, since
+// comparing needs something to compare against, and no upper cap since
+// extra cards just add rows rather than crowding a fixed shape.
+const CardGridContentSchema = z.object({
+  cards: z
+    .array(
+      z.object({
+        title: z.string(),
+        useWhen: z.string(),
+        looksLike: z.string(),
+        noteLabel: z.string(),
+        noteBody: z.string(),
+      })
+    )
+    .min(2),
+});
+
 const CustomHtmlContentSchema = z.object({
   // Sanitized as part of parsing itself, not in a separate step someone
   // could forget to call - every write path (create, save, seed, the Rise
@@ -153,6 +171,11 @@ export const PipelineLessonSchema = LessonBaseSchema.extend({
   content: PipelineContentSchema,
 });
 
+export const CardGridLessonSchema = LessonBaseSchema.extend({
+  type: z.literal("cardGrid"),
+  content: CardGridContentSchema,
+});
+
 export const CustomHtmlLessonSchema = LessonBaseSchema.extend({
   type: z.literal("html"),
   content: CustomHtmlContentSchema,
@@ -179,6 +202,7 @@ export const LessonSchema = z.discriminatedUnion("type", [
   MatchingLessonSchema,
   DialLessonSchema,
   PipelineLessonSchema,
+  CardGridLessonSchema,
   CustomHtmlLessonSchema,
   EmbedLessonSchema,
   ExamBreakdownLessonSchema,
@@ -195,6 +219,7 @@ export type AccordionLesson = z.infer<typeof AccordionLessonSchema>;
 export type MatchingLesson = z.infer<typeof MatchingLessonSchema>;
 export type DialLesson = z.infer<typeof DialLessonSchema>;
 export type PipelineLesson = z.infer<typeof PipelineLessonSchema>;
+export type CardGridLesson = z.infer<typeof CardGridLessonSchema>;
 export type CustomHtmlLesson = z.infer<typeof CustomHtmlLessonSchema>;
 export type EmbedLesson = z.infer<typeof EmbedLessonSchema>;
 export type ExamBreakdownLesson = z.infer<typeof ExamBreakdownLessonSchema>;

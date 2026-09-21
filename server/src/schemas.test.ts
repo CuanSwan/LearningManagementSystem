@@ -125,6 +125,32 @@ const validModule = {
       },
     },
     {
+      lessonId: "l14",
+      type: "cardGrid",
+      schemaVersion: 1,
+      source: "human",
+      wordingStyle: "official",
+      order: 14,
+      content: {
+        cards: [
+          {
+            title: "Structured data",
+            useWhen: "Consistency and reliability matter most.",
+            looksLike: "Financial transactions, employee records, inventory counts.",
+            noteLabel: "Why it wins",
+            noteBody: "Enables precise queries, enforced rules, reliable reporting.",
+          },
+          {
+            title: "Semi-structured data",
+            useWhen: "The schema needs to evolve quickly.",
+            looksLike: "Application logs, API integrations.",
+            noteLabel: "Why it wins",
+            noteBody: "Formats like JSON handle flexibility practically.",
+          },
+        ],
+      },
+    },
+    {
       lessonId: "l9",
       type: "html",
       schemaVersion: 1,
@@ -155,7 +181,7 @@ const validModule = {
 };
 
 describe("ModuleSchema", () => {
-  it("accepts a module with all thirteen lesson types", () => {
+  it("accepts a module with all fourteen lesson types", () => {
     expect(() => parseModule(validModule)).not.toThrow();
   });
 
@@ -353,6 +379,35 @@ describe("ModuleSchema", () => {
           wordingStyle: "official",
           order: 1,
           content: { steps: Array.from({ length: 8 }, (_, i) => ({ title: `Step ${i}`, body: "Too many." })) },
+        },
+      ],
+    };
+    const result = ModuleSchema.safeParse(invalid);
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a card grid lesson with fewer than 2 cards", () => {
+    const invalid = {
+      ...validModule,
+      lessons: [
+        {
+          lessonId: "l14",
+          type: "cardGrid",
+          schemaVersion: 1,
+          source: "human",
+          wordingStyle: "official",
+          order: 1,
+          content: {
+            cards: [
+              {
+                title: "Only card",
+                useWhen: "Not enough to compare against.",
+                looksLike: "Just one option.",
+                noteLabel: "Watch for",
+                noteBody: "Nothing to weigh it against.",
+              },
+            ],
+          },
         },
       ],
     };

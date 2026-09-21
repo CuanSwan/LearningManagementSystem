@@ -71,6 +71,13 @@ describe("createBlankLesson", () => {
     expect(lesson.content).toEqual({ steps: [{ title: "", body: "" }, { title: "", body: "" }] });
   });
 
+  it("creates a card grid lesson with two blank cards, matching the minimum comparison count", () => {
+    const lesson = createBlankLesson("cardGrid", 1);
+    expect(lesson.type).toBe("cardGrid");
+    const blankCard = { title: "", useWhen: "", looksLike: "", noteLabel: "", noteBody: "" };
+    expect(lesson.content).toEqual({ cards: [blankCard, blankCard] });
+  });
+
   it("creates an exam breakdown lesson with sensible closed-book defaults", () => {
     const lesson = createBlankLesson("examBreakdown", 1);
     expect(lesson.type).toBe("examBreakdown");

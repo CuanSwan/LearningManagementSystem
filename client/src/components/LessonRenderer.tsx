@@ -1,5 +1,6 @@
 import type { Lesson } from "../types.js";
 import { AccordionLesson } from "./AccordionLesson.js";
+import { CardGridLesson } from "./CardGridLesson.js";
 import { CustomHtmlLesson } from "./CustomHtmlLesson.js";
 import { DiagramLesson } from "./DiagramLesson.js";
 import { DialLesson } from "./DialLesson.js";
@@ -35,6 +36,8 @@ function renderContent(lesson: Lesson, isComplete: boolean, onComplete: () => vo
       return <DialLesson content={lesson.content} isComplete={isComplete} onComplete={onComplete} />;
     case "pipeline":
       return <PipelineLesson content={lesson.content} isComplete={isComplete} onComplete={onComplete} />;
+    case "cardGrid":
+      return <CardGridLesson content={lesson.content} isComplete={isComplete} onComplete={onComplete} />;
     case "html":
       return <CustomHtmlLesson content={lesson.content} isComplete={isComplete} onComplete={onComplete} />;
     case "embed":

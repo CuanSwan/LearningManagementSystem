@@ -16,6 +16,7 @@ export const LESSON_TYPES: LessonType[] = [
   "matching",
   "dial",
   "pipeline",
+  "cardGrid",
   "html",
   "embed",
 ];
@@ -31,6 +32,7 @@ const LESSON_TYPE_LABELS: Record<LessonType, string> = {
   matching: "Matching",
   dial: "Dial",
   pipeline: "Pipeline Stages",
+  cardGrid: "Card Grid",
   html: "Custom HTML",
   embed: "Embed (iframe)",
   examBreakdown: "Exam Breakdown",
@@ -70,6 +72,8 @@ export function describeLesson(lesson: Lesson): string {
       return lesson.content.stages[0]?.title || "(empty)";
     case "pipeline":
       return lesson.content.steps[0]?.title || "(empty)";
+    case "cardGrid":
+      return lesson.content.cards[0]?.title || "(empty)";
     case "html":
       return textPreview(lesson.content.html) || "(empty)";
     case "embed":
@@ -122,6 +126,10 @@ export function createBlankLesson(type: LessonType, order: number): Lesson {
       return { ...base, type, content: { stages: [{ title: "", body: "" }, { title: "", body: "" }] } };
     case "pipeline":
       return { ...base, type, content: { steps: [{ title: "", body: "" }, { title: "", body: "" }] } };
+    case "cardGrid": {
+      const blankCard = { title: "", useWhen: "", looksLike: "", noteLabel: "", noteBody: "" };
+      return { ...base, type, content: { cards: [{ ...blankCard }, { ...blankCard }] } };
+    }
     case "html":
       return { ...base, type, content: { html: "" } };
     case "embed":
