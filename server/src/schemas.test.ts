@@ -97,6 +97,110 @@ const validModule = {
       },
     },
     {
+      lessonId: "l12",
+      type: "dial",
+      schemaVersion: 1,
+      source: "human",
+      wordingStyle: "official",
+      order: 12,
+      content: {
+        stages: [
+          { title: "Anchoring", body: "Setting the first offer to influence the negotiation range." },
+          { title: "Reciprocity", body: "Concessions tend to be met with concessions." },
+        ],
+      },
+    },
+    {
+      lessonId: "l13",
+      type: "pipeline",
+      schemaVersion: 1,
+      source: "human",
+      wordingStyle: "official",
+      order: 13,
+      content: {
+        steps: [
+          { title: "Source systems", body: "CRM, ERP, websites, IoT sensors, manual entry." },
+          { title: "Data integration", body: "Moves data into a central location." },
+        ],
+      },
+    },
+    {
+      lessonId: "l15",
+      type: "presentationDial",
+      schemaVersion: 1,
+      source: "human",
+      wordingStyle: "official",
+      order: 15,
+      content: {
+        stages: [
+          { title: "Raw Facts and Figures", body: "Data refers to raw, unprocessed facts and figures." },
+          { title: "Data Is Raw", body: "A number by itself carries no meaning without context." },
+        ],
+      },
+    },
+    {
+      lessonId: "l16",
+      type: "hotspots",
+      schemaVersion: 1,
+      source: "human",
+      wordingStyle: "official",
+      order: 16,
+      content: {
+        tiles: [
+          {
+            title: "Volume",
+            body: "The sheer amount of data being generated and stored.",
+            example: "A supermarket chain records every till transaction across 1,400 stores, every day.",
+          },
+          {
+            title: "Velocity",
+            body: "The speed at which data arrives and has to be handled.",
+            example: "Card payments are screened for fraud in the seconds before the transaction is approved.",
+          },
+        ],
+      },
+    },
+    {
+      lessonId: "l17",
+      type: "treeScrub",
+      schemaVersion: 1,
+      source: "human",
+      wordingStyle: "official",
+      order: 17,
+      content: {
+        nodes: [
+          { title: "Data Owner", body: "Accountable for a specific data domain.", parentIndex: 0 },
+          { title: "Data Steward", body: "Defines business rules, resolves quality disputes.", parentIndex: 0 },
+        ],
+      },
+    },
+    {
+      lessonId: "l14",
+      type: "cardGrid",
+      schemaVersion: 1,
+      source: "human",
+      wordingStyle: "official",
+      order: 14,
+      content: {
+        cards: [
+          {
+            title: "Structured data",
+            useWhen: "Consistency and reliability matter most.",
+            looksLike: "Financial transactions, employee records, inventory counts.",
+            noteLabel: "Why it wins",
+            noteBody: "Enables precise queries, enforced rules, reliable reporting.",
+          },
+          {
+            title: "Semi-structured data",
+            useWhen: "The schema needs to evolve quickly.",
+            looksLike: "Application logs, API integrations.",
+            noteLabel: "Why it wins",
+            noteBody: "Formats like JSON handle flexibility practically.",
+          },
+        ],
+      },
+    },
+    {
       lessonId: "l9",
       type: "html",
       schemaVersion: 1,
@@ -127,7 +231,7 @@ const validModule = {
 };
 
 describe("ModuleSchema", () => {
-  it("accepts a module with all eleven lesson types", () => {
+  it("accepts a module with all seventeen lesson types", () => {
     expect(() => parseModule(validModule)).not.toThrow();
   });
 
@@ -249,6 +353,306 @@ describe("ModuleSchema", () => {
           wordingStyle: "official",
           order: 1,
           content: { pairs: [{ prompt: "BATNA", match: "Best Alternative To a Negotiated Agreement" }] },
+        },
+      ],
+    };
+    const result = ModuleSchema.safeParse(invalid);
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a dial lesson with fewer than 2 stages", () => {
+    const invalid = {
+      ...validModule,
+      lessons: [
+        {
+          lessonId: "l12",
+          type: "dial",
+          schemaVersion: 1,
+          source: "human",
+          wordingStyle: "official",
+          order: 1,
+          content: { stages: [{ title: "Only stage", body: "Not enough to step between." }] },
+        },
+      ],
+    };
+    const result = ModuleSchema.safeParse(invalid);
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a dial lesson with more than 20 stages", () => {
+    const invalid = {
+      ...validModule,
+      lessons: [
+        {
+          lessonId: "l12",
+          type: "dial",
+          schemaVersion: 1,
+          source: "human",
+          wordingStyle: "official",
+          order: 1,
+          content: { stages: Array.from({ length: 21 }, (_, i) => ({ title: `Stage ${i}`, body: "Too many." })) },
+        },
+      ],
+    };
+    const result = ModuleSchema.safeParse(invalid);
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a pipeline lesson with fewer than 2 steps", () => {
+    const invalid = {
+      ...validModule,
+      lessons: [
+        {
+          lessonId: "l13",
+          type: "pipeline",
+          schemaVersion: 1,
+          source: "human",
+          wordingStyle: "official",
+          order: 1,
+          content: { steps: [{ title: "Only step", body: "Not enough to track progress across." }] },
+        },
+      ],
+    };
+    const result = ModuleSchema.safeParse(invalid);
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a pipeline lesson with more than 7 steps", () => {
+    const invalid = {
+      ...validModule,
+      lessons: [
+        {
+          lessonId: "l13",
+          type: "pipeline",
+          schemaVersion: 1,
+          source: "human",
+          wordingStyle: "official",
+          order: 1,
+          content: { steps: Array.from({ length: 8 }, (_, i) => ({ title: `Step ${i}`, body: "Too many." })) },
+        },
+      ],
+    };
+    const result = ModuleSchema.safeParse(invalid);
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a presentation dial lesson with fewer than 2 stages", () => {
+    const invalid = {
+      ...validModule,
+      lessons: [
+        {
+          lessonId: "l15",
+          type: "presentationDial",
+          schemaVersion: 1,
+          source: "human",
+          wordingStyle: "official",
+          order: 1,
+          content: { stages: [{ title: "Only stage", body: "Not enough to step between." }] },
+        },
+      ],
+    };
+    const result = ModuleSchema.safeParse(invalid);
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a presentation dial lesson with more than 20 stages", () => {
+    const invalid = {
+      ...validModule,
+      lessons: [
+        {
+          lessonId: "l15",
+          type: "presentationDial",
+          schemaVersion: 1,
+          source: "human",
+          wordingStyle: "official",
+          order: 1,
+          content: { stages: Array.from({ length: 21 }, (_, i) => ({ title: `Stage ${i}`, body: "Too many." })) },
+        },
+      ],
+    };
+    const result = ModuleSchema.safeParse(invalid);
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a tree scrub lesson with fewer than 2 nodes", () => {
+    const invalid = {
+      ...validModule,
+      lessons: [
+        {
+          lessonId: "l17",
+          type: "treeScrub",
+          schemaVersion: 1,
+          source: "human",
+          wordingStyle: "official",
+          order: 1,
+          content: { nodes: [{ title: "Root only", body: "Not a tree by itself.", parentIndex: 0 }] },
+        },
+      ],
+    };
+    const result = ModuleSchema.safeParse(invalid);
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a tree scrub lesson with more than 20 nodes", () => {
+    const invalid = {
+      ...validModule,
+      lessons: [
+        {
+          lessonId: "l17",
+          type: "treeScrub",
+          schemaVersion: 1,
+          source: "human",
+          wordingStyle: "official",
+          order: 1,
+          content: {
+            nodes: Array.from({ length: 21 }, (_, i) => ({
+              title: `Node ${i}`,
+              body: "Too many.",
+              parentIndex: 0,
+            })),
+          },
+        },
+      ],
+    };
+    const result = ModuleSchema.safeParse(invalid);
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a tree scrub lesson where a node's parentIndex points at itself or a later node", () => {
+    const invalid = {
+      ...validModule,
+      lessons: [
+        {
+          lessonId: "l17",
+          type: "treeScrub",
+          schemaVersion: 1,
+          source: "human",
+          wordingStyle: "official",
+          order: 1,
+          content: {
+            nodes: [
+              { title: "Root", body: "The root.", parentIndex: 0 },
+              { title: "Self-referencing", body: "Points at itself.", parentIndex: 1 },
+            ],
+          },
+        },
+      ],
+    };
+    const result = ModuleSchema.safeParse(invalid);
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a tree scrub lesson where a node's parentIndex points forward at a node defined later", () => {
+    const invalid = {
+      ...validModule,
+      lessons: [
+        {
+          lessonId: "l17",
+          type: "treeScrub",
+          schemaVersion: 1,
+          source: "human",
+          wordingStyle: "official",
+          order: 1,
+          content: {
+            nodes: [
+              { title: "Root", body: "The root.", parentIndex: 0 },
+              { title: "Points ahead", body: "References node 2, which comes later.", parentIndex: 2 },
+              { title: "Later node", body: "Defined after the node pointing at it.", parentIndex: 0 },
+            ],
+          },
+        },
+      ],
+    };
+    const result = ModuleSchema.safeParse(invalid);
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts a tree scrub lesson with several nodes sharing the same parentIndex", () => {
+    const valid = {
+      ...validModule,
+      lessons: [
+        {
+          lessonId: "l17",
+          type: "treeScrub",
+          schemaVersion: 1,
+          source: "human",
+          wordingStyle: "official",
+          order: 1,
+          content: {
+            nodes: [
+              { title: "Root", body: "The root.", parentIndex: 0 },
+              { title: "Child A", body: "First sibling.", parentIndex: 0 },
+              { title: "Child B", body: "Second sibling.", parentIndex: 0 },
+              { title: "Child C", body: "Third sibling.", parentIndex: 0 },
+            ],
+          },
+        },
+      ],
+    };
+    expect(ModuleSchema.safeParse(valid).success).toBe(true);
+  });
+
+  it("rejects a hotspots lesson with fewer than 2 tiles", () => {
+    const invalid = {
+      ...validModule,
+      lessons: [
+        {
+          lessonId: "l16",
+          type: "hotspots",
+          schemaVersion: 1,
+          source: "human",
+          wordingStyle: "official",
+          order: 1,
+          content: { tiles: [{ title: "Only tile", body: "Not enough to compare.", example: "N/A" }] },
+        },
+      ],
+    };
+    const result = ModuleSchema.safeParse(invalid);
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts a hotspots lesson with more than 8 tiles (wraps rather than crowds)", () => {
+    const valid = {
+      ...validModule,
+      lessons: [
+        {
+          lessonId: "l16",
+          type: "hotspots",
+          schemaVersion: 1,
+          source: "human",
+          wordingStyle: "official",
+          order: 1,
+          content: {
+            tiles: Array.from({ length: 12 }, (_, i) => ({ title: `Tile ${i}`, body: "Plenty.", example: "N/A" })),
+          },
+        },
+      ],
+    };
+    expect(ModuleSchema.safeParse(valid).success).toBe(true);
+  });
+
+  it("rejects a card grid lesson with fewer than 2 cards", () => {
+    const invalid = {
+      ...validModule,
+      lessons: [
+        {
+          lessonId: "l14",
+          type: "cardGrid",
+          schemaVersion: 1,
+          source: "human",
+          wordingStyle: "official",
+          order: 1,
+          content: {
+            cards: [
+              {
+                title: "Only card",
+                useWhen: "Not enough to compare against.",
+                looksLike: "Just one option.",
+                noteLabel: "Watch for",
+                noteBody: "Nothing to weigh it against.",
+              },
+            ],
+          },
         },
       ],
     };

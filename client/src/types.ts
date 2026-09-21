@@ -76,6 +76,88 @@ export interface MatchingLesson extends LessonBase {
   content: { pairs: MatchingPair[] };
 }
 
+export interface DialStage {
+  title: string;
+  body: string;
+}
+
+// A ring of selectable stages arranged around a dial - the number of
+// stages *is* the number of circles, there's no separate count field.
+export interface DialLesson extends LessonBase {
+  type: "dial";
+  content: { stages: DialStage[] };
+}
+
+export interface PipelineStep {
+  title: string;
+  body: string;
+}
+
+// A horizontal progress track - the same title/body-per-step shape as the
+// dial, capped lower (7) since every step's label sits inline in one row.
+export interface PipelineLesson extends LessonBase {
+  type: "pipeline";
+  content: { steps: PipelineStep[] };
+}
+
+export interface PresentationDialStage {
+  title: string;
+  body: string;
+}
+
+// A "presentation mode" dial - unlike DialLesson, which rings every stage
+// around the circle at once, this only ever shows a 4-wide trailing window
+// of stages ending at the current one, navigated with prev/next.
+export interface PresentationDialLesson extends LessonBase {
+  type: "presentationDial";
+  content: { stages: PresentationDialStage[] };
+}
+
+export interface CardGridCard {
+  title: string;
+  useWhen: string;
+  looksLike: string;
+  noteLabel: string;
+  noteBody: string;
+}
+
+// A grid of comparison cards, always laid out 3 per row and wrapping (and
+// centering incomplete rows) beyond that.
+export interface CardGridLesson extends LessonBase {
+  type: "cardGrid";
+  content: { cards: CardGridCard[] };
+}
+
+export interface HotspotTile {
+  title: string;
+  body: string;
+  example: string;
+}
+
+// A single-row grid of clickable tiles, each popping open a note above
+// itself on click (only one open at a time).
+export interface HotspotsLesson extends LessonBase {
+  type: "hotspots";
+  content: { tiles: HotspotTile[] };
+}
+
+export interface TreeScrubNode {
+  title: string;
+  body: string;
+  // Index into the same nodes array. Node 0 is always the root (its own
+  // parentIndex is unused); every other node's parentIndex must be an
+  // earlier index, which is what makes a cycle structurally impossible.
+  parentIndex: number;
+}
+
+// A scroll-scrubbed tree: branches grow and nodes fade in as the page
+// scrolls through a tall wrapper, with the view zooming out to keep
+// pace as more of the tree is revealed.
+export interface TreeScrubLesson extends LessonBase {
+  type: "treeScrub";
+  content: { nodes: TreeScrubNode[] };
+}
+
 export interface CustomHtmlLesson extends LessonBase {
   type: "html";
   content: { html: string };
@@ -100,6 +182,12 @@ export type Lesson =
   | FlashcardLesson
   | AccordionLesson
   | MatchingLesson
+  | DialLesson
+  | PipelineLesson
+  | PresentationDialLesson
+  | CardGridLesson
+  | HotspotsLesson
+  | TreeScrubLesson
   | CustomHtmlLesson
   | EmbedLesson
   | ExamBreakdownLesson;

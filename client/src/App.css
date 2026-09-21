@@ -1218,6 +1218,17 @@ a.path-snake-link:hover .path-snake-bubble {
   padding: 1.75rem 2rem;
 }
 
+/* Dynamic components (dial, pipeline, presentation dial, card grid) are
+   self-contained visuals in their own right - wrapping them in a bordered
+   card doubles up on framing. Drop the card chrome so they sit directly
+   on the page instead. */
+.student-lesson.is-floating {
+  background: none;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+
 .student-lesson-header {
   display: flex;
   align-items: center;
@@ -1488,6 +1499,741 @@ a.path-snake-link:hover .path-snake-bubble {
   font-size: 1.35rem;
   font-weight: 600;
   color: var(--theme-primary, #3e6259);
+}
+
+/* --- Dial lesson: a ring of selectable stages --- */
+
+.dial-lesson {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 2.5rem;
+  align-items: center;
+  width: 100%;
+}
+
+.dial-lesson-dial {
+  position: relative;
+  width: 260px;
+  height: 260px;
+}
+
+.dial-lesson-ring {
+  position: absolute;
+  inset: 17px;
+  border-radius: 999px;
+  border: 1px dashed var(--border-strong);
+}
+
+.dial-lesson-node {
+  /* width/height/font-size are set inline per node - they shrink as the
+     stage count grows, since the ring's radius is fixed. */
+  position: absolute;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-family: "Fira Code", monospace;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-sunken);
+  color: var(--text-primary);
+  transition: background 180ms ease, color 180ms ease, border-color 180ms ease;
+}
+
+.dial-lesson-node:hover {
+  border-color: var(--theme-primary, #3e6259);
+}
+
+.dial-lesson-node[aria-selected="true"] {
+  background: var(--theme-primary, #3e6259);
+  color: #fff;
+  border-color: var(--theme-primary, #3e6259);
+}
+
+.dial-lesson-hub {
+  position: absolute;
+  left: 68px;
+  top: 99px;
+  width: 124px;
+  height: 62px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.dial-lesson-hub-count {
+  font-family: "Oranienbaum", serif;
+  font-size: 1.1rem;
+  line-height: 1.15;
+}
+
+.dial-lesson-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.dial-lesson-counter {
+  font-family: "Fira Code", monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--theme-primary, #3e6259);
+}
+
+.dial-lesson-title {
+  font-family: "Oranienbaum", serif;
+  font-size: 1.6rem;
+  line-height: 1.15;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.dial-lesson-body {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.dial-lesson-hint {
+  font-size: 0.82rem;
+  color: var(--text-tertiary);
+}
+
+@media (max-width: 640px) {
+  .dial-lesson {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+}
+
+/* --- Pipeline lesson: a horizontal track of selectable steps --- */
+
+.pipeline-lesson {
+  width: 100%;
+}
+
+.pipeline-lesson-track {
+  position: relative;
+  padding-top: 0.4rem;
+}
+
+.pipeline-lesson-rail,
+.pipeline-lesson-fill {
+  position: absolute;
+  top: 1rem;
+  height: 2px;
+}
+
+.pipeline-lesson-rail {
+  left: 8%;
+  right: 8%;
+  background: var(--border-strong);
+}
+
+.pipeline-lesson-fill {
+  left: 8%;
+  width: 0;
+  background: var(--theme-primary, #3e6259);
+  transition: width 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.pipeline-lesson-stations {
+  position: relative;
+  display: grid;
+  /* grid-template-columns is set inline per render - it depends on the
+     step count, so the spacing stays even whether there are 2 or 7. */
+  gap: 1rem;
+}
+
+.pipeline-lesson-station {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.6rem;
+  padding: 0 0.25rem 0.4rem;
+  border-radius: 8px;
+  cursor: pointer;
+  opacity: 0.5;
+  background: none;
+  border: 0;
+  font: inherit;
+  transition: opacity 180ms ease-out;
+}
+
+.pipeline-lesson-station:hover,
+.pipeline-lesson-station.reached {
+  opacity: 1;
+}
+
+.pipeline-lesson-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  border: 3px solid var(--theme-primary, #3e6259);
+  background: var(--surface-card);
+  transition: background 180ms ease-out, box-shadow 180ms ease-out;
+}
+
+.pipeline-lesson-station.reached .pipeline-lesson-dot {
+  background: var(--theme-primary, #3e6259);
+}
+
+.pipeline-lesson-station.active .pipeline-lesson-dot {
+  box-shadow:
+    0 0 0 3px var(--surface-card),
+    0 0 0 5px var(--theme-primary, #3e6259);
+}
+
+.pipeline-lesson-meta {
+  font-family: "Fira Code", monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.pipeline-lesson-station.active .pipeline-lesson-meta {
+  color: var(--theme-primary, #3e6259);
+}
+
+.pipeline-lesson-title {
+  font-size: 0.92rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+
+.pipeline-lesson-body {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.pipeline-lesson-actions {
+  margin-top: 1.75rem;
+  display: flex;
+  justify-content: center;
+}
+
+.pipeline-lesson-next {
+  font-family: "Fira Code", monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--theme-primary, #3e6259);
+  border: 1px solid var(--theme-primary, #3e6259);
+  border-radius: 999px;
+  padding: 0.45rem 1rem;
+  cursor: pointer;
+  transition: opacity 180ms ease-out;
+}
+
+.pipeline-lesson-next:hover {
+  opacity: 0.85;
+}
+
+@media (max-width: 640px) {
+  .pipeline-lesson-stations {
+    grid-template-columns: 1fr 1fr !important;
+    row-gap: 1.75rem;
+  }
+
+  .pipeline-lesson-rail,
+  .pipeline-lesson-fill {
+    display: none;
+  }
+}
+
+/* --- Presentation dial lesson: a ring of up to 4 visible stage-number
+   dots sitting behind a concentric card, the two centered on the same
+   point (like the source mockup's overlapping dial-wrap + card-zone),
+   flanked by round prev/next buttons. Only 4 dots ever exist - they sit
+   on an arc from upper-left down to the rightmost point (the current
+   stage), rather than a full ring, so the numbers they show "cycle"
+   through those 4 fixed slots as you page through up to 20 stages
+   instead of ringing every stage around a full circle at once. --- */
+
+.presentationdial-lesson {
+  width: 100%;
+}
+
+.presentationdial-lesson-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 1rem 0;
+}
+
+.presentationdial-lesson-centerzone {
+  position: relative;
+  flex: none;
+  width: 260px;
+  height: 260px;
+}
+
+.presentationdial-lesson-ring {
+  position: absolute;
+  inset: 12px;
+  border-radius: 999px;
+  border: 1px dashed var(--border-strong);
+}
+
+/* The nodes themselves sit at fixed positions (see nodeBasePosition in
+   the component) - it's this wrapper that physically rotates them into
+   place each step, exactly like the source mockup's dial-wrap, so the
+   surviving nodes swing around the ring instead of jumping. */
+.presentationdial-lesson-nodes {
+  position: absolute;
+  inset: 0;
+  transition: transform 650ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.presentationdial-lesson-node {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Fira Code", monospace;
+  font-size: 0.66rem;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-sunken);
+  color: var(--text-secondary);
+  transition: background 180ms ease, color 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+
+.presentationdial-lesson-node.active {
+  background: var(--theme-primary, #3e6259);
+  color: #fff;
+  border-color: var(--theme-primary, #3e6259);
+  transform: scale(1.15);
+}
+
+/* A slot whose offset falls outside the stage list (no "before the
+   first" stage, or running out of "ahead" stages near the end) - the
+   circle stays in place to keep the ring's 4 fixed positions, just with
+   no number in it. */
+.presentationdial-lesson-node.is-blank {
+  border-style: dashed;
+  border-color: var(--border-subtle);
+  background: none;
+}
+
+/* Counter-rotates against the wrapper's spin so the digits stay upright
+   while the ring turns underneath them. */
+.presentationdial-lesson-node span {
+  display: inline-block;
+  transition: transform 650ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.presentationdial-lesson-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  box-sizing: border-box;
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+  width: 200px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  box-shadow: 0 16px 40px var(--shadow-color);
+  padding: 1.5rem 1.5rem;
+  text-align: center;
+  transition: transform 320ms cubic-bezier(0.4, 0, 0.2, 1), opacity 320ms ease;
+}
+
+.presentationdial-lesson-card.is-collapsed {
+  transform: translate(-50%, -50%) scale(0.08);
+  opacity: 0;
+}
+
+.presentationdial-lesson-counter {
+  display: block;
+  font-family: "Fira Code", monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  color: var(--text-tertiary);
+  margin-bottom: 0.6rem;
+}
+
+.presentationdial-lesson-title {
+  margin: 0 0 0.6rem;
+  font-family: "Oranienbaum", serif;
+  font-size: 1.15rem;
+  line-height: 1.2;
+  color: var(--text-primary);
+}
+
+.presentationdial-lesson-body {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.presentationdial-lesson-nav {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid var(--border-medium);
+  background: var(--surface-card);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color 150ms ease, color 150ms ease, opacity 150ms ease;
+}
+
+.presentationdial-lesson-nav svg {
+  width: 18px;
+  height: 18px;
+}
+
+.presentationdial-lesson-nav:hover:not(:disabled) {
+  border-color: var(--theme-primary, #3e6259);
+  color: var(--theme-primary, #3e6259);
+}
+
+.presentationdial-lesson-nav:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* --- Card grid lesson: a wrapping, always-centered grid of comparison
+   cards, 3 per row - flexbox rather than CSS grid, since flex-wrap is
+   what centers an incomplete last row (2 cards, or 1 leftover after a
+   full row) with no extra markup. --- */
+
+.cardgrid-lesson {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.25rem;
+  width: 100%;
+}
+
+.cardgrid-lesson-card {
+  flex: 0 1 calc((100% - 2 * 1.25rem) / 3);
+  min-width: 220px;
+  max-width: calc((100% - 2 * 1.25rem) / 3);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  text-align: left;
+  gap: 0.75rem;
+  padding: 1.1rem 1.25rem 1.25rem;
+  background: var(--surface-card);
+  border: 1px solid var(--border-medium);
+  border-top: 3px solid var(--border-medium);
+  border-radius: 8px;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  opacity: 0.85;
+  transition: border-color 200ms ease-out, opacity 200ms ease-out, box-shadow 200ms ease-out;
+}
+
+.cardgrid-lesson-card:hover {
+  opacity: 1;
+}
+
+.cardgrid-lesson-card.is-selected {
+  opacity: 1;
+  border-color: var(--theme-primary, #3e6259);
+  border-top-color: var(--theme-primary, #3e6259);
+  box-shadow: 0 2px 10px var(--shadow-color);
+}
+
+.cardgrid-lesson-title {
+  margin: 0;
+  font-family: "Oranienbaum", serif;
+  font-size: 1.25rem;
+  line-height: 1.2;
+  color: var(--text-primary);
+}
+
+.cardgrid-lesson-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.cardgrid-lesson-note {
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.cardgrid-lesson-label {
+  font-family: "Fira Code", monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.cardgrid-lesson-text {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.cardgrid-lesson-hint {
+  margin-top: auto;
+  align-self: flex-end;
+  font-size: 0.8rem;
+  color: var(--text-tertiary);
+}
+
+@media (max-width: 640px) {
+  .cardgrid-lesson-card {
+    flex-basis: 100%;
+    max-width: 100%;
+  }
+}
+
+/* --- Hotspots lesson: a wrapping, always-centered grid of clickable
+   tiles (5 per row, same flex-wrap + justify-content: center technique
+   as the card grid lesson, just 5 columns instead of 3), each popping
+   open a note above itself on click (only one open at a time). The
+   popover's background stays a fixed dark tone in both themes - an
+   inverted callout, not a themed surface, same idea as a native
+   tooltip. --- */
+
+.hotspots-lesson {
+  width: 100%;
+}
+
+.hotspots-lesson-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+.hotspots-lesson-tile-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 0 1 calc((100% - 4 * 0.6rem) / 5);
+  min-width: 100px;
+  max-width: calc((100% - 4 * 0.6rem) / 5);
+}
+
+.hotspots-lesson-tile {
+  width: 100%;
+  height: 92px;
+  border-radius: 10px;
+  border: 1px solid var(--border-medium);
+  background: var(--surface-card);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Oranienbaum", serif;
+  font-size: 1.25rem;
+  line-height: 1.15;
+  cursor: pointer;
+  padding: 0.5rem;
+  text-align: center;
+  transition: border-color 200ms ease, background 200ms ease;
+}
+
+.hotspots-lesson-tile:hover {
+  border-color: var(--theme-primary, #3e6259);
+}
+
+.hotspots-lesson-tile.active {
+  border-color: var(--theme-primary, #3e6259);
+  background: var(--surface-sunken);
+}
+
+.hotspots-lesson-tile-index {
+  font-family: "Fira Code", monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  color: var(--text-tertiary);
+}
+
+.hotspots-lesson-popover {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 0.85rem;
+  width: 240px;
+  max-width: min(240px, calc(100vw - 2rem));
+  background: #1a1a18;
+  color: #f4f1ec;
+  border-radius: 10px;
+  padding: 1rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  box-shadow: 0 12px 28px var(--shadow-color-strong);
+  z-index: 5;
+}
+
+.hotspots-lesson-popover-label {
+  font-family: "Fira Code", monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.65;
+}
+
+.hotspots-lesson-popover-body {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.hotspots-lesson-popover-example {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  opacity: 0.65;
+}
+
+@media (max-width: 640px) {
+  .hotspots-lesson-tile-wrap {
+    flex-basis: calc((100% - 0.6rem) / 2);
+    max-width: calc((100% - 0.6rem) / 2);
+  }
+}
+
+/* --- Tree scrub lesson: a tall scroll-driven wrapper with a sticky inner
+   box. The box's aspect-ratio matches the SVG's fixed coordinate space
+   (640/820) exactly, since the HTML bubble layer reprojects each node's
+   position into the SVG's current (zooming) viewBox as a left/top
+   percentage - any mismatch between the box's rendered aspect ratio and
+   the coordinate space's would throw that off. --- */
+
+.treescrub-lesson {
+  width: 100%;
+}
+
+.treescrub-lesson-wrapper {
+  position: relative;
+}
+
+.treescrub-lesson-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.treescrub-lesson-box {
+  position: relative;
+  width: min(92vw, 640px);
+  aspect-ratio: 640 / 820;
+  max-height: 86vh;
+  background: var(--surface-card);
+  border-radius: 16px;
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 16px 40px var(--shadow-color);
+  overflow: hidden;
+  /* Half the bubble's own width, used to clamp its centered position away
+     from the box's edges (see .treescrub-lesson-bubble's left/top) - a
+     pure percentage doesn't account for the bubble's fixed pixel width,
+     so on a narrower box (mobile) a bubble positioned near an edge would
+     otherwise get clipped by the overflow:hidden above. */
+  --treescrub-bubble-half: 78px;
+}
+
+.treescrub-lesson-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.treescrub-lesson-branch {
+  stroke: var(--theme-primary, #3e6259);
+  stroke-linecap: round;
+  fill: none;
+  opacity: 0.75;
+}
+
+.treescrub-lesson-dot {
+  fill: var(--theme-primary, #3e6259);
+  stroke: var(--surface-card);
+  stroke-width: 2;
+}
+
+.treescrub-lesson-bubbles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.treescrub-lesson-bubble {
+  position: absolute;
+  width: 150px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-medium);
+  border-radius: 10px;
+  padding: 0.55rem 0.7rem;
+  box-shadow: 0 8px 20px var(--shadow-color);
+  text-align: center;
+}
+
+.treescrub-lesson-bubble-title {
+  font-family: "Oranienbaum", serif;
+  font-size: 0.85rem;
+  line-height: 1.2;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.treescrub-lesson-bubble-body {
+  font-size: 0.7rem;
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
+
+.treescrub-lesson-progress {
+  position: absolute;
+  bottom: 0.75rem;
+  right: 0.9rem;
+  font-family: "Fira Code", monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+@media (max-width: 640px) {
+  .treescrub-lesson-box {
+    width: 96vw;
+    --treescrub-bubble-half: 62px;
+  }
+
+  .treescrub-lesson-bubble {
+    width: 120px;
+    padding: 0.45rem 0.55rem;
+  }
+
+  .treescrub-lesson-bubble-body {
+    display: none;
+  }
 }
 
 .matching-item.is-selected {

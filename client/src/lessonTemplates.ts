@@ -14,6 +14,12 @@ export const LESSON_TYPES: LessonType[] = [
   "flashcard",
   "accordion",
   "matching",
+  "dial",
+  "pipeline",
+  "presentationDial",
+  "cardGrid",
+  "hotspots",
+  "treeScrub",
   "html",
   "embed",
 ];
@@ -27,6 +33,12 @@ const LESSON_TYPE_LABELS: Record<LessonType, string> = {
   flashcard: "Flashcards",
   accordion: "Accordion",
   matching: "Matching",
+  dial: "Dial",
+  pipeline: "Pipeline Stages",
+  presentationDial: "Presentation Dial",
+  cardGrid: "Card Grid",
+  hotspots: "Hotspot Grid",
+  treeScrub: "Scroll Tree",
   html: "Custom HTML",
   embed: "Embed (iframe)",
   examBreakdown: "Exam Breakdown",
@@ -62,6 +74,18 @@ export function describeLesson(lesson: Lesson): string {
       return lesson.content.sections[0]?.title || "(empty)";
     case "matching":
       return lesson.content.pairs[0]?.prompt || "(empty)";
+    case "dial":
+      return lesson.content.stages[0]?.title || "(empty)";
+    case "pipeline":
+      return lesson.content.steps[0]?.title || "(empty)";
+    case "presentationDial":
+      return lesson.content.stages[0]?.title || "(empty)";
+    case "cardGrid":
+      return lesson.content.cards[0]?.title || "(empty)";
+    case "hotspots":
+      return lesson.content.tiles[0]?.title || "(empty)";
+    case "treeScrub":
+      return lesson.content.nodes[0]?.title || "(empty)";
     case "html":
       return textPreview(lesson.content.html) || "(empty)";
     case "embed":
@@ -110,6 +134,31 @@ export function createBlankLesson(type: LessonType, order: number): Lesson {
       return { ...base, type, content: { sections: [{ title: "", body: "" }] } };
     case "matching":
       return { ...base, type, content: { pairs: [{ prompt: "", match: "" }, { prompt: "", match: "" }] } };
+    case "dial":
+      return { ...base, type, content: { stages: [{ title: "", body: "" }, { title: "", body: "" }] } };
+    case "pipeline":
+      return { ...base, type, content: { steps: [{ title: "", body: "" }, { title: "", body: "" }] } };
+    case "presentationDial":
+      return { ...base, type, content: { stages: [{ title: "", body: "" }, { title: "", body: "" }] } };
+    case "cardGrid": {
+      const blankCard = { title: "", useWhen: "", looksLike: "", noteLabel: "", noteBody: "" };
+      return { ...base, type, content: { cards: [{ ...blankCard }, { ...blankCard }] } };
+    }
+    case "hotspots": {
+      const blankTile = { title: "", body: "", example: "" };
+      return { ...base, type, content: { tiles: [{ ...blankTile }, { ...blankTile }] } };
+    }
+    case "treeScrub":
+      return {
+        ...base,
+        type,
+        content: {
+          nodes: [
+            { title: "", body: "", parentIndex: 0 },
+            { title: "", body: "", parentIndex: 0 },
+          ],
+        },
+      };
     case "html":
       return { ...base, type, content: { html: "" } };
     case "embed":

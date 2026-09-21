@@ -59,6 +59,49 @@ describe("describeLesson", () => {
 });
 
 describe("createBlankLesson", () => {
+  it("creates a dial lesson with two blank stages, matching the minimum circle count", () => {
+    const lesson = createBlankLesson("dial", 1);
+    expect(lesson.type).toBe("dial");
+    expect(lesson.content).toEqual({ stages: [{ title: "", body: "" }, { title: "", body: "" }] });
+  });
+
+  it("creates a pipeline lesson with two blank steps, matching the minimum station count", () => {
+    const lesson = createBlankLesson("pipeline", 1);
+    expect(lesson.type).toBe("pipeline");
+    expect(lesson.content).toEqual({ steps: [{ title: "", body: "" }, { title: "", body: "" }] });
+  });
+
+  it("creates a presentation dial lesson with two blank stages, matching the minimum stage count", () => {
+    const lesson = createBlankLesson("presentationDial", 1);
+    expect(lesson.type).toBe("presentationDial");
+    expect(lesson.content).toEqual({ stages: [{ title: "", body: "" }, { title: "", body: "" }] });
+  });
+
+  it("creates a card grid lesson with two blank cards, matching the minimum comparison count", () => {
+    const lesson = createBlankLesson("cardGrid", 1);
+    expect(lesson.type).toBe("cardGrid");
+    const blankCard = { title: "", useWhen: "", looksLike: "", noteLabel: "", noteBody: "" };
+    expect(lesson.content).toEqual({ cards: [blankCard, blankCard] });
+  });
+
+  it("creates a hotspots lesson with two blank tiles, matching the minimum tile count", () => {
+    const lesson = createBlankLesson("hotspots", 1);
+    expect(lesson.type).toBe("hotspots");
+    const blankTile = { title: "", body: "", example: "" };
+    expect(lesson.content).toEqual({ tiles: [blankTile, blankTile] });
+  });
+
+  it("creates a tree scrub lesson with a root and one child, matching the minimum node count", () => {
+    const lesson = createBlankLesson("treeScrub", 1);
+    expect(lesson.type).toBe("treeScrub");
+    expect(lesson.content).toEqual({
+      nodes: [
+        { title: "", body: "", parentIndex: 0 },
+        { title: "", body: "", parentIndex: 0 },
+      ],
+    });
+  });
+
   it("creates an exam breakdown lesson with sensible closed-book defaults", () => {
     const lesson = createBlankLesson("examBreakdown", 1);
     expect(lesson.type).toBe("examBreakdown");

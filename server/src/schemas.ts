@@ -59,6 +59,85 @@ const MatchingContentSchema = z.object({
   pairs: z.array(z.object({ prompt: z.string(), match: z.string() })).min(2),
 });
 
+// The number of stages *is* the number of circles on the dial - there's no
+// separate "circle count" field, it's just stages.length. At least 2 so the
+// dial has something to step between; at most 20 so the ring stays legible
+// even as each node's size shrinks to fit them all.
+const DialContentSchema = z.object({
+  stages: z.array(z.object({ title: z.string(), body: z.string() })).min(2).max(20),
+});
+
+// A horizontal progress track - the same one-title-one-body-per-step shape
+// as the dial, just capped much lower (7) since every step's label sits
+// inline in a single row rather than shrinking into a small ring.
+const PipelineContentSchema = z.object({
+  steps: z.array(z.object({ title: z.string(), body: z.string() })).min(2).max(7),
+});
+
+// A "presentation mode" dial - unlike the dial above, which rings every
+// stage around the circle at once, this only ever shows a 4-wide trailing
+// window of stages ending at the current one, navigated with prev/next
+// rather than by clicking a stage directly. Same title/body-per-stage
+// shape and the same 2-20 bounds as the dial, since it's stepping
+// through the same kind of content, just windowed instead of full-ring.
+const PresentationDialContentSchema = z.object({
+  stages: z.array(z.object({ title: z.string(), body: z.string() })).min(2).max(20),
+});
+
+// A grid of comparison cards, always laid out 3 per row and wrapping (and
+// centering incomplete rows) beyond that - so at least 2 cards, since
+// comparing needs something to compare against, and no upper cap since
+// extra cards just add rows rather than crowding a fixed shape.
+const CardGridContentSchema = z.object({
+  cards: z
+    .array(
+      z.object({
+        title: z.string(),
+        useWhen: z.string(),
+        looksLike: z.string(),
+        noteLabel: z.string(),
+        noteBody: z.string(),
+      })
+    )
+    .min(2),
+});
+
+// A grid of clickable tiles (5 per row, wrapping and centering beyond
+// that, like the card grid), each popping open a note above itself on
+// click. At least 2 to be worth a grid; no upper cap since extra tiles
+// just add rows rather than crowding a fixed shape.
+const HotspotsContentSchema = z.object({
+  tiles: z.array(z.object({ title: z.string(), body: z.string(), example: z.string() })).min(2),
+});
+
+// A scroll-scrubbed tree: node 0 is always the root, and every other
+// node names its parent by array index. Requiring parentIndex < the
+// node's own index makes a cycle structurally impossible (a node can
+// only point at an already-defined, earlier node) and gives siblings
+// under the same parent for free - any number of nodes can share a
+// parentIndex, and the client's layout fans them out by angle instead
+// of stacking them. At least 2 (a lone root isn't a tree); capped at
+// 20 since the client renders every node's own screen position, and a
+// tree that large needs the zoom-on-scroll behavior to stay legible.
+const TreeScrubContentSchema = z.object({
+  nodes: z
+    .array(z.object({ title: z.string(), body: z.string(), parentIndex: z.number().int().nonnegative() }))
+    .min(2)
+    .max(20)
+    .superRefine((nodes, ctx) => {
+      nodes.forEach((node, i) => {
+        if (i === 0) return;
+        if (node.parentIndex >= i) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `Node ${i}'s parentIndex must reference an earlier node (got ${node.parentIndex})`,
+            path: [i, "parentIndex"],
+          });
+        }
+      });
+    }),
+});
+
 const CustomHtmlContentSchema = z.object({
   // Sanitized as part of parsing itself, not in a separate step someone
   // could forget to call - every write path (create, save, seed, the Rise
@@ -128,6 +207,36 @@ export const MatchingLessonSchema = LessonBaseSchema.extend({
   content: MatchingContentSchema,
 });
 
+export const DialLessonSchema = LessonBaseSchema.extend({
+  type: z.literal("dial"),
+  content: DialContentSchema,
+});
+
+export const PipelineLessonSchema = LessonBaseSchema.extend({
+  type: z.literal("pipeline"),
+  content: PipelineContentSchema,
+});
+
+export const PresentationDialLessonSchema = LessonBaseSchema.extend({
+  type: z.literal("presentationDial"),
+  content: PresentationDialContentSchema,
+});
+
+export const CardGridLessonSchema = LessonBaseSchema.extend({
+  type: z.literal("cardGrid"),
+  content: CardGridContentSchema,
+});
+
+export const HotspotsLessonSchema = LessonBaseSchema.extend({
+  type: z.literal("hotspots"),
+  content: HotspotsContentSchema,
+});
+
+export const TreeScrubLessonSchema = LessonBaseSchema.extend({
+  type: z.literal("treeScrub"),
+  content: TreeScrubContentSchema,
+});
+
 export const CustomHtmlLessonSchema = LessonBaseSchema.extend({
   type: z.literal("html"),
   content: CustomHtmlContentSchema,
@@ -152,6 +261,12 @@ export const LessonSchema = z.discriminatedUnion("type", [
   FlashcardLessonSchema,
   AccordionLessonSchema,
   MatchingLessonSchema,
+  DialLessonSchema,
+  PipelineLessonSchema,
+  PresentationDialLessonSchema,
+  CardGridLessonSchema,
+  HotspotsLessonSchema,
+  TreeScrubLessonSchema,
   CustomHtmlLessonSchema,
   EmbedLessonSchema,
   ExamBreakdownLessonSchema,
@@ -166,6 +281,12 @@ export type DiagramLesson = z.infer<typeof DiagramLessonSchema>;
 export type FlashcardLesson = z.infer<typeof FlashcardLessonSchema>;
 export type AccordionLesson = z.infer<typeof AccordionLessonSchema>;
 export type MatchingLesson = z.infer<typeof MatchingLessonSchema>;
+export type DialLesson = z.infer<typeof DialLessonSchema>;
+export type PipelineLesson = z.infer<typeof PipelineLessonSchema>;
+export type PresentationDialLesson = z.infer<typeof PresentationDialLessonSchema>;
+export type CardGridLesson = z.infer<typeof CardGridLessonSchema>;
+export type HotspotsLesson = z.infer<typeof HotspotsLessonSchema>;
+export type TreeScrubLesson = z.infer<typeof TreeScrubLessonSchema>;
 export type CustomHtmlLesson = z.infer<typeof CustomHtmlLessonSchema>;
 export type EmbedLesson = z.infer<typeof EmbedLessonSchema>;
 export type ExamBreakdownLesson = z.infer<typeof ExamBreakdownLessonSchema>;

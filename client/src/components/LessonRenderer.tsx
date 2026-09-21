@@ -1,14 +1,20 @@
 import type { Lesson } from "../types.js";
 import { AccordionLesson } from "./AccordionLesson.js";
+import { CardGridLesson } from "./CardGridLesson.js";
 import { CustomHtmlLesson } from "./CustomHtmlLesson.js";
 import { DiagramLesson } from "./DiagramLesson.js";
+import { DialLesson } from "./DialLesson.js";
 import { EmbedLesson } from "./EmbedLesson.js";
 import { ExamBreakdownLesson } from "./ExamBreakdownLesson.js";
 import { FlashcardLesson } from "./FlashcardLesson.js";
+import { HotspotsLesson } from "./HotspotsLesson.js";
 import { MatchingLesson } from "./MatchingLesson.js";
+import { PipelineLesson } from "./PipelineLesson.js";
 import { PracticalLesson } from "./PracticalLesson.js";
+import { PresentationDialLesson } from "./PresentationDialLesson.js";
 import { QuizLesson } from "./QuizLesson.js";
 import { TextLesson } from "./TextLesson.js";
+import { TreeScrubLesson } from "./TreeScrubLesson.js";
 import { VideoLesson } from "./VideoLesson.js";
 
 function renderContent(lesson: Lesson, isComplete: boolean, onComplete: () => void) {
@@ -29,6 +35,18 @@ function renderContent(lesson: Lesson, isComplete: boolean, onComplete: () => vo
       return <AccordionLesson content={lesson.content} isComplete={isComplete} onComplete={onComplete} />;
     case "matching":
       return <MatchingLesson content={lesson.content} isComplete={isComplete} onComplete={onComplete} />;
+    case "dial":
+      return <DialLesson content={lesson.content} isComplete={isComplete} onComplete={onComplete} />;
+    case "pipeline":
+      return <PipelineLesson content={lesson.content} isComplete={isComplete} onComplete={onComplete} />;
+    case "presentationDial":
+      return <PresentationDialLesson content={lesson.content} isComplete={isComplete} onComplete={onComplete} />;
+    case "cardGrid":
+      return <CardGridLesson content={lesson.content} isComplete={isComplete} onComplete={onComplete} />;
+    case "hotspots":
+      return <HotspotsLesson content={lesson.content} isComplete={isComplete} onComplete={onComplete} />;
+    case "treeScrub":
+      return <TreeScrubLesson content={lesson.content} isComplete={isComplete} onComplete={onComplete} />;
     case "html":
       return <CustomHtmlLesson content={lesson.content} isComplete={isComplete} onComplete={onComplete} />;
     case "embed":

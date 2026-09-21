@@ -1,12 +1,18 @@
 import { lazy, Suspense } from "react";
 import type {
   AccordionLesson,
+  CardGridLesson,
+  DialLesson,
   ExamBreakdownLesson,
   FlashcardLesson,
+  HotspotsLesson,
   Lesson,
   MatchingLesson,
+  PipelineLesson,
   PracticalLesson,
+  PresentationDialLesson,
   QuizLesson,
+  TreeScrubLesson,
 } from "../types.js";
 
 // TipTap/ProseMirror are the single largest dependency in this app's bundle
@@ -278,6 +284,392 @@ function MatchingEditor({
   );
 }
 
+const DIAL_MIN_STAGES = 2;
+const DIAL_MAX_STAGES = 20;
+
+function DialEditor({
+  content,
+  onChange,
+}: {
+  content: DialLesson["content"];
+  onChange: (content: DialLesson["content"]) => void;
+}) {
+  function updateStage(i: number, patch: Partial<DialLesson["content"]["stages"][number]>) {
+    onChange({ stages: content.stages.map((s, idx) => (idx === i ? { ...s, ...patch } : s)) });
+  }
+
+  function addStage() {
+    if (content.stages.length >= DIAL_MAX_STAGES) return;
+    onChange({ stages: [...content.stages, { title: "", body: "" }] });
+  }
+
+  function removeStage(i: number) {
+    if (content.stages.length <= DIAL_MIN_STAGES) return;
+    onChange({ stages: content.stages.filter((_, idx) => idx !== i) });
+  }
+
+  return (
+    <div className="field-group">
+      <span className="field-hint">
+        The dial shows one circle per stage below - add or remove stages ({DIAL_MIN_STAGES}-{DIAL_MAX_STAGES}) to
+        change how many circles it has.
+      </span>
+      {content.stages.map((stage, i) => (
+        <fieldset key={i} className="editor-question">
+          <label className="field">
+            Title
+            <input value={stage.title} onChange={(e) => updateStage(i, { title: e.target.value })} />
+          </label>
+          <label className="field">
+            Text
+            <textarea rows={3} value={stage.body} onChange={(e) => updateStage(i, { body: e.target.value })} />
+          </label>
+          <div className="editor-row-actions">
+            <button type="button" onClick={() => removeStage(i)} disabled={content.stages.length <= DIAL_MIN_STAGES}>
+              Remove stage
+            </button>
+          </div>
+        </fieldset>
+      ))}
+      <button type="button" onClick={addStage} disabled={content.stages.length >= DIAL_MAX_STAGES}>
+        Add stage
+      </button>
+    </div>
+  );
+}
+
+const PIPELINE_MIN_STEPS = 2;
+const PIPELINE_MAX_STEPS = 7;
+
+function PipelineEditor({
+  content,
+  onChange,
+}: {
+  content: PipelineLesson["content"];
+  onChange: (content: PipelineLesson["content"]) => void;
+}) {
+  function updateStep(i: number, patch: Partial<PipelineLesson["content"]["steps"][number]>) {
+    onChange({ steps: content.steps.map((s, idx) => (idx === i ? { ...s, ...patch } : s)) });
+  }
+
+  function addStep() {
+    if (content.steps.length >= PIPELINE_MAX_STEPS) return;
+    onChange({ steps: [...content.steps, { title: "", body: "" }] });
+  }
+
+  function removeStep(i: number) {
+    if (content.steps.length <= PIPELINE_MIN_STEPS) return;
+    onChange({ steps: content.steps.filter((_, idx) => idx !== i) });
+  }
+
+  return (
+    <div className="field-group">
+      <span className="field-hint">
+        The pipeline shows one station per step below - add or remove steps ({PIPELINE_MIN_STEPS}-
+        {PIPELINE_MAX_STEPS}) to change how many stations it has.
+      </span>
+      {content.steps.map((step, i) => (
+        <fieldset key={i} className="editor-question">
+          <label className="field">
+            Title
+            <input value={step.title} onChange={(e) => updateStep(i, { title: e.target.value })} />
+          </label>
+          <label className="field">
+            Text
+            <textarea rows={3} value={step.body} onChange={(e) => updateStep(i, { body: e.target.value })} />
+          </label>
+          <div className="editor-row-actions">
+            <button type="button" onClick={() => removeStep(i)} disabled={content.steps.length <= PIPELINE_MIN_STEPS}>
+              Remove step
+            </button>
+          </div>
+        </fieldset>
+      ))}
+      <button type="button" onClick={addStep} disabled={content.steps.length >= PIPELINE_MAX_STEPS}>
+        Add step
+      </button>
+    </div>
+  );
+}
+
+const PRESENTATION_DIAL_MIN_STAGES = 2;
+const PRESENTATION_DIAL_MAX_STAGES = 20;
+
+function PresentationDialEditor({
+  content,
+  onChange,
+}: {
+  content: PresentationDialLesson["content"];
+  onChange: (content: PresentationDialLesson["content"]) => void;
+}) {
+  function updateStage(i: number, patch: Partial<PresentationDialLesson["content"]["stages"][number]>) {
+    onChange({ stages: content.stages.map((s, idx) => (idx === i ? { ...s, ...patch } : s)) });
+  }
+
+  function addStage() {
+    if (content.stages.length >= PRESENTATION_DIAL_MAX_STAGES) return;
+    onChange({ stages: [...content.stages, { title: "", body: "" }] });
+  }
+
+  function removeStage(i: number) {
+    if (content.stages.length <= PRESENTATION_DIAL_MIN_STAGES) return;
+    onChange({ stages: content.stages.filter((_, idx) => idx !== i) });
+  }
+
+  return (
+    <div className="field-group">
+      <span className="field-hint">
+        Only the 4 most recent stages ever show at once, ending with the current one on the right - add or remove
+        stages ({PRESENTATION_DIAL_MIN_STAGES}-{PRESENTATION_DIAL_MAX_STAGES}) to change how many there are to step
+        through.
+      </span>
+      {content.stages.map((stage, i) => (
+        <fieldset key={i} className="editor-question">
+          <label className="field">
+            Title
+            <input value={stage.title} onChange={(e) => updateStage(i, { title: e.target.value })} />
+          </label>
+          <label className="field">
+            Text
+            <textarea rows={3} value={stage.body} onChange={(e) => updateStage(i, { body: e.target.value })} />
+          </label>
+          <div className="editor-row-actions">
+            <button
+              type="button"
+              onClick={() => removeStage(i)}
+              disabled={content.stages.length <= PRESENTATION_DIAL_MIN_STAGES}
+            >
+              Remove stage
+            </button>
+          </div>
+        </fieldset>
+      ))}
+      <button type="button" onClick={addStage} disabled={content.stages.length >= PRESENTATION_DIAL_MAX_STAGES}>
+        Add stage
+      </button>
+    </div>
+  );
+}
+
+const CARD_GRID_MIN_CARDS = 2;
+
+function CardGridEditor({
+  content,
+  onChange,
+}: {
+  content: CardGridLesson["content"];
+  onChange: (content: CardGridLesson["content"]) => void;
+}) {
+  function updateCard(i: number, patch: Partial<CardGridLesson["content"]["cards"][number]>) {
+    onChange({ cards: content.cards.map((c, idx) => (idx === i ? { ...c, ...patch } : c)) });
+  }
+
+  function addCard() {
+    onChange({ cards: [...content.cards, { title: "", useWhen: "", looksLike: "", noteLabel: "", noteBody: "" }] });
+  }
+
+  function removeCard(i: number) {
+    if (content.cards.length <= CARD_GRID_MIN_CARDS) return;
+    onChange({ cards: content.cards.filter((_, idx) => idx !== i) });
+  }
+
+  return (
+    <div className="field-group">
+      <span className="field-hint">
+        The grid always lays out 3 cards per row and wraps (centering any leftover row) beyond that - add as many
+        cards as you like, at least {CARD_GRID_MIN_CARDS}.
+      </span>
+      {content.cards.map((card, i) => (
+        <fieldset key={i} className="editor-question">
+          <label className="field">
+            Title
+            <input value={card.title} onChange={(e) => updateCard(i, { title: e.target.value })} />
+          </label>
+          <label className="field">
+            Use when
+            <textarea rows={2} value={card.useWhen} onChange={(e) => updateCard(i, { useWhen: e.target.value })} />
+          </label>
+          <label className="field">
+            Looks like
+            <textarea
+              rows={2}
+              value={card.looksLike}
+              onChange={(e) => updateCard(i, { looksLike: e.target.value })}
+            />
+          </label>
+          <label className="field">
+            Note label
+            <input value={card.noteLabel} onChange={(e) => updateCard(i, { noteLabel: e.target.value })} />
+          </label>
+          <label className="field">
+            Note text
+            <textarea rows={2} value={card.noteBody} onChange={(e) => updateCard(i, { noteBody: e.target.value })} />
+          </label>
+          <div className="editor-row-actions">
+            <button type="button" onClick={() => removeCard(i)} disabled={content.cards.length <= CARD_GRID_MIN_CARDS}>
+              Remove card
+            </button>
+          </div>
+        </fieldset>
+      ))}
+      <button type="button" onClick={addCard}>
+        Add card
+      </button>
+    </div>
+  );
+}
+
+const HOTSPOTS_MIN_TILES = 2;
+
+function HotspotsEditor({
+  content,
+  onChange,
+}: {
+  content: HotspotsLesson["content"];
+  onChange: (content: HotspotsLesson["content"]) => void;
+}) {
+  function updateTile(i: number, patch: Partial<HotspotsLesson["content"]["tiles"][number]>) {
+    onChange({ tiles: content.tiles.map((t, idx) => (idx === i ? { ...t, ...patch } : t)) });
+  }
+
+  function addTile() {
+    onChange({ tiles: [...content.tiles, { title: "", body: "", example: "" }] });
+  }
+
+  function removeTile(i: number) {
+    if (content.tiles.length <= HOTSPOTS_MIN_TILES) return;
+    onChange({ tiles: content.tiles.filter((_, idx) => idx !== i) });
+  }
+
+  return (
+    <div className="field-group">
+      <span className="field-hint">
+        The grid always lays out 5 tiles per row and wraps (centering any leftover row) beyond that - add as many
+        tiles as you like, at least {HOTSPOTS_MIN_TILES}.
+      </span>
+      {content.tiles.map((tile, i) => (
+        <fieldset key={i} className="editor-question">
+          <label className="field">
+            Title
+            <input value={tile.title} onChange={(e) => updateTile(i, { title: e.target.value })} />
+          </label>
+          <label className="field">
+            Note
+            <textarea rows={2} value={tile.body} onChange={(e) => updateTile(i, { body: e.target.value })} />
+          </label>
+          <label className="field">
+            Example
+            <textarea rows={2} value={tile.example} onChange={(e) => updateTile(i, { example: e.target.value })} />
+          </label>
+          <div className="editor-row-actions">
+            <button type="button" onClick={() => removeTile(i)} disabled={content.tiles.length <= HOTSPOTS_MIN_TILES}>
+              Remove tile
+            </button>
+          </div>
+        </fieldset>
+      ))}
+      <button type="button" onClick={addTile}>
+        Add tile
+      </button>
+    </div>
+  );
+}
+
+const TREE_SCRUB_MIN_NODES = 2;
+const TREE_SCRUB_MAX_NODES = 20;
+
+function TreeScrubEditor({
+  content,
+  onChange,
+}: {
+  content: TreeScrubLesson["content"];
+  onChange: (content: TreeScrubLesson["content"]) => void;
+}) {
+  function updateNode(i: number, patch: Partial<TreeScrubLesson["content"]["nodes"][number]>) {
+    onChange({ nodes: content.nodes.map((n, idx) => (idx === i ? { ...n, ...patch } : n)) });
+  }
+
+  function addNode() {
+    if (content.nodes.length >= TREE_SCRUB_MAX_NODES) return;
+    // Defaults to a child of the root - always a valid parentIndex for
+    // any position the new node lands in.
+    onChange({ nodes: [...content.nodes, { title: "", body: "", parentIndex: 0 }] });
+  }
+
+  function removeNode(i: number) {
+    if (i === 0) return; // the root is permanent
+    if (content.nodes.length <= TREE_SCRUB_MIN_NODES) return;
+    const hasChildren = content.nodes.some((n, idx) => idx !== i && n.parentIndex === i);
+    if (hasChildren) return;
+    // Nothing points at i (checked above), so every other parentIndex is
+    // either already below i (untouched) or above it and needs to shift
+    // down by one to stay correct once the array closes the gap.
+    const nodes = content.nodes
+      .filter((_, idx) => idx !== i)
+      .map((n) => ({ ...n, parentIndex: n.parentIndex > i ? n.parentIndex - 1 : n.parentIndex }));
+    onChange({ nodes });
+  }
+
+  function nodeLabel(i: number): string {
+    return content.nodes[i]?.title || `Node ${i + 1}`;
+  }
+
+  return (
+    <div className="field-group">
+      <span className="field-hint">
+        The first entry is always the root. Every other entry picks a parent from the entries above it - add several
+        with the same parent to branch the tree. Add or remove entries ({TREE_SCRUB_MIN_NODES}-{TREE_SCRUB_MAX_NODES}
+        ) to change how many there are.
+      </span>
+      {content.nodes.map((node, i) => {
+        const hasChildren = content.nodes.some((n, idx) => idx !== i && n.parentIndex === i);
+        return (
+          <fieldset key={i} className="editor-question">
+            <label className="field">
+              Title
+              <input value={node.title} onChange={(e) => updateNode(i, { title: e.target.value })} />
+            </label>
+            <label className="field">
+              Text
+              <textarea rows={3} value={node.body} onChange={(e) => updateNode(i, { body: e.target.value })} />
+            </label>
+            {i === 0 ? (
+              <span className="field-hint">Root - every other entry traces back to this one.</span>
+            ) : (
+              <label className="field">
+                Parent
+                <select
+                  value={node.parentIndex}
+                  onChange={(e) => updateNode(i, { parentIndex: Number(e.target.value) })}
+                >
+                  {Array.from({ length: i }, (_, parentIdx) => (
+                    <option key={parentIdx} value={parentIdx}>
+                      {nodeLabel(parentIdx)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+            <div className="editor-row-actions">
+              <button
+                type="button"
+                onClick={() => removeNode(i)}
+                disabled={i === 0 || content.nodes.length <= TREE_SCRUB_MIN_NODES || hasChildren}
+                title={hasChildren ? "Remove or reassign this entry's children first" : undefined}
+              >
+                Remove entry
+              </button>
+            </div>
+          </fieldset>
+        );
+      })}
+      <button type="button" onClick={addNode} disabled={content.nodes.length >= TREE_SCRUB_MAX_NODES}>
+        Add entry
+      </button>
+    </div>
+  );
+}
+
 function ExamBreakdownEditor({
   content,
   onChange,
@@ -387,6 +779,18 @@ export function LessonEditorForm({
       return <AccordionEditor content={lesson.content} onChange={onChange} />;
     case "matching":
       return <MatchingEditor content={lesson.content} onChange={onChange} />;
+    case "dial":
+      return <DialEditor content={lesson.content} onChange={onChange} />;
+    case "pipeline":
+      return <PipelineEditor content={lesson.content} onChange={onChange} />;
+    case "presentationDial":
+      return <PresentationDialEditor content={lesson.content} onChange={onChange} />;
+    case "cardGrid":
+      return <CardGridEditor content={lesson.content} onChange={onChange} />;
+    case "hotspots":
+      return <HotspotsEditor content={lesson.content} onChange={onChange} />;
+    case "treeScrub":
+      return <TreeScrubEditor content={lesson.content} onChange={onChange} />;
     case "html":
       return (
         <label className="field">
