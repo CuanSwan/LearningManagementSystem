@@ -1989,6 +1989,110 @@ a.path-snake-link:hover .path-snake-bubble {
   }
 }
 
+/* --- Hotspots lesson: a single row of clickable tiles, each popping
+   open a note above itself (only one open at a time). The popover's
+   background stays a fixed dark tone in both themes - an inverted
+   callout, not a themed surface, same idea as a native tooltip. --- */
+
+.hotspots-lesson {
+  width: 100%;
+}
+
+.hotspots-lesson-grid {
+  display: grid;
+  /* grid-template-columns is set inline per render - it depends on the
+     tile count, so the spacing stays even whether there are 2 or 8. */
+  gap: 0.6rem;
+}
+
+.hotspots-lesson-tile-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.hotspots-lesson-tile {
+  width: 100%;
+  height: 92px;
+  border-radius: 10px;
+  border: 1px solid var(--border-medium);
+  background: var(--surface-card);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Oranienbaum", serif;
+  font-size: 1.25rem;
+  line-height: 1.15;
+  cursor: pointer;
+  padding: 0.5rem;
+  text-align: center;
+  transition: border-color 200ms ease, background 200ms ease;
+}
+
+.hotspots-lesson-tile:hover {
+  border-color: var(--theme-primary, #3e6259);
+}
+
+.hotspots-lesson-tile.active {
+  border-color: var(--theme-primary, #3e6259);
+  background: var(--surface-sunken);
+}
+
+.hotspots-lesson-tile-index {
+  font-family: "Fira Code", monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  color: var(--text-tertiary);
+}
+
+.hotspots-lesson-popover {
+  position: absolute;
+  bottom: 100%;
+  margin-bottom: 0.85rem;
+  width: 240px;
+  max-width: 80vw;
+  background: #1a1a18;
+  color: #f4f1ec;
+  border-radius: 10px;
+  padding: 1rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  box-shadow: 0 12px 28px var(--shadow-color-strong);
+  z-index: 5;
+}
+
+.hotspots-lesson-popover-label {
+  font-family: "Fira Code", monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.65;
+}
+
+.hotspots-lesson-popover-body {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.hotspots-lesson-popover-example {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  opacity: 0.65;
+}
+
+@media (max-width: 640px) {
+  .hotspots-lesson-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    row-gap: 1.5rem;
+  }
+}
+
 .matching-item.is-selected {
   border-color: var(--theme-primary, #3e6259);
 }

@@ -84,6 +84,13 @@ describe("createBlankLesson", () => {
     expect(lesson.content).toEqual({ cards: [blankCard, blankCard] });
   });
 
+  it("creates a hotspots lesson with two blank tiles, matching the minimum tile count", () => {
+    const lesson = createBlankLesson("hotspots", 1);
+    expect(lesson.type).toBe("hotspots");
+    const blankTile = { title: "", body: "", example: "" };
+    expect(lesson.content).toEqual({ tiles: [blankTile, blankTile] });
+  });
+
   it("creates an exam breakdown lesson with sensible closed-book defaults", () => {
     const lesson = createBlankLesson("examBreakdown", 1);
     expect(lesson.type).toBe("examBreakdown");

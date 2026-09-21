@@ -139,6 +139,28 @@ const validModule = {
       },
     },
     {
+      lessonId: "l16",
+      type: "hotspots",
+      schemaVersion: 1,
+      source: "human",
+      wordingStyle: "official",
+      order: 16,
+      content: {
+        tiles: [
+          {
+            title: "Volume",
+            body: "The sheer amount of data being generated and stored.",
+            example: "A supermarket chain records every till transaction across 1,400 stores, every day.",
+          },
+          {
+            title: "Velocity",
+            body: "The speed at which data arrives and has to be handled.",
+            example: "Card payments are screened for fraud in the seconds before the transaction is approved.",
+          },
+        ],
+      },
+    },
+    {
       lessonId: "l14",
       type: "cardGrid",
       schemaVersion: 1,
@@ -195,7 +217,7 @@ const validModule = {
 };
 
 describe("ModuleSchema", () => {
-  it("accepts a module with all fifteen lesson types", () => {
+  it("accepts a module with all sixteen lesson types", () => {
     expect(() => parseModule(validModule)).not.toThrow();
   });
 
@@ -431,6 +453,46 @@ describe("ModuleSchema", () => {
           wordingStyle: "official",
           order: 1,
           content: { stages: Array.from({ length: 21 }, (_, i) => ({ title: `Stage ${i}`, body: "Too many." })) },
+        },
+      ],
+    };
+    const result = ModuleSchema.safeParse(invalid);
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a hotspots lesson with fewer than 2 tiles", () => {
+    const invalid = {
+      ...validModule,
+      lessons: [
+        {
+          lessonId: "l16",
+          type: "hotspots",
+          schemaVersion: 1,
+          source: "human",
+          wordingStyle: "official",
+          order: 1,
+          content: { tiles: [{ title: "Only tile", body: "Not enough to compare.", example: "N/A" }] },
+        },
+      ],
+    };
+    const result = ModuleSchema.safeParse(invalid);
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a hotspots lesson with more than 8 tiles", () => {
+    const invalid = {
+      ...validModule,
+      lessons: [
+        {
+          lessonId: "l16",
+          type: "hotspots",
+          schemaVersion: 1,
+          source: "human",
+          wordingStyle: "official",
+          order: 1,
+          content: {
+            tiles: Array.from({ length: 9 }, (_, i) => ({ title: `Tile ${i}`, body: "Too many.", example: "N/A" })),
+          },
         },
       ],
     };

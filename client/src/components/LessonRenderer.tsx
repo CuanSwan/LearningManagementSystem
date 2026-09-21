@@ -7,6 +7,7 @@ import { DialLesson } from "./DialLesson.js";
 import { EmbedLesson } from "./EmbedLesson.js";
 import { ExamBreakdownLesson } from "./ExamBreakdownLesson.js";
 import { FlashcardLesson } from "./FlashcardLesson.js";
+import { HotspotsLesson } from "./HotspotsLesson.js";
 import { MatchingLesson } from "./MatchingLesson.js";
 import { PipelineLesson } from "./PipelineLesson.js";
 import { PracticalLesson } from "./PracticalLesson.js";
@@ -41,6 +42,8 @@ function renderContent(lesson: Lesson, isComplete: boolean, onComplete: () => vo
       return <PresentationDialLesson content={lesson.content} isComplete={isComplete} onComplete={onComplete} />;
     case "cardGrid":
       return <CardGridLesson content={lesson.content} isComplete={isComplete} onComplete={onComplete} />;
+    case "hotspots":
+      return <HotspotsLesson content={lesson.content} isComplete={isComplete} onComplete={onComplete} />;
     case "html":
       return <CustomHtmlLesson content={lesson.content} isComplete={isComplete} onComplete={onComplete} />;
     case "embed":

@@ -102,6 +102,17 @@ const CardGridContentSchema = z.object({
     .min(2),
 });
 
+// A single-row grid of clickable tiles, each popping open a note above
+// itself on click (only one open at a time). Capped at 8 - unlike the
+// card grid, this stays a single row (no wrapping), so too many tiles
+// would squeeze each one down to nothing.
+const HotspotsContentSchema = z.object({
+  tiles: z
+    .array(z.object({ title: z.string(), body: z.string(), example: z.string() }))
+    .min(2)
+    .max(8),
+});
+
 const CustomHtmlContentSchema = z.object({
   // Sanitized as part of parsing itself, not in a separate step someone
   // could forget to call - every write path (create, save, seed, the Rise
@@ -191,6 +202,11 @@ export const CardGridLessonSchema = LessonBaseSchema.extend({
   content: CardGridContentSchema,
 });
 
+export const HotspotsLessonSchema = LessonBaseSchema.extend({
+  type: z.literal("hotspots"),
+  content: HotspotsContentSchema,
+});
+
 export const CustomHtmlLessonSchema = LessonBaseSchema.extend({
   type: z.literal("html"),
   content: CustomHtmlContentSchema,
@@ -219,6 +235,7 @@ export const LessonSchema = z.discriminatedUnion("type", [
   PipelineLessonSchema,
   PresentationDialLessonSchema,
   CardGridLessonSchema,
+  HotspotsLessonSchema,
   CustomHtmlLessonSchema,
   EmbedLessonSchema,
   ExamBreakdownLessonSchema,
@@ -237,6 +254,7 @@ export type DialLesson = z.infer<typeof DialLessonSchema>;
 export type PipelineLesson = z.infer<typeof PipelineLessonSchema>;
 export type PresentationDialLesson = z.infer<typeof PresentationDialLessonSchema>;
 export type CardGridLesson = z.infer<typeof CardGridLessonSchema>;
+export type HotspotsLesson = z.infer<typeof HotspotsLessonSchema>;
 export type CustomHtmlLesson = z.infer<typeof CustomHtmlLessonSchema>;
 export type EmbedLesson = z.infer<typeof EmbedLessonSchema>;
 export type ExamBreakdownLesson = z.infer<typeof ExamBreakdownLessonSchema>;

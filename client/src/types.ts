@@ -128,6 +128,19 @@ export interface CardGridLesson extends LessonBase {
   content: { cards: CardGridCard[] };
 }
 
+export interface HotspotTile {
+  title: string;
+  body: string;
+  example: string;
+}
+
+// A single-row grid of clickable tiles, each popping open a note above
+// itself on click (only one open at a time).
+export interface HotspotsLesson extends LessonBase {
+  type: "hotspots";
+  content: { tiles: HotspotTile[] };
+}
+
 export interface CustomHtmlLesson extends LessonBase {
   type: "html";
   content: { html: string };
@@ -156,6 +169,7 @@ export type Lesson =
   | PipelineLesson
   | PresentationDialLesson
   | CardGridLesson
+  | HotspotsLesson
   | CustomHtmlLesson
   | EmbedLesson
   | ExamBreakdownLesson;

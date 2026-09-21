@@ -5,6 +5,7 @@ import type {
   DialLesson,
   ExamBreakdownLesson,
   FlashcardLesson,
+  HotspotsLesson,
   Lesson,
   MatchingLesson,
   PipelineLesson,
@@ -517,6 +518,64 @@ function CardGridEditor({
   );
 }
 
+const HOTSPOTS_MIN_TILES = 2;
+const HOTSPOTS_MAX_TILES = 8;
+
+function HotspotsEditor({
+  content,
+  onChange,
+}: {
+  content: HotspotsLesson["content"];
+  onChange: (content: HotspotsLesson["content"]) => void;
+}) {
+  function updateTile(i: number, patch: Partial<HotspotsLesson["content"]["tiles"][number]>) {
+    onChange({ tiles: content.tiles.map((t, idx) => (idx === i ? { ...t, ...patch } : t)) });
+  }
+
+  function addTile() {
+    if (content.tiles.length >= HOTSPOTS_MAX_TILES) return;
+    onChange({ tiles: [...content.tiles, { title: "", body: "", example: "" }] });
+  }
+
+  function removeTile(i: number) {
+    if (content.tiles.length <= HOTSPOTS_MIN_TILES) return;
+    onChange({ tiles: content.tiles.filter((_, idx) => idx !== i) });
+  }
+
+  return (
+    <div className="field-group">
+      <span className="field-hint">
+        The tiles sit in a single row - add or remove tiles ({HOTSPOTS_MIN_TILES}-{HOTSPOTS_MAX_TILES}) to change how
+        many there are.
+      </span>
+      {content.tiles.map((tile, i) => (
+        <fieldset key={i} className="editor-question">
+          <label className="field">
+            Title
+            <input value={tile.title} onChange={(e) => updateTile(i, { title: e.target.value })} />
+          </label>
+          <label className="field">
+            Note
+            <textarea rows={2} value={tile.body} onChange={(e) => updateTile(i, { body: e.target.value })} />
+          </label>
+          <label className="field">
+            Example
+            <textarea rows={2} value={tile.example} onChange={(e) => updateTile(i, { example: e.target.value })} />
+          </label>
+          <div className="editor-row-actions">
+            <button type="button" onClick={() => removeTile(i)} disabled={content.tiles.length <= HOTSPOTS_MIN_TILES}>
+              Remove tile
+            </button>
+          </div>
+        </fieldset>
+      ))}
+      <button type="button" onClick={addTile} disabled={content.tiles.length >= HOTSPOTS_MAX_TILES}>
+        Add tile
+      </button>
+    </div>
+  );
+}
+
 function ExamBreakdownEditor({
   content,
   onChange,
@@ -634,6 +693,8 @@ export function LessonEditorForm({
       return <PresentationDialEditor content={lesson.content} onChange={onChange} />;
     case "cardGrid":
       return <CardGridEditor content={lesson.content} onChange={onChange} />;
+    case "hotspots":
+      return <HotspotsEditor content={lesson.content} onChange={onChange} />;
     case "html":
       return (
         <label className="field">
