@@ -10,6 +10,7 @@ import { FlashcardLesson } from "./FlashcardLesson.js";
 import { MatchingLesson } from "./MatchingLesson.js";
 import { PipelineLesson } from "./PipelineLesson.js";
 import { PracticalLesson } from "./PracticalLesson.js";
+import { PresentationDialLesson } from "./PresentationDialLesson.js";
 import { QuizLesson } from "./QuizLesson.js";
 import { TextLesson } from "./TextLesson.js";
 import { VideoLesson } from "./VideoLesson.js";
@@ -36,6 +37,8 @@ function renderContent(lesson: Lesson, isComplete: boolean, onComplete: () => vo
       return <DialLesson content={lesson.content} isComplete={isComplete} onComplete={onComplete} />;
     case "pipeline":
       return <PipelineLesson content={lesson.content} isComplete={isComplete} onComplete={onComplete} />;
+    case "presentationDial":
+      return <PresentationDialLesson content={lesson.content} isComplete={isComplete} onComplete={onComplete} />;
     case "cardGrid":
       return <CardGridLesson content={lesson.content} isComplete={isComplete} onComplete={onComplete} />;
     case "html":

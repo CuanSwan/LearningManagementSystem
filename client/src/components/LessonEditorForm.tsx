@@ -9,6 +9,7 @@ import type {
   MatchingLesson,
   PipelineLesson,
   PracticalLesson,
+  PresentationDialLesson,
   QuizLesson,
 } from "../types.js";
 
@@ -389,6 +390,65 @@ function PipelineEditor({
   );
 }
 
+const PRESENTATION_DIAL_MIN_STAGES = 2;
+const PRESENTATION_DIAL_MAX_STAGES = 20;
+
+function PresentationDialEditor({
+  content,
+  onChange,
+}: {
+  content: PresentationDialLesson["content"];
+  onChange: (content: PresentationDialLesson["content"]) => void;
+}) {
+  function updateStage(i: number, patch: Partial<PresentationDialLesson["content"]["stages"][number]>) {
+    onChange({ stages: content.stages.map((s, idx) => (idx === i ? { ...s, ...patch } : s)) });
+  }
+
+  function addStage() {
+    if (content.stages.length >= PRESENTATION_DIAL_MAX_STAGES) return;
+    onChange({ stages: [...content.stages, { title: "", body: "" }] });
+  }
+
+  function removeStage(i: number) {
+    if (content.stages.length <= PRESENTATION_DIAL_MIN_STAGES) return;
+    onChange({ stages: content.stages.filter((_, idx) => idx !== i) });
+  }
+
+  return (
+    <div className="field-group">
+      <span className="field-hint">
+        Only the 4 most recent stages ever show at once, ending with the current one on the right - add or remove
+        stages ({PRESENTATION_DIAL_MIN_STAGES}-{PRESENTATION_DIAL_MAX_STAGES}) to change how many there are to step
+        through.
+      </span>
+      {content.stages.map((stage, i) => (
+        <fieldset key={i} className="editor-question">
+          <label className="field">
+            Title
+            <input value={stage.title} onChange={(e) => updateStage(i, { title: e.target.value })} />
+          </label>
+          <label className="field">
+            Text
+            <textarea rows={3} value={stage.body} onChange={(e) => updateStage(i, { body: e.target.value })} />
+          </label>
+          <div className="editor-row-actions">
+            <button
+              type="button"
+              onClick={() => removeStage(i)}
+              disabled={content.stages.length <= PRESENTATION_DIAL_MIN_STAGES}
+            >
+              Remove stage
+            </button>
+          </div>
+        </fieldset>
+      ))}
+      <button type="button" onClick={addStage} disabled={content.stages.length >= PRESENTATION_DIAL_MAX_STAGES}>
+        Add stage
+      </button>
+    </div>
+  );
+}
+
 const CARD_GRID_MIN_CARDS = 2;
 
 function CardGridEditor({
@@ -570,6 +630,8 @@ export function LessonEditorForm({
       return <DialEditor content={lesson.content} onChange={onChange} />;
     case "pipeline":
       return <PipelineEditor content={lesson.content} onChange={onChange} />;
+    case "presentationDial":
+      return <PresentationDialEditor content={lesson.content} onChange={onChange} />;
     case "cardGrid":
       return <CardGridEditor content={lesson.content} onChange={onChange} />;
     case "html":

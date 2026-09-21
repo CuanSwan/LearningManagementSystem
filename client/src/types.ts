@@ -100,6 +100,19 @@ export interface PipelineLesson extends LessonBase {
   content: { steps: PipelineStep[] };
 }
 
+export interface PresentationDialStage {
+  title: string;
+  body: string;
+}
+
+// A "presentation mode" dial - unlike DialLesson, which rings every stage
+// around the circle at once, this only ever shows a 4-wide trailing window
+// of stages ending at the current one, navigated with prev/next.
+export interface PresentationDialLesson extends LessonBase {
+  type: "presentationDial";
+  content: { stages: PresentationDialStage[] };
+}
+
 export interface CardGridCard {
   title: string;
   useWhen: string;
@@ -141,6 +154,7 @@ export type Lesson =
   | MatchingLesson
   | DialLesson
   | PipelineLesson
+  | PresentationDialLesson
   | CardGridLesson
   | CustomHtmlLesson
   | EmbedLesson

@@ -71,6 +71,12 @@ describe("createBlankLesson", () => {
     expect(lesson.content).toEqual({ steps: [{ title: "", body: "" }, { title: "", body: "" }] });
   });
 
+  it("creates a presentation dial lesson with two blank stages, matching the minimum stage count", () => {
+    const lesson = createBlankLesson("presentationDial", 1);
+    expect(lesson.type).toBe("presentationDial");
+    expect(lesson.content).toEqual({ stages: [{ title: "", body: "" }, { title: "", body: "" }] });
+  });
+
   it("creates a card grid lesson with two blank cards, matching the minimum comparison count", () => {
     const lesson = createBlankLesson("cardGrid", 1);
     expect(lesson.type).toBe("cardGrid");

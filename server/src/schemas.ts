@@ -74,6 +74,16 @@ const PipelineContentSchema = z.object({
   steps: z.array(z.object({ title: z.string(), body: z.string() })).min(2).max(7),
 });
 
+// A "presentation mode" dial - unlike the dial above, which rings every
+// stage around the circle at once, this only ever shows a 4-wide trailing
+// window of stages ending at the current one, navigated with prev/next
+// rather than by clicking a stage directly. Same title/body-per-stage
+// shape and the same 2-20 bounds as the dial, since it's stepping
+// through the same kind of content, just windowed instead of full-ring.
+const PresentationDialContentSchema = z.object({
+  stages: z.array(z.object({ title: z.string(), body: z.string() })).min(2).max(20),
+});
+
 // A grid of comparison cards, always laid out 3 per row and wrapping (and
 // centering incomplete rows) beyond that - so at least 2 cards, since
 // comparing needs something to compare against, and no upper cap since
@@ -171,6 +181,11 @@ export const PipelineLessonSchema = LessonBaseSchema.extend({
   content: PipelineContentSchema,
 });
 
+export const PresentationDialLessonSchema = LessonBaseSchema.extend({
+  type: z.literal("presentationDial"),
+  content: PresentationDialContentSchema,
+});
+
 export const CardGridLessonSchema = LessonBaseSchema.extend({
   type: z.literal("cardGrid"),
   content: CardGridContentSchema,
@@ -202,6 +217,7 @@ export const LessonSchema = z.discriminatedUnion("type", [
   MatchingLessonSchema,
   DialLessonSchema,
   PipelineLessonSchema,
+  PresentationDialLessonSchema,
   CardGridLessonSchema,
   CustomHtmlLessonSchema,
   EmbedLessonSchema,
@@ -219,6 +235,7 @@ export type AccordionLesson = z.infer<typeof AccordionLessonSchema>;
 export type MatchingLesson = z.infer<typeof MatchingLessonSchema>;
 export type DialLesson = z.infer<typeof DialLessonSchema>;
 export type PipelineLesson = z.infer<typeof PipelineLessonSchema>;
+export type PresentationDialLesson = z.infer<typeof PresentationDialLessonSchema>;
 export type CardGridLesson = z.infer<typeof CardGridLessonSchema>;
 export type CustomHtmlLesson = z.infer<typeof CustomHtmlLessonSchema>;
 export type EmbedLesson = z.infer<typeof EmbedLessonSchema>;

@@ -1723,6 +1723,139 @@ a.path-snake-link:hover .path-snake-bubble {
   }
 }
 
+/* --- Presentation dial lesson: a "current stage" card flanked by
+   prev/next buttons, with a 4-wide trailing window of stage numbers
+   above it - the window's fixed slots never move, only the numbers in
+   them change, always ending with the current stage on the right. --- */
+
+.presentationdial-lesson {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.presentationdial-lesson-track {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+}
+
+.presentationdial-lesson-node {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Fira Code", monospace;
+  font-size: 0.72rem;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-sunken);
+  color: var(--text-secondary);
+  transition: background 180ms ease, color 180ms ease, border-color 180ms ease;
+}
+
+.presentationdial-lesson-node.active {
+  background: var(--theme-primary, #3e6259);
+  color: #fff;
+  border-color: var(--theme-primary, #3e6259);
+}
+
+.presentationdial-lesson-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  width: 100%;
+}
+
+.presentationdial-lesson-nav {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid var(--border-medium);
+  background: var(--surface-card);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color 150ms ease, color 150ms ease, opacity 150ms ease;
+}
+
+.presentationdial-lesson-nav svg {
+  width: 20px;
+  height: 20px;
+}
+
+.presentationdial-lesson-nav:hover:not(:disabled) {
+  border-color: var(--theme-primary, #3e6259);
+  color: var(--theme-primary, #3e6259);
+}
+
+.presentationdial-lesson-nav:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.presentationdial-lesson-card {
+  flex: 1 1 auto;
+  min-width: 0;
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  box-shadow: 0 12px 32px var(--shadow-color);
+  padding: 2rem 2.25rem;
+  text-align: center;
+}
+
+.presentationdial-lesson-counter {
+  display: block;
+  font-family: "Fira Code", monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  color: var(--text-tertiary);
+  margin-bottom: 0.75rem;
+}
+
+.presentationdial-lesson-title {
+  margin: 0 0 0.75rem;
+  font-family: "Oranienbaum", serif;
+  font-size: 1.4rem;
+  line-height: 1.2;
+  color: var(--text-primary);
+}
+
+.presentationdial-lesson-body {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 640px) {
+  .presentationdial-lesson-stage {
+    gap: 0.6rem;
+  }
+
+  .presentationdial-lesson-nav {
+    width: 36px;
+    height: 36px;
+  }
+
+  .presentationdial-lesson-card {
+    padding: 1.5rem 1.25rem;
+  }
+}
+
 /* --- Card grid lesson: a wrapping, always-centered grid of comparison
    cards, 3 per row - flexbox rather than CSS grid, since flex-wrap is
    what centers an incomplete last row (2 cards, or 1 leftover after a

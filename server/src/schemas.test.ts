@@ -125,6 +125,20 @@ const validModule = {
       },
     },
     {
+      lessonId: "l15",
+      type: "presentationDial",
+      schemaVersion: 1,
+      source: "human",
+      wordingStyle: "official",
+      order: 15,
+      content: {
+        stages: [
+          { title: "Raw Facts and Figures", body: "Data refers to raw, unprocessed facts and figures." },
+          { title: "Data Is Raw", body: "A number by itself carries no meaning without context." },
+        ],
+      },
+    },
+    {
       lessonId: "l14",
       type: "cardGrid",
       schemaVersion: 1,
@@ -181,7 +195,7 @@ const validModule = {
 };
 
 describe("ModuleSchema", () => {
-  it("accepts a module with all fourteen lesson types", () => {
+  it("accepts a module with all fifteen lesson types", () => {
     expect(() => parseModule(validModule)).not.toThrow();
   });
 
@@ -379,6 +393,44 @@ describe("ModuleSchema", () => {
           wordingStyle: "official",
           order: 1,
           content: { steps: Array.from({ length: 8 }, (_, i) => ({ title: `Step ${i}`, body: "Too many." })) },
+        },
+      ],
+    };
+    const result = ModuleSchema.safeParse(invalid);
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a presentation dial lesson with fewer than 2 stages", () => {
+    const invalid = {
+      ...validModule,
+      lessons: [
+        {
+          lessonId: "l15",
+          type: "presentationDial",
+          schemaVersion: 1,
+          source: "human",
+          wordingStyle: "official",
+          order: 1,
+          content: { stages: [{ title: "Only stage", body: "Not enough to step between." }] },
+        },
+      ],
+    };
+    const result = ModuleSchema.safeParse(invalid);
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a presentation dial lesson with more than 20 stages", () => {
+    const invalid = {
+      ...validModule,
+      lessons: [
+        {
+          lessonId: "l15",
+          type: "presentationDial",
+          schemaVersion: 1,
+          source: "human",
+          wordingStyle: "official",
+          order: 1,
+          content: { stages: Array.from({ length: 21 }, (_, i) => ({ title: `Stage ${i}`, body: "Too many." })) },
         },
       ],
     };
