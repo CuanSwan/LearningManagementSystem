@@ -84,6 +84,17 @@ app.use(async (req: Request, _res: Response, next: NextFunction) => {
   next();
 });
 
+// Every route responds to a failed schema parse with this, instead of the
+// raw ZodIssue array - the client only ever showed a generic "Request
+// failed: 400" for these before, since its error-message extraction only
+// trusts a string `error` field. A path-qualified message (e.g.
+// "lessons.0.content.url: Embed URL must start with http:// or https://")
+// tells the admin (and us, debugging their report) exactly what to fix.
+function sendValidationError(res: Response, error: z.ZodError) {
+  const message = error.issues.map((issue) => `${issue.path.join(".") || "(root)"}: ${issue.message}`).join("; ");
+  res.status(400).json({ error: message, issues: error.issues });
+}
+
 function requireAuth(req: Request, res: Response, next: NextFunction) {
   if (!req.user) {
     res.status(401).json({ error: "Not authenticated" });
@@ -127,7 +138,7 @@ function setSessionCookie(res: Response, userId: string) {
 app.post("/api/auth/register", async (req, res) => {
   const parsed = RegisterSchema.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.issues });
+    sendValidationError(res, parsed.error);
     return;
   }
   try {
@@ -142,7 +153,7 @@ app.post("/api/auth/register", async (req, res) => {
 app.post("/api/auth/login", async (req, res) => {
   const parsed = LoginSchema.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.issues });
+    sendValidationError(res, parsed.error);
     return;
   }
   const user = await verifyCredentials(parsed.data.email, parsed.data.password);
@@ -176,7 +187,7 @@ const ChangePasswordSchema = z.object({
 app.put("/api/auth/me/password", requireAuth, async (req, res) => {
   const parsed = ChangePasswordSchema.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.issues });
+    sendValidationError(res, parsed.error);
     return;
   }
   const currentIsValid = await verifyCurrentPassword(req.user!.userId, parsed.data.currentPassword);
@@ -207,7 +218,7 @@ app.get("/api/users", requireRole("admin", "super_admin"), async (_req, res) => 
 app.post("/api/users", requireRole("super_admin"), async (req, res) => {
   const parsed = CreateUserInputSchema.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.issues });
+    sendValidationError(res, parsed.error);
     return;
   }
   try {
@@ -220,7 +231,7 @@ app.post("/api/users", requireRole("super_admin"), async (req, res) => {
 app.patch("/api/users/:userId/role", requireRole("super_admin"), async (req, res) => {
   const parsed = z.object({ role: UserRoleSchema }).safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.issues });
+    sendValidationError(res, parsed.error);
     return;
   }
   const updated = await setUserRole(req.params.userId, parsed.data.role);
@@ -234,7 +245,7 @@ app.patch("/api/users/:userId/role", requireRole("super_admin"), async (req, res
 app.patch("/api/users/:userId/password", requireRole("super_admin"), async (req, res) => {
   const parsed = z.object({ newPassword: z.string().min(8) }).safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.issues });
+    sendValidationError(res, parsed.error);
     return;
   }
   const updated = await updatePassword(req.params.userId, parsed.data.newPassword);
@@ -253,7 +264,7 @@ const SetUserAssignmentsSchema = z.object({
 app.patch("/api/users/:userId/assignments", requireRole("admin", "super_admin"), async (req, res) => {
   const parsed = SetUserAssignmentsSchema.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.issues });
+    sendValidationError(res, parsed.error);
     return;
   }
   const updated = await setUserAssignments(req.params.userId, parsed.data);
@@ -298,7 +309,7 @@ app.get("/api/courses", requireAuth, async (_req, res) => {
 app.post("/api/courses", requireRole("admin", "super_admin"), async (req, res) => {
   const parsed = CreateCourseInputSchema.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.issues });
+    sendValidationError(res, parsed.error);
     return;
   }
   const course = await createCourse({
@@ -373,7 +384,7 @@ app.get("/api/courses/:courseId", requireAuth, async (req, res) => {
 app.patch("/api/courses/:courseId", requireRole("admin", "super_admin"), async (req, res) => {
   const parsed = CoursePatchSchema.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.issues });
+    sendValidationError(res, parsed.error);
     return;
   }
   const updated = await patchCourse(req.params.courseId, parsed.data);
@@ -404,7 +415,7 @@ app.get("/api/modules", requireRole("admin", "super_admin"), async (_req, res) =
 app.post("/api/modules", requireRole("admin", "super_admin"), async (req, res) => {
   const parsed = CreateModuleInputSchema.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.issues });
+    sendValidationError(res, parsed.error);
     return;
   }
   if (!parsed.data.courseId && (parsed.data.lessons ?? []).length === 0) {
@@ -431,7 +442,7 @@ app.get("/api/modules/:moduleId", requireAuth, async (req, res) => {
 app.put("/api/modules/:moduleId", requireRole("admin", "super_admin"), async (req, res) => {
   const parsed = ModuleSchema.safeParse({ ...req.body, moduleId: req.params.moduleId });
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.issues });
+    sendValidationError(res, parsed.error);
     return;
   }
   const saved = await saveModule(req.params.moduleId, parsed.data);
@@ -472,7 +483,7 @@ app.get("/api/learning-paths", requireAuth, async (_req, res) => {
 app.post("/api/learning-paths", requireRole("admin", "super_admin"), async (req, res) => {
   const parsed = CreateLearningPathInputSchema.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.issues });
+    sendValidationError(res, parsed.error);
     return;
   }
   const path = await createLearningPath({
@@ -496,7 +507,7 @@ app.get("/api/learning-paths/:pathId", requireAuth, async (req, res) => {
 app.patch("/api/learning-paths/:pathId", requireRole("admin", "super_admin"), async (req, res) => {
   const parsed = LearningPathPatchSchema.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.issues });
+    sendValidationError(res, parsed.error);
     return;
   }
   const updated = await patchLearningPath(req.params.pathId, parsed.data);
@@ -527,7 +538,7 @@ app.put("/api/progress/lessons/:lessonId", requireAuth, async (req, res) => {
     .object({ completed: z.boolean(), courseId: z.string().min(1).optional(), moduleId: z.string().min(1).optional() })
     .safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.issues });
+    sendValidationError(res, parsed.error);
     return;
   }
   await setLessonCompletion(req.user!.userId, req.params.lessonId, parsed.data.completed);
@@ -550,7 +561,7 @@ app.get("/api/preferences", requireAuth, async (req, res) => {
 app.put("/api/preferences", requireAuth, async (req, res) => {
   const parsed = z.object({ lessonDisplayMode: LessonDisplayModeSchema }).safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.issues });
+    sendValidationError(res, parsed.error);
     return;
   }
   await setLessonDisplayMode(req.user!.userId, parsed.data.lessonDisplayMode);
@@ -560,7 +571,7 @@ app.put("/api/preferences", requireAuth, async (req, res) => {
 app.put("/api/preferences/color-scheme", requireAuth, async (req, res) => {
   const parsed = z.object({ colorScheme: ColorSchemeSchema }).safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.issues });
+    sendValidationError(res, parsed.error);
     return;
   }
   await setColorScheme(req.user!.userId, parsed.data.colorScheme);

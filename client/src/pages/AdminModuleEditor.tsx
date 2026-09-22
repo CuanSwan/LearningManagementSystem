@@ -15,6 +15,7 @@ export function AdminModuleEditor() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [status, setStatus] = useState<ModuleStatus>("draft");
   const [unassigning, setUnassigning] = useState(false);
 
@@ -35,11 +36,13 @@ export function AdminModuleEditor() {
   async function handleSave() {
     if (!foundModule) return;
     setSaveStatus("saving");
+    setSaveError(null);
     try {
       const saved = await saveModule(foundModule.moduleId, { ...foundModule, lessons: editor.lessons, status });
       setModule(saved);
       setSaveStatus("saved");
-    } catch {
+    } catch (err) {
+      setSaveError((err as Error).message);
       setSaveStatus("error");
     }
   }
@@ -97,7 +100,9 @@ export function AdminModuleEditor() {
             </button>
           )}
           {saveStatus === "saved" && <span className="save-status save-status-ok">Saved</span>}
-          {saveStatus === "error" && <span className="save-status save-status-error">Save failed</span>}
+          {saveStatus === "error" && (
+            <span className="save-status save-status-error">{saveError ?? "Save failed"}</span>
+          )}
         </div>
       </div>
 

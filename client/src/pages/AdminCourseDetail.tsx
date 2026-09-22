@@ -15,6 +15,7 @@ export function AdminCourseDetail() {
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [moduleTitle, setModuleTitle] = useState("");
   const [moduleObjective, setModuleObjective] = useState("");
+  const [moduleError, setModuleError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
@@ -42,8 +43,13 @@ export function AdminCourseDetail() {
   async function handleCreateModule(e: React.FormEvent) {
     e.preventDefault();
     if (!courseId) return;
-    const module = await createModule({ courseId, title: moduleTitle, objective: moduleObjective });
-    navigate(`/admin/modules/${module.moduleId}`);
+    setModuleError(null);
+    try {
+      const module = await createModule({ courseId, title: moduleTitle, objective: moduleObjective });
+      navigate(`/admin/modules/${module.moduleId}`);
+    } catch (err) {
+      setModuleError((err as Error).message);
+    }
   }
 
   async function handleDeleteCourse() {
@@ -118,6 +124,7 @@ export function AdminCourseDetail() {
             <input value={moduleObjective} onChange={(e) => setModuleObjective(e.target.value)} required />
           </label>
           <button type="submit">Add module</button>
+          {moduleError && <span className="save-status save-status-error">{moduleError}</span>}
         </form>
       </section>
 
