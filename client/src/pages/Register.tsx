@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import type { PublicVoucher } from "../types.js";
 import { getVoucherPublic } from "../api.js";
 import { useAuth } from "../auth.js";
+import { PASSWORD_HINT, passwordMeetsRequirements } from "../passwordRules.js";
 
 const ROLE_LABELS: Record<PublicVoucher["role"], string> = {
   student: "student",
@@ -26,6 +27,7 @@ export function Register() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -47,6 +49,14 @@ export function Register() {
     e.preventDefault();
     if (!voucherId) return;
     setSubmitError(null);
+    if (password !== confirmPassword) {
+      setSubmitError("Passwords don't match.");
+      return;
+    }
+    if (!passwordMeetsRequirements(password)) {
+      setSubmitError(PASSWORD_HINT);
+      return;
+    }
     setSubmitting(true);
     try {
       await register(voucherId, email, password);
@@ -111,6 +121,17 @@ export function Register() {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            minLength={8}
+            required
+          />
+          <span className="field-hint">{PASSWORD_HINT}</span>
+        </label>
+        <label className="field">
+          <span className="field-label">Confirm password</span>
+          <input
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
             minLength={8}
             required
           />

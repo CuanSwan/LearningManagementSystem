@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import type { User, UserRole, Voucher } from "../types.js";
 import { createVoucher, listUsers, listVouchers, resetUserPassword, revokeVoucher, setUserRole } from "../api.js";
 import { useAuth } from "../auth.js";
+import { PASSWORD_HINT, passwordMeetsRequirements } from "../passwordRules.js";
 
 function formatDate(ms: number | undefined): string {
   return ms === undefined ? "never" : new Date(ms).toLocaleDateString();
@@ -37,6 +38,7 @@ export function AdminUsers() {
 
   const [resettingUserId, setResettingUserId] = useState<string | null>(null);
   const [resetPassword, setResetPassword] = useState("");
+  const [resetConfirmPassword, setResetConfirmPassword] = useState("");
   const [resetError, setResetError] = useState<string | null>(null);
   const [resetDoneUserId, setResetDoneUserId] = useState<string | null>(null);
 
@@ -50,6 +52,7 @@ export function AdminUsers() {
   function startReset(userId: string) {
     setResettingUserId(userId);
     setResetPassword("");
+    setResetConfirmPassword("");
     setResetError(null);
     setResetDoneUserId(null);
   }
@@ -57,10 +60,19 @@ export function AdminUsers() {
   async function handleResetSubmit(e: FormEvent, userId: string) {
     e.preventDefault();
     setResetError(null);
+    if (resetPassword !== resetConfirmPassword) {
+      setResetError("Passwords don't match.");
+      return;
+    }
+    if (!passwordMeetsRequirements(resetPassword)) {
+      setResetError(PASSWORD_HINT);
+      return;
+    }
     try {
       await resetUserPassword(userId, resetPassword);
       setResettingUserId(null);
       setResetPassword("");
+      setResetConfirmPassword("");
       setResetDoneUserId(userId);
     } catch (err) {
       setResetError(err instanceof Error ? err.message : "Could not reset password.");
@@ -140,6 +152,14 @@ export function AdminUsers() {
                     minLength={8}
                     required
                     autoFocus
+                  />
+                  <input
+                    type="password"
+                    placeholder="Confirm new password"
+                    value={resetConfirmPassword}
+                    onChange={(e) => setResetConfirmPassword(e.target.value)}
+                    minLength={8}
+                    required
                   />
                   <button type="submit">Set</button>
                   <button type="button" onClick={() => setResettingUserId(null)}>
