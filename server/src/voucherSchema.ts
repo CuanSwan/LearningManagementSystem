@@ -4,16 +4,17 @@ import { UserRoleSchema } from "./userSchema.js";
 export const VoucherStatusSchema = z.enum(["pending", "registered", "revoked"]);
 export type VoucherStatus = z.infer<typeof VoucherStatusSchema>;
 
-// The one year a voucher (and, transitively, the account created from it)
-// stays valid for. Not configurable per-voucher - every voucher gets the
-// same window, measured from the moment an admin issues it.
+// The one year a student voucher (and, transitively, the account created
+// from it) stays valid for. Admin and super_admin vouchers don't use this
+// at all - see createVoucher - since an admin's access shouldn't lapse on
+// a clock the way a student's course access does.
 export const VOUCHER_VALIDITY_MS = 365 * 24 * 60 * 60 * 1000;
 
 // A voucher is not a user - it's an admin's intent to let exactly one email
-// address register as a specific name/role, for one year from issuance.
-// voucherId doubles as the unguessable secret embedded in the sign-up link
-// (it's a crypto.randomUUID(), same as every other id in this app), so
-// there's no separate "code" field to keep in sync with it.
+// address register as a specific name/role. voucherId doubles as the
+// unguessable secret embedded in the sign-up link (it's a
+// crypto.randomUUID(), same as every other id in this app), so there's no
+// separate "code" field to keep in sync with it.
 export const VoucherSchema = z.object({
   voucherId: z.string(),
   email: z.string().email(),
@@ -25,7 +26,11 @@ export const VoucherSchema = z.object({
   // self-elevating by passing its own `role` in the register request.
   role: UserRoleSchema,
   issuedAt: z.number(),
-  expiresAt: z.number(),
+  // Absent for an admin/super_admin voucher - those never expire, and
+  // neither does the account it becomes (see createVoucher and
+  // isVoucherExpired). Present (issuedAt + VOUCHER_VALIDITY_MS) for a
+  // student voucher.
+  expiresAt: z.number().optional(),
   status: VoucherStatusSchema,
   // Set once the voucher is consumed - kept around (rather than deleting
   // the voucher) both as an audit trail and because the resulting user

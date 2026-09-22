@@ -3,8 +3,8 @@ import type { User, UserRole, Voucher } from "../types.js";
 import { createVoucher, listUsers, listVouchers, resetUserPassword, revokeVoucher, setUserRole } from "../api.js";
 import { useAuth } from "../auth.js";
 
-function formatDate(ms: number): string {
-  return new Date(ms).toLocaleDateString();
+function formatDate(ms: number | undefined): string {
+  return ms === undefined ? "never" : new Date(ms).toLocaleDateString();
 }
 
 function voucherSignUpLink(voucherId: string): string {
@@ -15,8 +15,9 @@ function voucherSignUpLink(voucherId: string): string {
 // nothing proactively flips it, since the whole check happens lazily at
 // register/login time. Computed here purely for display, so an admin
 // doesn't see a stale "Pending" on something that's actually unusable now.
+// Admin/super_admin vouchers have no expiresAt at all - they never expire.
 function voucherDisplayStatus(voucher: Voucher): "pending" | "expired" | "registered" | "revoked" {
-  if (voucher.status === "pending" && Date.now() > voucher.expiresAt) return "expired";
+  if (voucher.status === "pending" && voucher.expiresAt !== undefined && Date.now() > voucher.expiresAt) return "expired";
   return voucher.status;
 }
 
