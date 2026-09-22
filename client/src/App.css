@@ -265,6 +265,15 @@ main {
   left: calc(300px + 1.5rem);
 }
 
+/* The drawer no longer pushes content on mobile (see the media query
+   below), so riding its edge at 300px+ would push the toggle off a
+   narrow screen entirely - keep it at its resting spot instead. */
+@media (max-width: 640px) {
+  .course-side-menu-toggle.is-open {
+    left: 1.5rem;
+  }
+}
+
 .course-side-menu-body {
   display: flex;
   flex-direction: column;
@@ -284,6 +293,18 @@ main {
 .course-page,
 .module-page {
   transition: margin-left 0.25s ease;
+}
+
+/* On a narrow viewport the 300px drawer is most of the screen - pushing
+   content over would leave almost nothing readable. Cancel the push and
+   let the drawer float over the content instead (it's already
+   position: fixed with its own z-index, so removing the margin is all
+   that's needed - the content just stays put underneath it). */
+@media (max-width: 640px) {
+  .course-side-menu.is-open ~ .course-page,
+  .course-side-menu.is-open ~ .module-page {
+    margin-left: 0;
+  }
 }
 
 .course-side-menu-module {
