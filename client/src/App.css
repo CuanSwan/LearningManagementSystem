@@ -162,6 +162,7 @@ main {
 
 .component-library,
 .library-sidebar {
+  box-sizing: border-box;
   width: 100%;
   border: 1px solid var(--border-default);
   border-radius: 6px;
