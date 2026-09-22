@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ModuleSchema, parseModule } from "./schemas.js";
+import { CourseSchema, LearningPathSchema, ModuleSchema, parseModule } from "./schemas.js";
 
 const validModule = {
   moduleId: "intro-to-negotiation",
@@ -732,5 +732,55 @@ describe("ModuleSchema", () => {
     };
     const result = ModuleSchema.safeParse(invalid);
     expect(result.success).toBe(false);
+  });
+});
+
+// Regression coverage for a real bug: the Mongo driver used to silently
+// turn an undefined-valued field into a stored `null` (fixed by
+// ignoreUndefined in db/index.ts), so a document written before that fix -
+// or any client that explicitly sends null - can still hand these schemas
+// a literal null for an optional field. Plain `.optional()` rejects that,
+// which meant an already-affected module/course/learning path could never
+// be saved again. These fields must accept null and normalize it away.
+describe("optional fields tolerate a stored null, not just undefined", () => {
+  it("accepts a module with category and courseId as null", () => {
+    const result = ModuleSchema.safeParse({
+      moduleId: "m1",
+      courseId: null,
+      category: null,
+      status: "draft",
+      seed: { title: "Untitled", objective: "x", authorNotes: null, rawContent: null },
+      lessons: [],
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.courseId).toBeUndefined();
+      expect(result.data.category).toBeUndefined();
+      expect(result.data.seed.authorNotes).toBeUndefined();
+      expect(result.data.seed.rawContent).toBeUndefined();
+    }
+  });
+
+  it("accepts a course with description and category as null", () => {
+    const result = CourseSchema.safeParse({
+      courseId: "c1",
+      title: "Course",
+      description: null,
+      category: null,
+      theme: {},
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.description).toBeUndefined();
+      expect(result.data.category).toBeUndefined();
+    }
+  });
+
+  it("accepts a learning path with description as null", () => {
+    const result = LearningPathSchema.safeParse({ pathId: "p1", title: "Path", description: null });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.description).toBeUndefined();
+    }
   });
 });

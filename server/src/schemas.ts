@@ -11,6 +11,20 @@ export type WordingStyle = z.infer<typeof WordingStyleSchema>;
 export const ModuleStatusSchema = z.enum(["draft", "ai_generated", "published"]);
 export type ModuleStatus = z.infer<typeof ModuleStatusSchema>;
 
+// Every schema below that's persisted (module, course, learning path) can
+// have any of its optional fields read back from Mongo as a literal `null`
+// instead of genuinely absent - the driver used to silently turn an
+// undefined-valued field into BSON null on write, before ignoreUndefined
+// was set on the client (see db/index.ts). Plain `.optional()` only ever
+// accepted undefined, not null, so a document already affected by this
+// would fail Zod validation - and since a save round-trips whatever a
+// previous read returned, that meant it could never be saved again either.
+// This normalizes null back to undefined so already-stored data keeps
+// working without a migration.
+function nullableOptional<T extends z.ZodTypeAny>(schema: T) {
+  return schema.nullish().transform((val) => val ?? undefined);
+}
+
 const TextContentSchema = z.object({
   // Rich markup from the admin's text editor (headings, lists, emphasis,
   // etc.), sanitized on parse for the same reason CustomHtmlContentSchema
@@ -21,8 +35,8 @@ const TextContentSchema = z.object({
 
 const VideoContentSchema = z.object({
   videoUrl: z.string(),
-  transcript: z.string().optional(),
-  duration: z.number().nonnegative().optional(),
+  transcript: nullableOptional(z.string()),
+  duration: nullableOptional(z.number().nonnegative()),
 });
 
 const QuizContentSchema = z.object({
@@ -303,8 +317,8 @@ export type LessonType = Lesson["type"];
 export const ModuleSeedSchema = z.object({
   title: z.string(),
   objective: z.string(),
-  authorNotes: z.string().optional(),
-  rawContent: z.string().optional(),
+  authorNotes: nullableOptional(z.string()),
+  rawContent: nullableOptional(z.string()),
 });
 
 export const ModuleSchema = z.object({
@@ -312,11 +326,11 @@ export const ModuleSchema = z.object({
   // Absent when the module isn't (or is no longer) part of any course - see
   // `category` below, which is how such a module still gets placed in the
   // admin library tree.
-  courseId: z.string().optional(),
+  courseId: nullableOptional(z.string()),
   // Only meaningful when courseId is absent: the category the module was
   // removed from (or created under) via the library, so it still has a home
   // in the tree without a course to look the category up from.
-  category: z.string().optional(),
+  category: nullableOptional(z.string()),
   status: ModuleStatusSchema,
   seed: ModuleSeedSchema,
   lessons: z.array(LessonSchema),
@@ -331,8 +345,8 @@ export function parseModule(data: unknown): Module {
 export const CourseSchema = z.object({
   courseId: z.string(),
   title: z.string(),
-  description: z.string().optional(),
-  category: z.string().optional(),
+  description: nullableOptional(z.string()),
+  category: nullableOptional(z.string()),
   // Only the fields this course chooses to override - see Theme.withOverrides() on the client.
   theme: ThemeOverrideSchema.default({}),
 });
@@ -346,7 +360,7 @@ export function parseCourse(data: unknown): Course {
 export const LearningPathSchema = z.object({
   pathId: z.string(),
   title: z.string(),
-  description: z.string().optional(),
+  description: nullableOptional(z.string()),
   // Ordered - a student moves through these courses one by one.
   courseIds: z.array(z.string()).default([]),
 });

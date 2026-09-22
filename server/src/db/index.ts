@@ -56,7 +56,15 @@ export async function connectDb(): Promise<Database> {
     // Some hosts (e.g. Render) black-hole outbound IPv6, which the driver's
     // TLS handshake to Atlas surfaces as a confusing "tlsv1 alert internal
     // error" instead of a clean connection failure. Forcing IPv4 avoids it.
-    const client = new MongoClient(uri, { family: 4 });
+    //
+    // ignoreUndefined stops the driver's own default behavior of silently
+    // turning any undefined-valued field into BSON null on write. Without
+    // it, an intentionally-absent optional field (module.category on a
+    // course-attached module, for example) gets written as null instead of
+    // just not existing, and comes back that way on every later read too -
+    // reads never re-run the Zod schema, so `z.string().optional()` (which
+    // accepts undefined but not null) never gets a chance to catch it.
+    const client = new MongoClient(uri, { family: 4, ignoreUndefined: true });
     await client.connect();
     const db = client.db(process.env.MONGODB_DB ?? "lms");
     console.log("Connected to MongoDB");
