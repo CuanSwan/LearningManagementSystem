@@ -221,14 +221,17 @@ main {
    their content covered before they've asked for the nav tree. --- */
 .course-side-menu {
   position: fixed;
-  top: 6rem;
+  /* Lower than the admin tools panel's matching 6rem - course/module pages
+     stack a breadcrumb and a left-aligned "Back to ..." button right under
+     the top bar, and 6rem here would sit directly on top of that button. */
+  top: 9rem;
   left: 1.5rem;
   z-index: 15;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 0.5rem;
-  max-height: calc(100vh - 8rem);
+  max-height: calc(100vh - 11rem);
 }
 
 .course-side-menu-toggle {
