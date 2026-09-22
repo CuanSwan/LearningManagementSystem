@@ -147,9 +147,17 @@ const CustomHtmlContentSchema = z.object({
 });
 
 const EmbedContentSchema = z.object({
+  // Empty is allowed - it's the blank-lesson factory's starting state, same
+  // as every other lesson type's content, and a module has to be saveable
+  // as a draft before the admin has filled it in. Once non-empty, though,
   // http(s) only - anything else (javascript:, data:) is a known iframe-src
   // XSS vector, not just an unsanitized-content problem.
-  url: z.string().url().refine((u) => /^https?:\/\//i.test(u), "Embed URL must start with http:// or https://"),
+  url: z
+    .string()
+    .refine(
+      (u) => u === "" || (/^https?:\/\//i.test(u) && z.string().url().safeParse(u).success),
+      "Embed URL must start with http:// or https://"
+    ),
 });
 
 const ExamBreakdownContentSchema = z.object({

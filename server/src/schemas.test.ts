@@ -341,6 +341,24 @@ describe("ModuleSchema", () => {
     expect(ModuleSchema.safeParse(valid).success).toBe(true);
   });
 
+  it("accepts a freshly-added embed lesson with no URL yet, like a draft", () => {
+    const blank = {
+      ...validModule,
+      lessons: [
+        {
+          lessonId: "l10",
+          type: "embed",
+          schemaVersion: 1,
+          source: "human",
+          wordingStyle: "official",
+          order: 1,
+          content: { url: "" },
+        },
+      ],
+    };
+    expect(ModuleSchema.safeParse(blank).success).toBe(true);
+  });
+
   it("rejects a matching lesson with fewer than 2 pairs", () => {
     const invalid = {
       ...validModule,
