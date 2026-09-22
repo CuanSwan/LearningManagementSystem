@@ -212,6 +212,136 @@ main {
   background: var(--surface-app);
 }
 
+/* --- Course side menu: a collapsible Module -> Lesson tree, fixed to the
+   left edge of the viewport - the same floating-overlay idea as the admin
+   tools panel, mirrored to the other side. course-page/module-page fill
+   the full viewport width with no spare margin to dock into, so this
+   overlays the reading content when open by design. Starts collapsed
+   (unlike the admin panel): a student arriving to read shouldn't have
+   their content covered before they've asked for the nav tree. --- */
+.course-side-menu {
+  position: fixed;
+  top: 6rem;
+  left: 1.5rem;
+  z-index: 15;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  max-height: calc(100vh - 8rem);
+}
+
+.course-side-menu-toggle {
+  background: var(--surface-card);
+  color: var(--text-primary);
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 12px var(--shadow-color);
+  white-space: nowrap;
+}
+
+.course-side-menu-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  width: 300px;
+  max-width: calc(100vw - 3rem);
+  overflow-y: auto;
+  background: var(--surface-card);
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  padding: 0.75rem;
+  box-shadow: 0 12px 28px var(--shadow-color-strong);
+}
+
+.course-side-menu-module {
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.course-side-menu-module:last-child {
+  border-bottom: none;
+}
+
+.course-side-menu-module > summary {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 0.25rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+.course-side-menu-module > summary::-webkit-details-marker {
+  display: none;
+}
+
+.course-side-menu-module-title {
+  flex: 1;
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--text-primary);
+}
+
+.course-side-menu-module.is-locked .course-side-menu-module-title {
+  color: var(--text-tertiary);
+}
+
+.course-side-menu-check {
+  color: var(--theme-primary, #3e6259);
+  font-size: 0.8rem;
+}
+
+.course-side-menu-lock {
+  font-size: 0.75rem;
+  opacity: 0.6;
+}
+
+.course-side-menu-empty {
+  margin: 0 0.25rem 0.5rem;
+  font-size: 0.78rem;
+  color: var(--text-tertiary);
+}
+
+.course-side-menu-lessons {
+  list-style: none;
+  margin: 0 0 0.5rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.course-side-menu-lesson {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.5rem 0.4rem 1.5rem;
+  border-radius: 4px;
+  font-size: 0.82rem;
+  line-height: 1.3;
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
+a.course-side-menu-lesson:hover {
+  background: var(--surface-sunken);
+  color: var(--text-primary);
+}
+
+.course-side-menu-lesson.is-active {
+  background: var(--surface-sunken);
+  color: var(--theme-primary, #3e6259);
+  font-weight: 600;
+}
+
+.course-side-menu-lesson.is-locked {
+  color: var(--text-disabled);
+}
+
 .library-sidebar > .library-section:first-child {
   margin-top: 0;
   padding-top: 0;

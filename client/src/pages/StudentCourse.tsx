@@ -6,6 +6,8 @@ import { isCourseAccessible } from "../access.js";
 import { useAuth } from "../auth.js";
 import { BackButton } from "../components/BackButton.js";
 import { Breadcrumb } from "../components/Breadcrumb.js";
+import { CourseSideMenu } from "../components/CourseSideMenu.js";
+import { isModuleComplete, isModuleLocked } from "../courseProgress.js";
 import { describeLesson, lessonTypeLabel } from "../lessonTemplates.js";
 import { Theme, themeStyle } from "../theme.js";
 
@@ -15,10 +17,6 @@ function truncate(text: string, maxLength: number): string {
 
 const IN_PROGRESS_COLOR = "#e8862f";
 const LOCKED_COLOR = "#9ca3af";
-
-function isModuleComplete(module: Module, completedIds: Set<string>): boolean {
-  return module.lessons.length > 0 && module.lessons.every((l) => completedIds.has(l.lessonId));
-}
 
 export function StudentCourse() {
   const { courseId } = useParams<{ courseId: string }>();
@@ -75,6 +73,7 @@ export function StudentCourse() {
 
   return (
     <main className="student-view course-page" style={themeStyle(resolved)}>
+      <CourseSideMenu courseId={courseId!} />
       <Breadcrumb items={[{ label: "Courses", to: "/courses" }, { label: course.title }]} />
       <BackButton to="/courses" label="Back to courses" />
       <h1>{course.title}</h1>
@@ -100,8 +99,7 @@ export function StudentCourse() {
             const moduleTotal = module.lessons.length;
             const pct = moduleTotal ? (moduleCompleted / moduleTotal) * 100 : 0;
             const complete = isModuleComplete(module, completedIds);
-            const priorModulesComplete = modules.slice(0, index).every((m) => isModuleComplete(m, completedIds));
-            const locked = !complete && !priorModulesComplete;
+            const locked = isModuleLocked(modules, index, completedIds);
             const accentColor = complete ? resolved.primaryColor : locked ? LOCKED_COLOR : IN_PROGRESS_COLOR;
 
             const cardContent = (

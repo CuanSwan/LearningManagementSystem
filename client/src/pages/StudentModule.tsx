@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import type { Course, Lesson, Module } from "../types.js";
 import { getCourse, getModule, getProgress, listModulesByCourse, setLessonProgress } from "../api.js";
 import { BackButton } from "../components/BackButton.js";
 import { Breadcrumb } from "../components/Breadcrumb.js";
+import { CourseSideMenu } from "../components/CourseSideMenu.js";
 import { LessonCarousel } from "../components/LessonCarousel.js";
 import { ModuleCompleteModal } from "../components/ModuleCompleteModal.js";
 import { StudentLessonBlock } from "../components/StudentLessonBlock.js";
@@ -15,8 +16,14 @@ function truncate(text: string, maxLength: number): string {
   return text.length > maxLength ? `${text.slice(0, maxLength).trimEnd()}...` : text;
 }
 
+const LESSON_HASH_PREFIX = "#lesson-";
+
 export function StudentModule() {
   const { courseId, moduleId } = useParams<{ courseId: string; moduleId: string }>();
+  const location = useLocation();
+  const activeLessonId = location.hash.startsWith(LESSON_HASH_PREFIX)
+    ? location.hash.slice(LESSON_HASH_PREFIX.length)
+    : undefined;
   const [course, setCourse] = useState<Course | null>(null);
   const [foundModule, setModule] = useState<Module | null>(null);
   const [courseModules, setCourseModules] = useState<Module[]>([]);
@@ -41,6 +48,15 @@ export function StudentModule() {
       .then((list) => setCourseModules(list.filter((m) => m.status === "published")))
       .catch(() => {});
   }, [courseId, moduleId]);
+
+  // Deep-linking to a specific lesson (from the course side menu) only
+  // applies in the vertical list layout, where every lesson is in the DOM
+  // at once - the carousel gets the same target lesson via its own
+  // initialLessonId prop below instead, since it renders one at a time.
+  useEffect(() => {
+    if (!activeLessonId || mode === "carousel" || mode === "accessible") return;
+    document.getElementById(`lesson-${activeLessonId}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [activeLessonId, mode, foundModule]);
 
   if (accessError) return <p className="access-restricted-notice">{accessError}</p>;
 
@@ -78,6 +94,7 @@ export function StudentModule() {
       className={`student-view module-page${mode === "accessible" ? " accessible-mode" : ""}`}
       style={themeStyle(resolved)}
     >
+      <CourseSideMenu courseId={courseId!} activeModuleId={moduleId} activeLessonId={activeLessonId} />
       <Breadcrumb items={breadcrumbItems} />
       <BackButton to={`/courses/${courseId}`} label={`Back to ${course.title}`} />
       <h1>{foundModule.seed.title}</h1>
@@ -85,8 +102,14 @@ export function StudentModule() {
 
       {usesCarousel ? (
         <LessonCarousel
+          // Remounts (and so recomputes its starting index) whenever the
+          // target module or lesson changes, since the carousel's index is
+          // otherwise plain internal state that a prop change alone can't
+          // reset once already mounted.
+          key={`${moduleId}-${activeLessonId ?? "start"}`}
           lessons={orderedLessons}
           completedIds={completedIds}
+          initialLessonId={activeLessonId}
           onComplete={markComplete}
           onCurrentLessonChange={handleCurrentLessonChange}
         />
@@ -106,12 +129,13 @@ export function StudentModule() {
 
           <div className="student-lessons">
             {orderedLessons.map((lesson) => (
-              <StudentLessonBlock
-                key={lesson.lessonId}
-                lesson={lesson}
-                isComplete={completedIds.has(lesson.lessonId)}
-                onComplete={() => markComplete(lesson.lessonId)}
-              />
+              <div key={lesson.lessonId} id={`lesson-${lesson.lessonId}`}>
+                <StudentLessonBlock
+                  lesson={lesson}
+                  isComplete={completedIds.has(lesson.lessonId)}
+                  onComplete={() => markComplete(lesson.lessonId)}
+                />
+              </div>
             ))}
           </div>
         </>

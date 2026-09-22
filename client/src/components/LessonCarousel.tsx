@@ -5,15 +5,20 @@ import { StudentLessonBlock } from "./StudentLessonBlock.js";
 export function LessonCarousel({
   lessons,
   completedIds,
+  initialLessonId,
   onComplete,
   onCurrentLessonChange,
 }: {
   lessons: Lesson[];
   completedIds: Set<string>;
+  initialLessonId?: string;
   onComplete: (lessonId: string) => void;
   onCurrentLessonChange?: (lesson: Lesson) => void;
 }) {
-  const [index, setIndex] = useState(0);
+  const [index, setIndex] = useState(() => {
+    const i = lessons.findIndex((l) => l.lessonId === initialLessonId);
+    return i >= 0 ? i : 0;
+  });
   const lesson = lessons[index];
 
   useEffect(() => {
