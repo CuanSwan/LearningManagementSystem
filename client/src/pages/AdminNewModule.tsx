@@ -2,9 +2,8 @@ import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import type { Lesson, LessonType } from "../types.js";
 import { createModule } from "../api.js";
-import { ComponentLibrary } from "../components/ComponentLibrary.js";
+import { AdminToolsPanel } from "../components/AdminToolsPanel.js";
 import { DraggableLessonBlock } from "../components/DraggableLessonBlock.js";
-import { LibrarySidebar } from "../components/LibrarySidebar.js";
 import { LIBRARY_LESSON_MIME, NEW_LESSON_MIME, SAVED_LESSON_MIME } from "../dnd.js";
 import { useLessonListEditor } from "../useLessonListEditor.js";
 
@@ -115,10 +114,9 @@ export function AdminNewModule() {
             Drop a library block here to add it to the end
           </div>
         </div>
-
-        <ComponentLibrary savedLessons={editor.savedLessons} onDropRemove={editor.remove} />
-        <LibrarySidebar onImportLesson={editor.importLesson} />
       </div>
+
+      <AdminToolsPanel savedLessons={editor.savedLessons} onDropRemove={editor.remove} onImportLesson={editor.importLesson} />
     </main>
   );
 }
