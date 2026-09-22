@@ -8,7 +8,7 @@ import { BackButton } from "../components/BackButton.js";
 import { Breadcrumb } from "../components/Breadcrumb.js";
 import { CourseSideMenu } from "../components/CourseSideMenu.js";
 import { isModuleComplete, isModuleLocked } from "../courseProgress.js";
-import { describeLesson, lessonTypeLabel } from "../lessonTemplates.js";
+import { describeLesson } from "../lessonTemplates.js";
 import { Theme, themeStyle } from "../theme.js";
 
 function truncate(text: string, maxLength: number): string {
@@ -134,13 +134,11 @@ export function StudentCourse() {
                             key={lesson.lessonId}
                             className={`timeline-step${isComplete ? " is-complete" : ""}`}
                           >
-                            <span className="timeline-step-type">{lessonTypeLabel(lesson.type)}</span>
+                            <span className="timeline-step-bullet" aria-hidden="true">
+                              {isComplete ? "✓" : "•"}
+                            </span>
                             <span className="timeline-step-preview">{truncate(describeLesson(lesson), 70)}</span>
-                            {isComplete ? (
-                              <span className="timeline-step-check">✓</span>
-                            ) : (
-                              <span className="timeline-step-number">{lessonIndex + 1}</span>
-                            )}
+                            <span className="timeline-step-number">{lessonIndex + 1}</span>
                           </li>
                         );
                       })}

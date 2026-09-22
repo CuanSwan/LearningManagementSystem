@@ -1386,27 +1386,27 @@ a.path-snake-link:hover .path-snake-bubble {
   font-size: 0.9rem;
 }
 
-.timeline-step-check {
-  color: var(--module-accent, #3e6259);
-  font-weight: 700;
-}
-
 .timeline-step-number {
   color: var(--text-disabled);
   font-weight: 700;
   font-size: 0.85rem;
 }
 
-.timeline-step-type {
+.timeline-step-bullet {
   flex-shrink: 0;
-  border: 1px solid var(--text-primary);
-  color: var(--text-primary);
-  border-radius: 0;
-  padding: 0.4rem 0.85rem;
-  font-size: 0.78rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  font-size: 1.1rem;
+  line-height: 1;
+  color: var(--text-disabled);
+}
+
+.timeline-step.is-complete .timeline-step-bullet {
+  color: var(--module-accent, #3e6259);
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-size: 0.95rem;
 }
 
 .timeline-step-preview {
