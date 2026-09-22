@@ -1,4 +1,5 @@
 import { ColorSchemeSchema, LessonDisplayModeSchema } from "./displayPreference.js";
+import { sendVoucherEmail } from "./mailer.js";
 import { LessonSchema, ModuleSchema } from "./schemas.js";
 import { ThemeOverrideSchema } from "./theme.js";
 import { UserRoleSchema, type UserRole } from "./userSchema.js";
@@ -59,6 +60,17 @@ import {
   verifyCredentials,
   verifyCurrentPassword,
 } from "./userStore.js";
+import {
+  checkVoucherForRegistration,
+  createVoucher,
+  getVoucher,
+  initVoucherStore,
+  listVouchers,
+  markVoucherRegistered,
+  revokeVoucher,
+  toPublicVoucher,
+  VOUCHER_REGISTRATION_ERROR_MESSAGES,
+} from "./voucherStore.js";
 
 const app = express();
 const port = process.env.PORT ?? 4000;
@@ -85,9 +97,29 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
-app.use(async (req: Request, _res: Response, next: NextFunction) => {
-  const userId = getSessionUserId(req.cookies[SESSION_COOKIE]);
-  req.user = userId ? await getUserById(userId) : undefined;
+// True once a voucher-registered user's one-year window (see
+// voucherSchema.ts's VOUCHER_VALIDITY_MS) has passed. Absent for a user
+// with no originating voucher (pre-voucher accounts, seeded demo
+// accounts), who never expire.
+function isMembershipExpired(user: { membershipExpiresAt?: number }): boolean {
+  return user.membershipExpiresAt !== undefined && Date.now() > user.membershipExpiresAt;
+}
+
+app.use(async (req: Request, res: Response, next: NextFunction) => {
+  const sessionId = req.cookies[SESSION_COOKIE];
+  const userId = getSessionUserId(sessionId);
+  const user = userId ? await getUserById(userId) : undefined;
+  // Checked on every request, not just at login - a session created before
+  // the one-year mark shouldn't keep working past it just because the user
+  // never logged out. Kill the session outright rather than leaving it to
+  // silently keep re-checking on every future request.
+  if (user && isMembershipExpired(user)) {
+    destroySession(sessionId);
+    res.clearCookie(SESSION_COOKIE, cookieOptions);
+    req.user = undefined;
+  } else {
+    req.user = user;
+  }
   next();
 });
 
@@ -126,9 +158,13 @@ function requireRole(...roles: UserRole[]) {
 
 // --- Auth ---
 
+// name and role are deliberately not part of this - both live on the
+// voucher (see voucherSchema.ts) and are copied from there, not taken from
+// the request body, so a client can't self-elevate by passing its own
+// role, and can't get a name a course admin never actually invited.
 const RegisterSchema = z.object({
+  voucherId: z.string().min(1),
   email: z.string().email(),
-  name: z.string().min(1),
   password: z.string().min(8),
 });
 
@@ -148,8 +184,22 @@ app.post("/api/auth/register", async (req, res) => {
     sendValidationError(res, parsed.error);
     return;
   }
+  const { voucherId, email, password } = parsed.data;
+
+  const voucher = await getVoucher(voucherId);
+  if (!voucher) {
+    res.status(404).json({ error: "This invitation link isn't valid." });
+    return;
+  }
+  const problem = checkVoucherForRegistration(voucher, email);
+  if (problem) {
+    res.status(400).json({ error: VOUCHER_REGISTRATION_ERROR_MESSAGES[problem] });
+    return;
+  }
+
   try {
-    const user = await createUser({ ...parsed.data, role: "student" });
+    const user = await createUser({ email, name: voucher.name, password, role: voucher.role, voucherId: voucher.voucherId });
+    await markVoucherRegistered(voucher.voucherId, user.userId);
     setSessionCookie(res, user.userId);
     res.status(201).json(user);
   } catch (err) {
@@ -166,6 +216,10 @@ app.post("/api/auth/login", async (req, res) => {
   const user = await verifyCredentials(parsed.data.email, parsed.data.password);
   if (!user) {
     res.status(401).json({ error: "Invalid email or password" });
+    return;
+  }
+  if (isMembershipExpired(user)) {
+    res.status(401).json({ error: "Your access has expired. Contact an administrator for a new invitation." });
     return;
   }
   setSessionCookie(res, user.userId);
@@ -206,33 +260,13 @@ app.put("/api/auth/me/password", requireAuth, async (req, res) => {
   res.status(204).end();
 });
 
-// --- User management (super_admin only) ---
-
-const CreateUserInputSchema = z.object({
-  email: z.string().email(),
-  name: z.string().min(1),
-  password: z.string().min(8),
-  role: UserRoleSchema,
-});
+// --- User management ---
 
 // Listing users (name/email/role/assignments) is needed by the course/
 // learning-path assignment UI, which regular admins also use - unlike
-// creating accounts or changing role/password, which stay super_admin-only.
+// changing role/password, which stay super_admin-only.
 app.get("/api/users", requireRole("admin", "super_admin"), async (_req, res) => {
   res.json(await listUsers());
-});
-
-app.post("/api/users", requireRole("super_admin"), async (req, res) => {
-  const parsed = CreateUserInputSchema.safeParse(req.body);
-  if (!parsed.success) {
-    sendValidationError(res, parsed.error);
-    return;
-  }
-  try {
-    res.status(201).json(await createUser(parsed.data));
-  } catch (err) {
-    res.status(409).json({ error: (err as Error).message });
-  }
 });
 
 app.patch("/api/users/:userId/role", requireRole("super_admin"), async (req, res) => {
@@ -277,6 +311,80 @@ app.patch("/api/users/:userId/assignments", requireRole("admin", "super_admin"),
   const updated = await setUserAssignments(req.params.userId, parsed.data);
   if (!updated) {
     res.status(404).json({ error: "User not found" });
+    return;
+  }
+  res.json(updated);
+});
+
+// --- Vouchers ---
+
+const CreateVoucherInputSchema = z.object({
+  email: z.string().email(),
+  name: z.string().min(1),
+  role: UserRoleSchema,
+});
+
+// Only super_admin can issue an admin/super_admin voucher - mirrors the
+// existing rule that only super_admin can hand out privileged roles at
+// all (see the role-patch route above). A plain admin can still invite
+// students, which is the replacement for what used to be open self-signup.
+function canIssueRole(issuer: UserRole, role: UserRole): boolean {
+  return role === "student" || issuer === "super_admin";
+}
+
+app.get("/api/vouchers", requireRole("admin", "super_admin"), async (_req, res) => {
+  res.json(await listVouchers());
+});
+
+// Public and unauthenticated on purpose - the register page needs this to
+// greet the invitee by name and catch an already-used/expired/revoked
+// voucher before showing the form, before the visitor has any session.
+// voucherId is an unguessable UUID (the link's whole security model), and
+// this only ever returns the public-safe projection (see
+// voucherSchema.ts's PublicVoucherSchema) - never registeredUserId.
+app.get("/api/vouchers/:voucherId", async (req, res) => {
+  const voucher = await getVoucher(req.params.voucherId);
+  if (!voucher) {
+    res.status(404).json({ error: "This invitation link isn't valid." });
+    return;
+  }
+  res.json(toPublicVoucher(voucher));
+});
+
+app.post("/api/vouchers", requireRole("admin", "super_admin"), async (req, res) => {
+  const parsed = CreateVoucherInputSchema.safeParse(req.body);
+  if (!parsed.success) {
+    sendValidationError(res, parsed.error);
+    return;
+  }
+  if (!canIssueRole(req.user!.role, parsed.data.role)) {
+    res.status(403).json({ error: "Only a super admin can invite an admin or super admin." });
+    return;
+  }
+  const voucher = await createVoucher(parsed.data);
+  const emailSent = await sendVoucherEmail({
+    to: voucher.email,
+    name: voucher.name,
+    voucherId: voucher.voucherId,
+    role: voucher.role,
+    expiresAt: voucher.expiresAt,
+  });
+  res.status(201).json({ voucher, emailSent });
+});
+
+app.patch("/api/vouchers/:voucherId/revoke", requireRole("admin", "super_admin"), async (req, res) => {
+  const voucher = await getVoucher(req.params.voucherId);
+  if (!voucher) {
+    res.status(404).json({ error: "Voucher not found" });
+    return;
+  }
+  if (!canIssueRole(req.user!.role, voucher.role)) {
+    res.status(403).json({ error: "Only a super admin can revoke an admin or super admin invitation." });
+    return;
+  }
+  const updated = await revokeVoucher(req.params.voucherId);
+  if (!updated) {
+    res.status(400).json({ error: "Only a pending invitation can be revoked." });
     return;
   }
   res.json(updated);
@@ -603,7 +711,7 @@ app.use((err: unknown, req: Request, res: Response, _next: NextFunction) => {
 
 async function main() {
   const db = await connectDb();
-  await Promise.all([initStore(db), initUserStore(db), initProgressStore(db), initPreferencesStore(db)]);
+  await Promise.all([initStore(db), initUserStore(db), initVoucherStore(db), initProgressStore(db), initPreferencesStore(db)]);
 
   await seedUsers();
   await seedSampleData();

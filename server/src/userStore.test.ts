@@ -6,12 +6,15 @@ import { createFileStore } from "./db/fileStore.js";
 import type { Database } from "./db/index.js";
 import {
   createUser,
+  getUserById,
   initUserStore,
+  listUsers,
   setUserAssignments,
   updatePassword,
   verifyCredentials,
   verifyCurrentPassword,
 } from "./userStore.js";
+import { createVoucher, initVoucherStore } from "./voucherStore.js";
 
 let dir: string;
 
@@ -22,6 +25,10 @@ beforeEach(async () => {
     close: async () => {},
   };
   await initUserStore(db);
+  // Every user-returning function joins to the originating voucher (see
+  // toPublicUser) - needed even for tests that never pass a voucherId,
+  // since userStore.ts calls into this module unconditionally.
+  await initVoucherStore(db);
 });
 
 afterEach(async () => {
@@ -61,6 +68,37 @@ describe("createUser", () => {
     const user = await createUser({ email: "a@b.com", name: "A", password: "Password1", role: "student" });
     expect(user.assignedLearningPathIds).toEqual([]);
     expect(user.assignedCourseIds).toEqual([]);
+  });
+
+  it("has no membership fields when created without a voucher", async () => {
+    const user = await createUser({ email: "a@b.com", name: "A", password: "Password1", role: "student" });
+    expect(user.memberSince).toBeUndefined();
+    expect(user.membershipExpiresAt).toBeUndefined();
+  });
+});
+
+describe("membership fields joined from a voucher", () => {
+  it("appear on the user returned by createUser, verifyCredentials, getUserById, and listUsers", async () => {
+    const voucher = await createVoucher({ email: "a@b.com", name: "A", role: "student" });
+    const created = await createUser({
+      email: "a@b.com",
+      name: voucher.name,
+      password: "Password1",
+      role: voucher.role,
+      voucherId: voucher.voucherId,
+    });
+    expect(created.memberSince).toBe(voucher.issuedAt);
+    expect(created.membershipExpiresAt).toBe(voucher.expiresAt);
+
+    const loggedIn = await verifyCredentials("a@b.com", "Password1");
+    expect(loggedIn?.memberSince).toBe(voucher.issuedAt);
+    expect(loggedIn?.membershipExpiresAt).toBe(voucher.expiresAt);
+
+    const fetched = await getUserById(created.userId);
+    expect(fetched?.membershipExpiresAt).toBe(voucher.expiresAt);
+
+    const listed = await listUsers();
+    expect(listed.find((u) => u.userId === created.userId)?.membershipExpiresAt).toBe(voucher.expiresAt);
   });
 });
 

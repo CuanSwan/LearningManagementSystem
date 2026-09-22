@@ -15,5 +15,12 @@ export const UserSchema = z.object({
   role: UserRoleSchema,
   assignedLearningPathIds: z.array(z.string()).default([]),
   assignedCourseIds: z.array(z.string()).default([]),
+  // Absent for a user with no originating voucher (every account created
+  // before this feature existed, plus the seeded demo accounts) - such a
+  // user never expires. Present for a voucher-registered user: memberSince
+  // is the voucher's issuedAt, membershipExpiresAt is the point login stops
+  // working unless an admin issues a new voucher.
+  memberSince: z.number().optional(),
+  membershipExpiresAt: z.number().optional(),
 });
 export type User = z.infer<typeof UserSchema>;
