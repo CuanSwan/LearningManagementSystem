@@ -2,7 +2,7 @@ import { ColorSchemeSchema, LessonDisplayModeSchema } from "./displayPreference.
 import { sendVoucherEmail } from "./mailer.js";
 import { CourseStatusSchema, LessonSchema, ModuleSchema } from "./schemas.js";
 import { ThemeOverrideSchema } from "./theme.js";
-import { UserRoleSchema, type UserRole } from "./userSchema.js";
+import { PasswordSchema, UserRoleSchema, type UserRole } from "./userSchema.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import express, { type NextFunction, type Request, type Response } from "express";
@@ -177,7 +177,7 @@ function requireRole(...roles: UserRole[]) {
 const RegisterSchema = z.object({
   voucherId: z.string().min(1),
   email: z.string().email(),
-  password: z.string().min(8),
+  password: PasswordSchema,
 });
 
 const LoginSchema = z.object({
@@ -254,7 +254,7 @@ app.get("/api/auth/me", (req, res) => {
 
 const ChangePasswordSchema = z.object({
   currentPassword: z.string(),
-  newPassword: z.string().min(8),
+  newPassword: PasswordSchema,
 });
 
 app.put("/api/auth/me/password", requireAuth, async (req, res) => {
@@ -296,7 +296,7 @@ app.patch("/api/users/:userId/role", requireRole("super_admin"), async (req, res
 });
 
 app.patch("/api/users/:userId/password", requireRole("super_admin"), async (req, res) => {
-  const parsed = z.object({ newPassword: z.string().min(8) }).safeParse(req.body);
+  const parsed = z.object({ newPassword: PasswordSchema }).safeParse(req.body);
   if (!parsed.success) {
     sendValidationError(res, parsed.error);
     return;
