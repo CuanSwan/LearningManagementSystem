@@ -80,7 +80,7 @@ export function App() {
               <Route path="/admin/assignments" element={<AdminAssignments />} />
             </Route>
 
-            <Route element={<RequireRole roles={["super_admin"]} />}>
+            <Route element={<RequireRole roles={["admin", "super_admin"]} />}>
               <Route path="/admin/users" element={<AdminUsers />} />
             </Route>
           </Route>

@@ -1,6 +1,7 @@
 import { hashPassword, verifyPassword } from "./auth.js";
 import type { Database, DocumentStore } from "./db/index.js";
 import { UserSchema, type User, type UserRole } from "./userSchema.js";
+import { getVoucher } from "./voucherStore.js";
 
 interface StoredUser extends Record<string, unknown> {
   userId: string;
@@ -10,6 +11,10 @@ interface StoredUser extends Record<string, unknown> {
   passwordHash: string;
   assignedLearningPathIds?: string[];
   assignedCourseIds?: string[];
+  // Absent for a user created before vouchers existed (or the seeded demo
+  // accounts, which skip vouchers entirely) - see UserSchema's
+  // memberSince/membershipExpiresAt for what this drives.
+  voucherId?: string;
 }
 
 let users: DocumentStore<StoredUser>;
@@ -21,7 +26,14 @@ export async function initUserStore(db: Database): Promise<void> {
   users = await db.createStore<StoredUser>("users", "userId", [{ fields: { email: 1 }, unique: true }]);
 }
 
-function toPublicUser(stored: StoredUser): User {
+async function toPublicUser(stored: StoredUser): Promise<User> {
+  // A user with no voucherId (pre-voucher accounts, seeded demo accounts)
+  // never expires - membership fields simply stay absent for them. A
+  // dangling voucherId (the voucher record itself somehow missing) is
+  // treated the same way rather than as an error, since the alternative -
+  // failing to load the user at all - would be worse than just not
+  // showing membership info for them.
+  const voucher = stored.voucherId ? await getVoucher(stored.voucherId) : undefined;
   return UserSchema.parse({
     userId: stored.userId,
     email: stored.email,
@@ -29,6 +41,8 @@ function toPublicUser(stored: StoredUser): User {
     role: stored.role,
     assignedLearningPathIds: stored.assignedLearningPathIds ?? [],
     assignedCourseIds: stored.assignedCourseIds ?? [],
+    memberSince: voucher?.issuedAt,
+    membershipExpiresAt: voucher?.expiresAt,
   });
 }
 
@@ -37,6 +51,7 @@ export async function createUser(input: {
   name: string;
   password: string;
   role: UserRole;
+  voucherId?: string;
 }): Promise<User> {
   const email = input.email.toLowerCase();
   const existing = await users.list({ email });
@@ -51,6 +66,7 @@ export async function createUser(input: {
     passwordHash: hashPassword(input.password),
     assignedLearningPathIds: [],
     assignedCourseIds: [],
+    voucherId: input.voucherId,
   };
   try {
     await users.set(stored.userId, stored);
@@ -82,7 +98,7 @@ export async function getUserById(userId: string): Promise<User | undefined> {
 }
 
 export async function listUsers(): Promise<User[]> {
-  return (await users.list()).map(toPublicUser);
+  return Promise.all((await users.list()).map(toPublicUser));
 }
 
 export async function setUserRole(userId: string, role: UserRole): Promise<User | undefined> {

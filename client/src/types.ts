@@ -245,7 +245,30 @@ export interface User {
   role: UserRole;
   assignedLearningPathIds: string[];
   assignedCourseIds: string[];
+  // Absent for a user with no originating voucher (pre-voucher accounts,
+  // seeded demo accounts) - such a user never expires.
+  memberSince?: number;
+  membershipExpiresAt?: number;
 }
+
+export type VoucherStatus = "pending" | "registered" | "revoked";
+
+export interface Voucher {
+  voucherId: string;
+  email: string;
+  name: string;
+  role: UserRole;
+  issuedAt: number;
+  expiresAt: number;
+  status: VoucherStatus;
+  registeredUserId?: string;
+  registeredAt?: number;
+}
+
+// What GET /api/vouchers/:voucherId (public, unauthenticated - used by the
+// register page) returns - never registeredUserId/registeredAt, which
+// would leak another user's id to anyone holding an already-used link.
+export type PublicVoucher = Omit<Voucher, "registeredUserId" | "registeredAt">;
 
 export type LessonDisplayMode = "vertical" | "carousel" | "accessible";
 

@@ -1,4 +1,15 @@
-import type { ColorScheme, Course, LearningPath, Lesson, LessonDisplayMode, Module, User, UserRole } from "./types.js";
+import type {
+  ColorScheme,
+  Course,
+  LearningPath,
+  Lesson,
+  LessonDisplayMode,
+  Module,
+  PublicVoucher,
+  User,
+  UserRole,
+  Voucher,
+} from "./types.js";
 
 // In production this points at the deployed API (e.g. Render); in local
 // dev it's left empty and vite.config.ts's proxy forwards /api requests
@@ -35,8 +46,11 @@ export function login(email: string, password: string): Promise<User> {
   return request("/api/auth/login", { method: "POST", body: JSON.stringify({ email, password }) });
 }
 
-export function register(email: string, name: string, password: string): Promise<User> {
-  return request("/api/auth/register", { method: "POST", body: JSON.stringify({ email, name, password }) });
+// name and role aren't collected here - they come from the voucher, which
+// the server looks up by voucherId and copies from, so they can't be
+// spoofed via the request body.
+export function register(voucherId: string, email: string, password: string): Promise<User> {
+  return request("/api/auth/register", { method: "POST", body: JSON.stringify({ voucherId, email, password }) });
 }
 
 export async function logout(): Promise<void> {
@@ -45,10 +59,6 @@ export async function logout(): Promise<void> {
 
 export function listUsers(): Promise<User[]> {
   return request("/api/users");
-}
-
-export function createUser(input: { email: string; name: string; password: string; role: UserRole }): Promise<User> {
-  return request("/api/users", { method: "POST", body: JSON.stringify(input) });
 }
 
 export function setUserRole(userId: string, role: UserRole): Promise<User> {
@@ -88,6 +98,25 @@ export async function resetUserPassword(userId: string, newPassword: string): Pr
     const body = await res.json().catch(() => null);
     throw new Error(typeof body?.error === "string" ? body.error : `Request failed: ${res.status}`);
   }
+}
+
+export function listVouchers(): Promise<Voucher[]> {
+  return request("/api/vouchers");
+}
+
+// Unauthenticated on purpose - the register page needs this before the
+// visitor has any session, to greet them by name and catch an
+// already-used/expired/revoked voucher before showing the form.
+export function getVoucherPublic(voucherId: string): Promise<PublicVoucher> {
+  return request(`/api/vouchers/${voucherId}`);
+}
+
+export function createVoucher(input: { email: string; name: string; role: UserRole }): Promise<{ voucher: Voucher; emailSent: boolean }> {
+  return request("/api/vouchers", { method: "POST", body: JSON.stringify(input) });
+}
+
+export function revokeVoucher(voucherId: string): Promise<Voucher> {
+  return request(`/api/vouchers/${voucherId}/revoke`, { method: "PATCH" });
 }
 
 export function listCourses(): Promise<Course[]> {
