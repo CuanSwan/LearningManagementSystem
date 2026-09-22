@@ -5,6 +5,13 @@ import { UserRoleSchema, type UserRole } from "./userSchema.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import express, { type NextFunction, type Request, type Response } from "express";
+// Express 4 doesn't forward a rejected promise from an async route handler
+// to error-handling middleware on its own - an unhandled one used to just
+// hang the request forever with nothing logged. This patches route
+// dispatch so every async handler's rejection reaches the error handler
+// below instead. Side-effecting import - must run before any app.use/get/
+// post/etc. below.
+import "express-async-errors";
 import multer from "multer";
 import { z } from "zod";
 import { createSession, destroySession, getSessionUserId } from "./auth.js";
@@ -576,6 +583,22 @@ app.put("/api/preferences/color-scheme", requireAuth, async (req, res) => {
   }
   await setColorScheme(req.user!.userId, parsed.data.colorScheme);
   res.json({ colorScheme: parsed.data.colorScheme });
+});
+
+// Catches anything a route handler didn't already turn into its own
+// response - a thrown/rejected error from a store, the DB layer, or
+// anywhere else. Must be registered after every route (Express only
+// treats a 4-arg middleware as an error handler) and last, so it's the
+// backstop the Rise-import route's `throw err` (and any of the async
+// handlers above) actually lands in - express-async-errors is what gets a
+// rejected promise here in the first place. Logs the full error server-side
+// (this is what "console.log/tail the server output" actually shows for a
+// 500), and only ever sends a generic message to the client - the real
+// detail belongs in the log, not in a response an attacker could read too.
+app.use((err: unknown, req: Request, res: Response, _next: NextFunction) => {
+  console.error(`[error] ${req.method} ${req.originalUrl}:`, err);
+  if (res.headersSent) return;
+  res.status(500).json({ error: "Internal server error" });
 });
 
 async function main() {
