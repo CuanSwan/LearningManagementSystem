@@ -259,7 +259,8 @@ export interface Voucher {
   name: string;
   role: UserRole;
   issuedAt: number;
-  expiresAt: number;
+  // Absent for an admin/super_admin voucher - those never expire.
+  expiresAt?: number;
   status: VoucherStatus;
   registeredUserId?: string;
   registeredAt?: number;

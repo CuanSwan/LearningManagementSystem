@@ -20,7 +20,9 @@ export async function createVoucher(input: { email: string; name: string; role: 
     name: input.name,
     role: input.role,
     issuedAt,
-    expiresAt: issuedAt + VOUCHER_VALIDITY_MS,
+    // Only a student's access is meant to lapse on a clock - an admin or
+    // super_admin voucher (and the account it becomes) never expires.
+    expiresAt: input.role === "student" ? issuedAt + VOUCHER_VALIDITY_MS : undefined,
     status: "pending" satisfies VoucherStatus,
   });
   await vouchers.set(voucher.voucherId, voucher);
@@ -36,7 +38,7 @@ export async function listVouchers(): Promise<Voucher[]> {
 }
 
 export function isVoucherExpired(voucher: Pick<Voucher, "expiresAt">): boolean {
-  return Date.now() > voucher.expiresAt;
+  return voucher.expiresAt !== undefined && Date.now() > voucher.expiresAt;
 }
 
 // Only a still-pending voucher can be revoked - one already consumed has a

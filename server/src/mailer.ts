@@ -34,7 +34,8 @@ export async function sendVoucherEmail(params: {
   name: string;
   voucherId: string;
   role: UserRole;
-  expiresAt: number;
+  // Absent for an admin/super_admin voucher, which never expires.
+  expiresAt?: number;
 }): Promise<boolean> {
   const link = voucherSignUpLink(params.voucherId);
   if (!resend) {
@@ -42,11 +43,10 @@ export async function sendVoucherEmail(params: {
     return false;
   }
 
-  const expiresLabel = new Date(params.expiresAt).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+  const expiresLine =
+    params.expiresAt !== undefined
+      ? `This invitation is valid until ${new Date(params.expiresAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}.`
+      : "This invitation doesn't expire.";
 
   try {
     const result = await resend.emails.send({
@@ -57,7 +57,7 @@ export async function sendVoucherEmail(params: {
         <p>Hi ${escapeHtml(params.name)},</p>
         <p>You've been invited to join as a <strong>${ROLE_LABELS[params.role]}</strong>. Use the link below to set up your account with this email address (<strong>${escapeHtml(params.to)}</strong>):</p>
         <p><a href="${link}">${link}</a></p>
-        <p>This invitation is valid until ${expiresLabel}.</p>
+        <p>${expiresLine}</p>
       `,
     });
     if (result.error) {

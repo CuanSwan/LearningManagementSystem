@@ -75,7 +75,7 @@ export function Register() {
         ? "This invitation has been revoked."
         : voucher?.status === "registered"
           ? "This invitation has already been used."
-          : voucher && Date.now() > voucher.expiresAt
+          : voucher && voucher.expiresAt !== undefined && Date.now() > voucher.expiresAt
             ? "This invitation has expired. Ask an admin to issue a new one."
             : null;
 

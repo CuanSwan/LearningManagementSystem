@@ -33,7 +33,7 @@ afterEach(async () => {
 });
 
 describe("createVoucher", () => {
-  it("starts pending, lowercases the email, and expires exactly a year from issuance", async () => {
+  it("starts pending, lowercases the email, and expires exactly a year from issuance for a student", async () => {
     const before = Date.now();
     const voucher = await createVoucher({ email: "A@Example.com", name: "Alex", role: "student" });
     const after = Date.now();
@@ -42,7 +42,13 @@ describe("createVoucher", () => {
     expect(voucher.status).toBe("pending");
     expect(voucher.issuedAt).toBeGreaterThanOrEqual(before);
     expect(voucher.issuedAt).toBeLessThanOrEqual(after);
-    expect(voucher.expiresAt - voucher.issuedAt).toBe(VOUCHER_VALIDITY_MS);
+    expect(voucher.expiresAt).toBeDefined();
+    expect(voucher.expiresAt! - voucher.issuedAt).toBe(VOUCHER_VALIDITY_MS);
+  });
+
+  it.each(["admin", "super_admin"] as const)("never expires for a %s voucher", async (role) => {
+    const voucher = await createVoucher({ email: "a@b.com", name: "A", role });
+    expect(voucher.expiresAt).toBeUndefined();
   });
 
   it("persists so a later getVoucher finds it", async () => {
@@ -68,6 +74,10 @@ describe("isVoucherExpired", () => {
 
   it("is true once expiresAt is in the past", () => {
     expect(isVoucherExpired({ expiresAt: Date.now() - 1000 })).toBe(true);
+  });
+
+  it("is false with no expiresAt at all, however far in the past 'now' pretends to be", () => {
+    expect(isVoucherExpired({ expiresAt: undefined })).toBe(false);
   });
 });
 
@@ -155,5 +165,10 @@ describe("checkVoucherForRegistration", () => {
   it("checks status before expiry, so a revoked-and-expired voucher reports revoked", () => {
     const voucher = baseVoucher({ status: "revoked", expiresAt: Date.now() - 1000 });
     expect(checkVoucherForRegistration(voucher, "a@b.com")).toBe("revoked");
+  });
+
+  it("allows an admin voucher with no expiresAt regardless of how old issuedAt is", () => {
+    const voucher = baseVoucher({ role: "admin", issuedAt: 0, expiresAt: undefined });
+    expect(checkVoucherForRegistration(voucher, "a@b.com")).toBeNull();
   });
 });
