@@ -72,11 +72,12 @@ export function StudentCourse() {
   );
 
   return (
-    <main className="student-view course-page" style={themeStyle(resolved)}>
+    <>
       <CourseSideMenu courseId={courseId!} />
-      <Breadcrumb items={[{ label: "Courses", to: "/courses" }, { label: course.title }]} />
-      <BackButton to="/courses" label="Back to courses" />
-      <h1>{course.title}</h1>
+      <main className="student-view course-page" style={themeStyle(resolved)}>
+        <Breadcrumb items={[{ label: "Courses", to: "/courses" }, { label: course.title }]} />
+        <BackButton to="/courses" label="Back to courses" />
+        <h1>{course.title}</h1>
       {course.description && <p className="course-description">{course.description}</p>}
 
       {totalLessons > 0 && (
@@ -176,6 +177,7 @@ export function StudentCourse() {
           })}
         </ol>
       )}
-    </main>
+      </main>
+    </>
   );
 }

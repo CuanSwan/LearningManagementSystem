@@ -9,12 +9,14 @@ function truncate(text: string, maxLength: number): string {
   return text.length > maxLength ? `${text.slice(0, maxLength).trimEnd()}...` : text;
 }
 
-// Floats fixed to the left edge of the viewport, the same "collapsible
-// overlay" pattern as the admin tools panel - course/module pages fill the
-// full page width with no spare margin to dock into, so there's nowhere to
-// sit in-flow without squeezing the reading content. Defaults to collapsed,
-// unlike the admin panel: a student arriving to read shouldn't have their
-// content covered before they've asked for the nav tree.
+// A full-height drawer, fixed to the left edge of the viewport, that
+// slides in and pushes the reading content right (via a CSS sibling
+// selector matching .course-page/.module-page - see App.css) rather than
+// floating as an overlay on top of it. The toggle is a separate element
+// (not inside the sliding drawer) so it stays reachable - and rides along
+// the drawer's edge - regardless of open state. Defaults to closed: a
+// student arriving to read shouldn't have their content shoved aside
+// before they've asked for the nav tree.
 export function CourseSideMenu({
   courseId,
   activeModuleId,
@@ -24,7 +26,7 @@ export function CourseSideMenu({
   activeModuleId?: string;
   activeLessonId?: string;
 }) {
-  const [collapsed, setCollapsed] = useState(true);
+  const [open, setOpen] = useState(false);
   const [modules, setModules] = useState<Module[]>([]);
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
 
@@ -46,17 +48,9 @@ export function CourseSideMenu({
   if (modules.length === 0) return null;
 
   return (
-    <div className={`course-side-menu${collapsed ? " is-collapsed" : ""}`}>
-      <button
-        type="button"
-        className="course-side-menu-toggle"
-        onClick={() => setCollapsed((c) => !c)}
-        aria-expanded={!collapsed}
-      >
-        {collapsed ? "Contents ›" : "‹ Contents"}
-      </button>
-      {!collapsed && (
-        <nav className="course-side-menu-body" aria-label="Course contents">
+    <>
+      <nav className={`course-side-menu${open ? " is-open" : ""}`} aria-label="Course contents">
+        <div className="course-side-menu-body">
           {modules.map((module, index) => {
             const complete = isModuleComplete(module, completedIds);
             const locked = isModuleLocked(modules, index, completedIds);
@@ -111,8 +105,16 @@ export function CourseSideMenu({
               </details>
             );
           })}
-        </nav>
-      )}
-    </div>
+        </div>
+      </nav>
+      <button
+        type="button"
+        className={`course-side-menu-toggle${open ? " is-open" : ""}`}
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+      >
+        {open ? "‹ Contents" : "Contents ›"}
+      </button>
+    </>
   );
 }

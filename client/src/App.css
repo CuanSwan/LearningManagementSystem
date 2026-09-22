@@ -212,29 +212,42 @@ main {
   background: var(--surface-app);
 }
 
-/* --- Course side menu: a collapsible Module -> Lesson tree, fixed to the
-   left edge of the viewport - the same floating-overlay idea as the admin
-   tools panel, mirrored to the other side. course-page/module-page fill
-   the full viewport width with no spare margin to dock into, so this
-   overlays the reading content when open by design. Starts collapsed
-   (unlike the admin panel): a student arriving to read shouldn't have
-   their content covered before they've asked for the nav tree. --- */
+/* --- Course side menu: a full-height Module -> Lesson tree drawer, docked
+   to the left edge of the viewport below the top bar (45px, its measured
+   height). Unlike the admin tools panel it doesn't float over the reading
+   content - it slides in via transform and pushes .course-page/.module-page
+   over via the sibling-selector margin-left below, so opening it never
+   covers content the student is reading. The toggle is a separate fixed
+   element (not inside the sliding drawer) so it's always reachable and
+   rides along the drawer's right edge as it slides. Starts closed: a
+   student arriving to read shouldn't have their content shoved aside
+   before they've asked for the nav tree. z-index stays below the
+   accessibility menu (40) and mobile nav dropdown (20) so both remain
+   usable/visible with the drawer open. --- */
 .course-side-menu {
   position: fixed;
-  /* Lower than the admin tools panel's matching 6rem - course/module pages
-     stack a breadcrumb and a left-aligned "Back to ..." button right under
-     the top bar, and 6rem here would sit directly on top of that button. */
-  top: 9rem;
-  left: 1.5rem;
-  z-index: 15;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.5rem;
-  max-height: calc(100vh - 11rem);
+  top: 45px;
+  left: 0;
+  width: 300px;
+  height: calc(100vh - 45px);
+  z-index: 18;
+  background: var(--surface-card);
+  border-right: 1px solid var(--border-default);
+  box-shadow: 0 0 28px var(--shadow-color-strong);
+  overflow-y: auto;
+  transform: translateX(-100%);
+  transition: transform 0.25s ease;
+}
+
+.course-side-menu.is-open {
+  transform: translateX(0);
 }
 
 .course-side-menu-toggle {
+  position: fixed;
+  top: 9rem;
+  left: 1.5rem;
+  z-index: 19;
   background: var(--surface-card);
   color: var(--text-primary);
   border: 1px solid var(--border-strong);
@@ -245,20 +258,32 @@ main {
   cursor: pointer;
   box-shadow: 0 4px 12px var(--shadow-color);
   white-space: nowrap;
+  transition: left 0.25s ease;
+}
+
+.course-side-menu-toggle.is-open {
+  left: calc(300px + 1.5rem);
 }
 
 .course-side-menu-body {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  width: 300px;
-  max-width: calc(100vw - 3rem);
-  overflow-y: auto;
-  background: var(--surface-card);
-  border: 1px solid var(--border-default);
-  border-radius: 8px;
-  padding: 0.75rem;
-  box-shadow: 0 12px 28px var(--shadow-color-strong);
+  padding: 1.5rem 1rem;
+}
+
+/* Pushes the reading content over while the drawer is open - the drawer
+   and the page element are siblings (see StudentCourse/StudentModule), so
+   a general sibling combinator reacts to .is-open without any JS wiring
+   between the two. */
+.course-side-menu.is-open ~ .course-page,
+.course-side-menu.is-open ~ .module-page {
+  margin-left: 300px;
+}
+
+.course-page,
+.module-page {
+  transition: margin-left 0.25s ease;
 }
 
 .course-side-menu-module {

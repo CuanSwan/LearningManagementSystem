@@ -90,11 +90,12 @@ export function StudentModule() {
   ];
 
   return (
-    <main
-      className={`student-view module-page${mode === "accessible" ? " accessible-mode" : ""}`}
-      style={themeStyle(resolved)}
-    >
+    <>
       <CourseSideMenu courseId={courseId!} activeModuleId={moduleId} activeLessonId={activeLessonId} />
+      <main
+        className={`student-view module-page${mode === "accessible" ? " accessible-mode" : ""}`}
+        style={themeStyle(resolved)}
+      >
       <Breadcrumb items={breadcrumbItems} />
       <BackButton to={`/courses/${courseId}`} label={`Back to ${course.title}`} />
       <h1>{foundModule.seed.title}</h1>
@@ -149,6 +150,7 @@ export function StudentModule() {
           onClose={() => setShowCompleteModal(false)}
         />
       )}
-    </main>
+      </main>
+    </>
   );
 }
