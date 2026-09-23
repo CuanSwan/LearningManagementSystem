@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const UserRoleSchema = z.enum(["student", "admin", "super_admin"]);
+export const UserRoleSchema = z.enum(["student", "reviewer", "admin", "super_admin"]);
 export type UserRole = z.infer<typeof UserRoleSchema>;
 
 // Public-safe user shape - never carries a password or password hash.

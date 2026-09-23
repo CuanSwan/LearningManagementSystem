@@ -236,7 +236,7 @@ export interface LearningPath {
   courseIds: string[];
 }
 
-export type UserRole = "student" | "admin" | "super_admin";
+export type UserRole = "student" | "reviewer" | "admin" | "super_admin";
 
 export interface User {
   userId: string;
