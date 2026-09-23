@@ -15,6 +15,7 @@ import { AdminNewModule } from "./pages/AdminNewModule.js";
 import { AdminLearningPathDetail } from "./pages/AdminLearningPathDetail.js";
 import { AdminLearningPathList } from "./pages/AdminLearningPathList.js";
 import { AdminUsers } from "./pages/AdminUsers.js";
+import { EmbedModule } from "./pages/EmbedModule.js";
 import { Home } from "./pages/Home.js";
 import { LearningPathDetail } from "./pages/LearningPathDetail.js";
 import { LearningPaths } from "./pages/LearningPaths.js";
@@ -54,6 +55,7 @@ export function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/embed/courses/:courseId/modules/:moduleId" element={<EmbedModule />} />
 
           <Route
             element={

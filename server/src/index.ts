@@ -50,7 +50,9 @@ import {
 } from "./store.js";
 import {
   createUser,
+  findOrCreateEmbedUser,
   getUserById,
+  grantCourseAccess,
   initUserStore,
   listUsers,
   setUserAssignments,
@@ -88,6 +90,26 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 app.use(async (req: Request, _res: Response, next: NextFunction) => {
   const userId = getSessionUserId(req.cookies[SESSION_COOKIE]);
   req.user = userId ? await getUserById(userId) : undefined;
+  next();
+});
+
+// An embed-origin session (see /api/embed below) only ever exists to view
+// the one module its link granted - default-deny rather than gating each
+// route individually, so a route added later is automatically off-limits
+// to it instead of silently open until someone remembers to lock it down.
+const EMBED_ALLOWED_PATHS = [
+  /^\/api\/auth\//,
+  /^\/api\/embed$/,
+  /^\/api\/courses\/[^/]+$/,
+  /^\/api\/modules\/[^/]+$/,
+  /^\/api\/progress(\/|$)/,
+];
+
+app.use((req: Request, res: Response, next: NextFunction) => {
+  if (req.user?.authOrigin === "embed" && !EMBED_ALLOWED_PATHS.some((pattern) => pattern.test(req.path))) {
+    res.status(403).json({ error: "Not available in embedded view" });
+    return;
+  }
   next();
 });
 
@@ -204,6 +226,50 @@ app.put("/api/auth/me/password", requireAuth, async (req, res) => {
   }
   await updatePassword(req.user!.userId, parsed.data.newPassword);
   res.status(204).end();
+});
+
+// --- Embed (passwordless entry from an external site, e.g. an iframe) ---
+
+const EmbedQuerySchema = z.object({
+  email: z.string().email(),
+  courseId: z.string().min(1),
+  moduleId: z.string().min(1),
+});
+
+// Hit directly by the visitor's browser (not the external site's backend) -
+// see the design discussion this implements: an embed link grants access to
+// exactly one module, auto-provisioning a passwordless account by email the
+// first time a given visitor is seen. No email/expiry step - the URL itself
+// is the credential, on the understanding that anyone who can edit it is
+// already inside the external site's own gated content.
+app.get("/api/embed", async (req, res) => {
+  const parsed = EmbedQuerySchema.safeParse(req.query);
+  if (!parsed.success) {
+    sendValidationError(res, parsed.error);
+    return;
+  }
+  const { email, courseId, moduleId } = parsed.data;
+
+  const course = await getCourse(courseId);
+  if (!course) {
+    res.status(404).json({ error: "Course not found" });
+    return;
+  }
+  const module = await getModule(moduleId);
+  if (!module || module.courseId !== courseId || module.status !== "published") {
+    res.status(404).json({ error: "Module not found" });
+    return;
+  }
+
+  const user = await findOrCreateEmbedUser(email);
+  if (!user) {
+    res.status(403).json({ error: "This email is already registered - embedded access isn't available for it" });
+    return;
+  }
+
+  await grantCourseAccess(user.userId, courseId);
+  setSessionCookie(res, user.userId);
+  res.json({ ok: true });
 });
 
 // --- User management (super_admin only) ---

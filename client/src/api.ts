@@ -155,6 +155,14 @@ export function getModule(moduleId: string): Promise<Module> {
   return request(`/api/modules/${moduleId}`);
 }
 
+// Auto-provisions (or re-logs-into) a passwordless embed account for `email`
+// and grants it access to `courseId`, via the session cookie the response
+// sets - see server/src/index.ts's /api/embed for what this actually does.
+export function embedLogin(email: string, courseId: string, moduleId: string): Promise<{ ok: true }> {
+  const params = new URLSearchParams({ email, courseId, moduleId });
+  return request(`/api/embed?${params.toString()}`);
+}
+
 export function createModule(input: {
   courseId?: string;
   category?: string;
