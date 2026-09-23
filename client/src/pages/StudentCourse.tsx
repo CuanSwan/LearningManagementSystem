@@ -100,7 +100,7 @@ export function StudentCourse() {
             const moduleTotal = module.lessons.length;
             const pct = moduleTotal ? (moduleCompleted / moduleTotal) * 100 : 0;
             const complete = isModuleComplete(module, completedIds);
-            const locked = isModuleLocked(modules, index, completedIds);
+            const locked = isModuleLocked(modules, index, completedIds, user?.role ?? "student");
             const accentColor = complete ? resolved.primaryColor : locked ? LOCKED_COLOR : IN_PROGRESS_COLOR;
 
             const cardContent = (

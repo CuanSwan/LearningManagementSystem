@@ -144,7 +144,12 @@ export function LearningPathDetail() {
                 .slice(0, index)
                 .every((c) => isCourseComplete(modulesByCourse[c.courseId] ?? [], completedIds));
               const accessible = !user || isCourseAccessible(user, course.courseId, learningPaths);
-              const locked = !accessible || (!complete && !priorCoursesComplete);
+              // An admin/super_admin already bypasses isCourseAccessible
+              // above; also skip the sequential-progression lock so they can
+              // click straight through every course in the path while
+              // reviewing content or checking layout.
+              const isPrivileged = user?.role === "admin" || user?.role === "super_admin";
+              const locked = !isPrivileged && (!accessible || (!complete && !priorCoursesComplete));
               const accentColor = complete ? Theme.default().primaryColor : locked ? LOCKED_COLOR : IN_PROGRESS_COLOR;
               const lane = LANE_CLASSES[index % LANE_CLASSES.length];
 
