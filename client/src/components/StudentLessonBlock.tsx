@@ -26,7 +26,9 @@ export function StudentLessonBlock({
   const isDynamicComponent = DYNAMIC_COMPONENT_TYPES.has(lesson.type);
   return (
     <div
-      className={`student-lesson${isComplete ? " is-complete" : ""}${isDynamicComponent ? " is-floating" : ""}`}
+      // student-lesson-<type> exists so quiz/practical can keep the card
+      // border other lesson types just lost - see .student-lesson in App.css.
+      className={`student-lesson student-lesson-${lesson.type}${isComplete ? " is-complete" : ""}${isDynamicComponent ? " is-floating" : ""}`}
     >
       <div className="student-lesson-header">
         <div className="student-lesson-badges">
