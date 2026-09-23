@@ -19,4 +19,18 @@ describe("CourseSchema", () => {
   it("rejects a theme override field with the wrong type", () => {
     expect(() => parseCourse({ courseId: "c1", title: "X", theme: { primaryColor: 123 } })).toThrow();
   });
+
+  it("defaults status to draft, invisible until explicitly published", () => {
+    const course = parseCourse({ courseId: "c1", title: "Sales Fundamentals" });
+    expect(course.status).toBe("draft");
+  });
+
+  it("accepts an explicit published status", () => {
+    const course = parseCourse({ courseId: "c1", title: "Sales Fundamentals", status: "published" });
+    expect(course.status).toBe("published");
+  });
+
+  it("rejects an unknown status", () => {
+    expect(() => parseCourse({ courseId: "c1", title: "X", status: "archived" })).toThrow();
+  });
 });

@@ -84,7 +84,7 @@ export async function createCourse(data: unknown): Promise<Course> {
 
 export async function patchCourse(
   courseId: string,
-  patch: { title?: string; description?: string; category?: string; theme?: unknown }
+  patch: { title?: string; description?: string; category?: string; theme?: unknown; status?: string }
 ): Promise<Course | undefined> {
   const existing = await courses.get(courseId);
   if (!existing) return undefined;
@@ -229,9 +229,14 @@ export async function seedLearningPath(path: LearningPath): Promise<void> {
 // since they're the ones managing this content - reviewers get the same
 // unrestricted access, so they can view any course without needing
 // assignments (the client never calls the completion endpoint for a
-// reviewer, so this doesn't give them anything to "complete").
+// reviewer, so this doesn't give them anything to "complete"). A draft
+// course is invisible to everyone else, even a student it's directly
+// assigned to - it isn't ready to be seen yet, which is the whole point of
+// having a reviewer look it over before it's published.
 export async function userHasCourseAccess(user: User, courseId: string): Promise<boolean> {
   if (user.role === "admin" || user.role === "super_admin" || user.role === "reviewer") return true;
+  const course = await courses.get(courseId);
+  if (!course || course.status !== "published") return false;
   if (user.assignedCourseIds.includes(courseId)) return true;
   if (user.assignedLearningPathIds.length === 0) return false;
   const assignedPaths = await Promise.all(user.assignedLearningPathIds.map((id) => learningPaths.get(id)));

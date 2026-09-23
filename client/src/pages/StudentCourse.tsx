@@ -34,7 +34,10 @@ export function StudentCourse() {
     getProgress().then((p) => setCompletedIds(new Set(p.completedLessonIds)));
   }, [courseId]);
 
-  const accessible = !user || isCourseAccessible(user, courseId!, learningPaths);
+  // course hasn't loaded yet - treat as accessible for now so the module
+  // fetch below (gated on `accessible`, not on `course`) isn't held up
+  // waiting on it; the real check re-runs once course.status is known.
+  const accessible = !user || !course || isCourseAccessible(user, course, learningPaths);
 
   useEffect(() => {
     if (!courseId || !accessible) return;

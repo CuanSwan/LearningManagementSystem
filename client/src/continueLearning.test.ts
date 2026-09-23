@@ -3,7 +3,7 @@ import { findContinueTarget, findCourseToContinue, findFirstAssignedCourse, summ
 import type { Course, LearningPath, Lesson, Module, User } from "./types.js";
 
 function course(courseId: string, title: string): Course {
-  return { courseId, title, theme: {} };
+  return { courseId, title, theme: {}, status: "published" };
 }
 
 function path(pathId: string, courseIds: string[]): LearningPath {

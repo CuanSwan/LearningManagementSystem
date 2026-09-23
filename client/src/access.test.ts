@@ -18,6 +18,10 @@ function path(pathId: string, courseIds: string[]): LearningPath {
   return { pathId, title: pathId, courseIds };
 }
 
+function course(courseId: string, status: "draft" | "published" = "published"): { courseId: string; status: "draft" | "published" } {
+  return { courseId, status };
+}
+
 describe("computeAccessibleCourseIds", () => {
   it("includes directly assigned courses", () => {
     const set = computeAccessibleCourseIds(student({ assignedCourseIds: ["c1", "c2"] }), []);
@@ -53,24 +57,38 @@ describe("computeAccessibleCourseIds", () => {
 describe("isCourseAccessible", () => {
   it("grants an admin access to any course regardless of assignments", () => {
     const admin: User = { ...student(), role: "admin" };
-    expect(isCourseAccessible(admin, "unassigned-course", [])).toBe(true);
+    expect(isCourseAccessible(admin, course("unassigned-course"), [])).toBe(true);
   });
 
   it("grants a super_admin access to any course", () => {
     const superAdmin: User = { ...student(), role: "super_admin" };
-    expect(isCourseAccessible(superAdmin, "unassigned-course", [])).toBe(true);
+    expect(isCourseAccessible(superAdmin, course("unassigned-course"), [])).toBe(true);
   });
 
   it("grants a reviewer access to any course regardless of assignments", () => {
     const reviewer: User = { ...student(), role: "reviewer" };
-    expect(isCourseAccessible(reviewer, "unassigned-course", [])).toBe(true);
+    expect(isCourseAccessible(reviewer, course("unassigned-course"), [])).toBe(true);
   });
 
-  it("grants a student access to a directly assigned course", () => {
-    expect(isCourseAccessible(student({ assignedCourseIds: ["c1"] }), "c1", [])).toBe(true);
+  it("grants an admin access to a draft course", () => {
+    const admin: User = { ...student(), role: "admin" };
+    expect(isCourseAccessible(admin, course("c1", "draft"), [])).toBe(true);
+  });
+
+  it("grants a reviewer access to a draft course", () => {
+    const reviewer: User = { ...student(), role: "reviewer" };
+    expect(isCourseAccessible(reviewer, course("c1", "draft"), [])).toBe(true);
+  });
+
+  it("grants a student access to a directly assigned, published course", () => {
+    expect(isCourseAccessible(student({ assignedCourseIds: ["c1"] }), course("c1"), [])).toBe(true);
   });
 
   it("denies a student access to a course that isn't assigned to them", () => {
-    expect(isCourseAccessible(student({ assignedCourseIds: ["c1"] }), "c2", [])).toBe(false);
+    expect(isCourseAccessible(student({ assignedCourseIds: ["c1"] }), course("c2"), [])).toBe(false);
+  });
+
+  it("denies a student access to a directly assigned course that's still a draft", () => {
+    expect(isCourseAccessible(student({ assignedCourseIds: ["c1"] }), course("c1", "draft"), [])).toBe(false);
   });
 });

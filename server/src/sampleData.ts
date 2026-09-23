@@ -10,6 +10,7 @@ const projectManagementFundamentals = parseCourse({
   description: "Plan, schedule & control projects from business case to closure.",
   category: "Core",
   theme: { primaryColor: "#0d0d0d" },
+  status: "published",
 });
 
 const agileScrumInPractice = parseCourse({
@@ -18,6 +19,7 @@ const agileScrumInPractice = parseCourse({
   description: "Run iterative delivery with sprints, backlogs & retrospectives.",
   category: "Core",
   theme: { primaryColor: "#2dd4bf" },
+  status: "published",
 });
 
 const pythonProgrammingEssentials = parseCourse({
@@ -26,6 +28,7 @@ const pythonProgrammingEssentials = parseCourse({
   description: "Write, test & structure your first Python applications.",
   category: "Coding",
   theme: { primaryColor: "#c9920e" },
+  status: "published",
 });
 
 const networkingInfrastructure = parseCourse({
@@ -34,6 +37,7 @@ const networkingInfrastructure = parseCourse({
   description: "Understand how networks, servers & cloud services fit together.",
   category: "IT",
   theme: { primaryColor: "#c2185b" },
+  status: "published",
 });
 
 const businessAnalysisFoundations = parseCourse({
@@ -42,6 +46,7 @@ const businessAnalysisFoundations = parseCourse({
   description: "Gather requirements & translate them into workable solutions.",
   category: "Business",
   theme: { primaryColor: "#6a3fd1" },
+  status: "published",
 });
 
 const cyberSecurityAwareness = parseCourse({
@@ -50,6 +55,7 @@ const cyberSecurityAwareness = parseCourse({
   description: "Recognise everyday threats & protect organisational data.",
   category: "IT",
   theme: { primaryColor: "#6b7280" },
+  status: "published",
 });
 
 const sampleModules: Module[] = [

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { suggestTheme } from "../themeSuggestion.js";
-import type { Course, Module, ThemeOverride } from "../types.js";
+import type { Course, CourseStatus, Module, ThemeOverride } from "../types.js";
 import { createModule, deleteCourse, getCourse, listModulesByCourse, patchCourse } from "../api.js";
 import { ThemeOverrideFields } from "../components/ThemeOverrideFields.js";
 
@@ -12,6 +12,7 @@ export function AdminCourseDetail() {
   const [modules, setModules] = useState<Module[]>([]);
   const [theme, setTheme] = useState<ThemeOverride>({});
   const [category, setCategory] = useState("");
+  const [status, setStatus] = useState<CourseStatus>("draft");
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [moduleTitle, setModuleTitle] = useState("");
   const [moduleObjective, setModuleObjective] = useState("");
@@ -24,6 +25,7 @@ export function AdminCourseDetail() {
       setCourse(c);
       setTheme(c.theme);
       setCategory(c.category ?? "");
+      setStatus(c.status);
     });
     listModulesByCourse(courseId).then(setModules);
   }, [courseId]);
@@ -32,7 +34,7 @@ export function AdminCourseDetail() {
     if (!courseId) return;
     setSaveStatus("saving");
     try {
-      const updated = await patchCourse(courseId, { theme, category: category || undefined });
+      const updated = await patchCourse(courseId, { theme, category: category || undefined, status });
       setCourse(updated);
       setSaveStatus("saved");
     } catch {
@@ -80,7 +82,18 @@ export function AdminCourseDetail() {
       {course.description && <p>{course.description}</p>}
 
       <section>
-        <h2>Theme</h2>
+        <h2>Course settings</h2>
+        <label className="status-select">
+          Status
+          <select value={status} onChange={(e) => setStatus(e.target.value as CourseStatus)}>
+            <option value="draft">Draft</option>
+            <option value="published">Published</option>
+          </select>
+        </label>
+        <p className="field-hint">
+          A draft course is invisible to students - even ones it's assigned to - until you publish it. Admins and
+          reviewers can always see and open it either way.
+        </p>
         <label className="field">
           Category
           <input value={category} onChange={(e) => setCategory(e.target.value)} placeholder="e.g. Core, IT, Business" />
@@ -95,7 +108,7 @@ export function AdminCourseDetail() {
         <ThemeOverrideFields value={theme} onChange={setTheme} />
         <div className="save-controls">
           <button type="button" onClick={handleSaveTheme} disabled={saveStatus === "saving"}>
-            {saveStatus === "saving" ? "Saving..." : "Save theme"}
+            {saveStatus === "saving" ? "Saving..." : "Save"}
           </button>
           {saveStatus === "saved" && <span className="save-status save-status-ok">Saved</span>}
           {saveStatus === "error" && <span className="save-status save-status-error">Save failed</span>}
