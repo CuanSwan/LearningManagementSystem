@@ -2611,6 +2611,7 @@ a.path-snake-link:hover .path-snake-bubble {
 
 .course-progress-fill {
   height: 100%;
+  border-radius: 7px;
   background: var(--theme-primary, #3e6259);
   transition: width 0.2s ease;
 }
