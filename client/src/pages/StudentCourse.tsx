@@ -9,6 +9,7 @@ import { Breadcrumb } from "../components/Breadcrumb.js";
 import { CourseSideMenu } from "../components/CourseSideMenu.js";
 import { isModuleComplete, isModuleLocked } from "../courseProgress.js";
 import { describeLesson } from "../lessonTemplates.js";
+import { daysRemainingLabel } from "../membership.js";
 import { Theme, themeStyle } from "../theme.js";
 
 function truncate(text: string, maxLength: number): string {
@@ -89,6 +90,10 @@ export function StudentCourse() {
             {totalCompleted} of {totalLessons} lessons complete
           </span>
         </div>
+      )}
+
+      {user?.membershipExpiresAt !== undefined && (
+        <p className="membership-countdown">{daysRemainingLabel(user.membershipExpiresAt)}</p>
       )}
 
       {modules.length === 0 ? (

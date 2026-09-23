@@ -2596,6 +2596,12 @@ a.path-snake-link:hover .path-snake-bubble {
   transition: width 0.2s ease;
 }
 
+.membership-countdown {
+  margin: -0.75rem 0 1.5rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
 /* --- Auth: top bar, login/register, user management --- */
 
 .top-bar {
