@@ -108,6 +108,9 @@ export function LearningPathDetail() {
   const allLessons = courses.flatMap((c) => (modulesByCourse[c.courseId] ?? []).flatMap((m) => m.lessons));
   const totalLessons = allLessons.length;
   const totalCompleted = allLessons.filter((l) => completedIds.has(l.lessonId)).length;
+  // A reviewer's viewing is never recorded (see StudentModule's
+  // markComplete), so a progress bar here would just be misleading.
+  const hideProgress = user?.role === "reviewer";
 
   return (
     <main className="student-view course-page">
@@ -115,7 +118,7 @@ export function LearningPathDetail() {
       <h1>{path.title}</h1>
       {path.description && <p className="course-description">{path.description}</p>}
 
-      {totalLessons > 0 && (
+      {totalLessons > 0 && !hideProgress && (
         <div className="progress-summary">
           <div className="progress-bar">
             <div className="progress-bar-fill" style={{ width: `${(totalCompleted / totalLessons) * 100}%` }} />
@@ -144,7 +147,13 @@ export function LearningPathDetail() {
                 .slice(0, index)
                 .every((c) => isCourseComplete(modulesByCourse[c.courseId] ?? [], completedIds));
               const accessible = !user || isCourseAccessible(user, course.courseId, learningPaths);
-              const locked = !accessible || (!complete && !priorCoursesComplete);
+              // Admins/super_admins/reviewers don't progress through a path
+              // sequentially the way a student does - isCourseAccessible
+              // already grants them access to every course, but without this
+              // they'd still see later courses as "locked" behind the
+              // sequential-completion rule below.
+              const isPrivileged = user?.role === "admin" || user?.role === "super_admin" || user?.role === "reviewer";
+              const locked = !accessible || (!isPrivileged && !complete && !priorCoursesComplete);
               const accentColor = complete ? Theme.default().primaryColor : locked ? LOCKED_COLOR : IN_PROGRESS_COLOR;
               const lane = LANE_CLASSES[index % LANE_CLASSES.length];
 

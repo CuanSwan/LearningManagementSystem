@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import type { Module } from "../types.js";
 import { getProgress, listModulesByCourse } from "../api.js";
+import { useAuth } from "../auth.js";
 import { isModuleComplete, isModuleLocked } from "../courseProgress.js";
 import { describeLesson } from "../lessonTemplates.js";
 
@@ -26,6 +27,7 @@ export function CourseSideMenu({
   activeModuleId?: string;
   activeLessonId?: string;
 }) {
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [modules, setModules] = useState<Module[]>([]);
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
@@ -53,7 +55,7 @@ export function CourseSideMenu({
         <div className="course-side-menu-body">
           {modules.map((module, index) => {
             const complete = isModuleComplete(module, completedIds);
-            const locked = isModuleLocked(modules, index, completedIds);
+            const locked = isModuleLocked(modules, index, completedIds, user?.role ?? "student");
             const isActiveModule = module.moduleId === activeModuleId;
             // With no active module (the course overview page has no single
             // "current" module in context), default-open whichever module

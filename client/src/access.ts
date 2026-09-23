@@ -12,8 +12,10 @@ export function computeAccessibleCourseIds(user: User, learningPaths: LearningPa
 
 // Browsing the catalog (course title/description) is never gated - only
 // entering a course's actual content is. An admin/super_admin always has
-// access to every course, since they're the ones managing this content.
+// access to every course, since they're the ones managing this content -
+// reviewers get the same unrestricted access, but never track progress
+// (see StudentCourse/StudentModule), so viewing doesn't record anything.
 export function isCourseAccessible(user: User, courseId: string, learningPaths: LearningPath[]): boolean {
-  if (user.role === "admin" || user.role === "super_admin") return true;
+  if (user.role === "admin" || user.role === "super_admin" || user.role === "reviewer") return true;
   return computeAccessibleCourseIds(user, learningPaths).has(courseId);
 }
