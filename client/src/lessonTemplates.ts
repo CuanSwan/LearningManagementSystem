@@ -1,4 +1,5 @@
 import DOMPurify from "dompurify";
+import { generateId } from "./id.js";
 import type { Lesson, LessonType, Module } from "./types.js";
 
 // Exam breakdown is deliberately excluded here - it's not a general-purpose
@@ -107,7 +108,7 @@ export function moduleLessonLabel(module: Module, lesson: Lesson): string {
 
 export function createBlankLesson(type: LessonType, order: number): Lesson {
   const base = {
-    lessonId: crypto.randomUUID(),
+    lessonId: generateId(),
     schemaVersion: 1,
     source: "human" as const,
     wordingStyle: "shortened" as const,
