@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import type { Course, Lesson, Module } from "../types.js";
 import { getCourse, getModule, getProgress, listModulesByCourse, setLessonProgress } from "../api.js";
+import { useAuth } from "../auth.js";
 import { BackButton } from "../components/BackButton.js";
 import { Breadcrumb } from "../components/Breadcrumb.js";
 import { CourseSideMenu } from "../components/CourseSideMenu.js";
@@ -20,6 +21,8 @@ const LESSON_HASH_PREFIX = "#lesson-";
 
 export function StudentModule() {
   const { courseId, moduleId } = useParams<{ courseId: string; moduleId: string }>();
+  const { user } = useAuth();
+  const isReviewer = user?.role === "reviewer";
   const location = useLocation();
   const activeLessonId = location.hash.startsWith(LESSON_HASH_PREFIX)
     ? location.hash.slice(LESSON_HASH_PREFIX.length)
@@ -61,7 +64,10 @@ export function StudentModule() {
   if (accessError) return <p className="access-restricted-notice">{accessError}</p>;
 
   async function markComplete(lessonId: string) {
-    if (!foundModule || !courseId || !moduleId) return;
+    // A reviewer is browsing content, not taking the course - nothing about
+    // their view gets recorded, so the lesson-progress endpoint never gets
+    // called for them (see also the hidden progress bar below).
+    if (isReviewer || !foundModule || !courseId || !moduleId) return;
     const lessonIds = foundModule.lessons.map((l) => l.lessonId);
     const wasComplete = lessonIds.length > 0 && lessonIds.every((id) => completedIds.has(id));
 
@@ -116,17 +122,19 @@ export function StudentModule() {
         />
       ) : (
         <>
-          <div className="progress-summary">
-            <div className="progress-bar">
-              <div
-                className="progress-bar-fill"
-                style={{ width: `${orderedLessons.length ? (completedCount / orderedLessons.length) * 100 : 0}%` }}
-              />
+          {!isReviewer && (
+            <div className="progress-summary">
+              <div className="progress-bar">
+                <div
+                  className="progress-bar-fill"
+                  style={{ width: `${orderedLessons.length ? (completedCount / orderedLessons.length) * 100 : 0}%` }}
+                />
+              </div>
+              <span>
+                {completedCount} of {orderedLessons.length} lessons complete
+              </span>
             </div>
-            <span>
-              {completedCount} of {orderedLessons.length} lessons complete
-            </span>
-          </div>
+          )}
 
           <div className="student-lessons">
             {orderedLessons.map((lesson) => (

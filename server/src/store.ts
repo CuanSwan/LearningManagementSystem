@@ -226,9 +226,12 @@ export async function seedLearningPath(path: LearningPath): Promise<void> {
 // admin assigned it to them directly, or assigned a learning path that
 // includes it - browsing the catalog itself (title/description) is never
 // gated, only what's inside. Admins/super_admins always have full access,
-// since they're the ones managing this content.
+// since they're the ones managing this content - reviewers get the same
+// unrestricted access, so they can view any course without needing
+// assignments (the client never calls the completion endpoint for a
+// reviewer, so this doesn't give them anything to "complete").
 export async function userHasCourseAccess(user: User, courseId: string): Promise<boolean> {
-  if (user.role === "admin" || user.role === "super_admin") return true;
+  if (user.role === "admin" || user.role === "super_admin" || user.role === "reviewer") return true;
   if (user.assignedCourseIds.includes(courseId)) return true;
   if (user.assignedLearningPathIds.length === 0) return false;
   const assignedPaths = await Promise.all(user.assignedLearningPathIds.map((id) => learningPaths.get(id)));

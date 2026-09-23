@@ -61,6 +61,11 @@ describe("isCourseAccessible", () => {
     expect(isCourseAccessible(superAdmin, "unassigned-course", [])).toBe(true);
   });
 
+  it("grants a reviewer access to any course regardless of assignments", () => {
+    const reviewer: User = { ...student(), role: "reviewer" };
+    expect(isCourseAccessible(reviewer, "unassigned-course", [])).toBe(true);
+  });
+
   it("grants a student access to a directly assigned course", () => {
     expect(isCourseAccessible(student({ assignedCourseIds: ["c1"] }), "c1", [])).toBe(true);
   });
