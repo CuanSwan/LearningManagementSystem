@@ -139,6 +139,7 @@ export function AdminUsers() {
             <div className="user-list-item-actions">
               <select value={u.role} onChange={(e) => handleRoleChange(u.userId, e.target.value as UserRole)}>
                 <option value="student">Student</option>
+                <option value="reviewer">Reviewer</option>
                 <option value="admin">Admin</option>
                 <option value="super_admin">Super admin</option>
               </select>
@@ -192,6 +193,7 @@ export function AdminUsers() {
           Role
           <select value={role} onChange={(e) => setRole(e.target.value as UserRole)}>
             <option value="student">Student</option>
+            {canIssuePrivileged && <option value="reviewer">Reviewer</option>}
             {canIssuePrivileged && <option value="admin">Admin</option>}
             {canIssuePrivileged && <option value="super_admin">Super admin</option>}
           </select>

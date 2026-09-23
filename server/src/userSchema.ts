@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const UserRoleSchema = z.enum(["student", "admin", "super_admin"]);
+export const UserRoleSchema = z.enum(["student", "reviewer", "admin", "super_admin"]);
 export type UserRole = z.infer<typeof UserRoleSchema>;
 
 // Applied everywhere a password is being SET (register, self-service

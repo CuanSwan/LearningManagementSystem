@@ -7,6 +7,7 @@ import { PASSWORD_HINT, passwordMeetsRequirements } from "../passwordRules.js";
 
 const ROLE_LABELS: Record<PublicVoucher["role"], string> = {
   student: "student",
+  reviewer: "reviewer",
   admin: "admin",
   super_admin: "super admin",
 };
