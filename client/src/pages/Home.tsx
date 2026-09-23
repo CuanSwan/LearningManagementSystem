@@ -26,8 +26,9 @@ export function Home() {
       if (cancelled) return;
 
       // Only fetch content for courses the student can actually enter -
-      // anything else 403s, and locked courses can't be "in progress" anyway.
-      const accessibleCourses = courses.filter((c) => isCourseAccessible(user!, c.courseId, learningPaths));
+      // anything else 403s, and locked (or still-draft) courses can't be
+      // "in progress" anyway.
+      const accessibleCourses = courses.filter((c) => isCourseAccessible(user!, c, learningPaths));
       const modulesByCourse: Record<string, Module[]> = {};
       await Promise.all(
         accessibleCourses.map(async (course) => {
@@ -43,7 +44,7 @@ export function Home() {
         setIsContinuing(true);
         return;
       }
-      const first = findFirstAssignedCourse(user!, courses, learningPaths);
+      const first = findFirstAssignedCourse(user!, accessibleCourses, learningPaths);
       setPrimaryTarget(first ? { courseId: first.courseId, courseTitle: first.title } : null);
     }
 

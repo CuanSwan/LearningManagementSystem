@@ -40,12 +40,12 @@ export function LearningPathDetail() {
       const loadedCourses = await Promise.all(p.courseIds.map((id) => getCourse(id)));
       setCourses(loadedCourses);
       // A course the viewer isn't assigned (directly or via this or another
-      // path) 403s on its modules - it'll render locked regardless, so
-      // there's no content worth fetching for it.
+      // path), or that's still a draft, 403s on its modules - it'll render
+      // locked regardless, so there's no content worth fetching for it.
       const moduleLists = await Promise.all(
-        p.courseIds.map((id) =>
-          !user || isCourseAccessible(user, id, allPaths)
-            ? listModulesByCourse(id).then((list) => list.filter((m) => m.status === "published"))
+        loadedCourses.map((course) =>
+          !user || isCourseAccessible(user, course, allPaths)
+            ? listModulesByCourse(course.courseId).then((list) => list.filter((m) => m.status === "published"))
             : Promise.resolve([])
         )
       );
@@ -146,7 +146,7 @@ export function LearningPathDetail() {
               const priorCoursesComplete = courses
                 .slice(0, index)
                 .every((c) => isCourseComplete(modulesByCourse[c.courseId] ?? [], completedIds));
-              const accessible = !user || isCourseAccessible(user, course.courseId, learningPaths);
+              const accessible = !user || isCourseAccessible(user, course, learningPaths);
               // Admins/super_admins/reviewers don't progress through a path
               // sequentially the way a student does - isCourseAccessible
               // already grants them access to every course, but without this

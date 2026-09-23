@@ -74,6 +74,7 @@ export function AdminCourseList() {
             <li key={course.courseId} className="course-list-item">
               <span className="course-swatch" style={{ background: resolved.primaryColor }} aria-hidden="true" />
               <Link to={`/admin/courses/${course.courseId}`}>{course.title}</Link>
+              <span className="module-status"> ({course.status})</span>
             </li>
           );
         })}

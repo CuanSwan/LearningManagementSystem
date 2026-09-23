@@ -11,6 +11,9 @@ export type WordingStyle = z.infer<typeof WordingStyleSchema>;
 export const ModuleStatusSchema = z.enum(["draft", "ai_generated", "published"]);
 export type ModuleStatus = z.infer<typeof ModuleStatusSchema>;
 
+export const CourseStatusSchema = z.enum(["draft", "published"]);
+export type CourseStatus = z.infer<typeof CourseStatusSchema>;
+
 // Every schema below that's persisted (module, course, learning path) can
 // have any of its optional fields read back from Mongo as a literal `null`
 // instead of genuinely absent - the driver used to silently turn an
@@ -349,6 +352,12 @@ export const CourseSchema = z.object({
   category: nullableOptional(z.string()),
   // Only the fields this course chooses to override - see Theme.withOverrides() on the client.
   theme: ThemeOverrideSchema.default({}),
+  // Same idea as a module's status - a course starts as a draft, invisible
+  // to anyone but admins/super_admins/reviewers, until explicitly published
+  // (see userHasCourseAccess). Defaults to "draft" rather than requiring
+  // every course-creation call site to say so explicitly, the same way
+  // `theme` above defaults to no overrides.
+  status: CourseStatusSchema.default("draft"),
 });
 
 export type Course = z.infer<typeof CourseSchema>;

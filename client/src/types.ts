@@ -221,12 +221,15 @@ export interface ThemeValues {
 
 export type ThemeOverride = Partial<ThemeValues>;
 
+export type CourseStatus = "draft" | "published";
+
 export interface Course {
   courseId: string;
   title: string;
   description?: string;
   category?: string;
   theme: ThemeOverride;
+  status: CourseStatus;
 }
 
 export interface LearningPath {

@@ -126,30 +126,54 @@ describe("seedLearningPath", () => {
 });
 
 describe("userHasCourseAccess", () => {
-  it("always grants access to an admin", async () => {
+  it("always grants access to an admin, even to a draft course", async () => {
+    await createCourse({ courseId: "any-course", title: "Draft Course" });
     const admin: User = { ...studentWith({}), role: "admin" };
     expect(await userHasCourseAccess(admin, "any-course")).toBe(true);
   });
 
-  it("grants access to a directly assigned course", async () => {
+  it("always grants access to a reviewer, even to a draft course", async () => {
+    await createCourse({ courseId: "any-course", title: "Draft Course" });
+    const reviewer: User = { ...studentWith({}), role: "reviewer" };
+    expect(await userHasCourseAccess(reviewer, "any-course")).toBe(true);
+  });
+
+  it("grants access to a directly assigned, published course", async () => {
+    await createCourse({ courseId: "c1", title: "Course 1", status: "published" });
     const student = studentWith({ assignedCourseIds: ["c1"] });
     expect(await userHasCourseAccess(student, "c1")).toBe(true);
   });
 
-  it("grants access to a course reached via an assigned learning path", async () => {
+  it("denies access to a directly assigned course that's still a draft", async () => {
+    await createCourse({ courseId: "c1", title: "Course 1" });
+    const student = studentWith({ assignedCourseIds: ["c1"] });
+    expect(await userHasCourseAccess(student, "c1")).toBe(false);
+  });
+
+  it("grants access to a published course reached via an assigned learning path", async () => {
+    await createCourse({ courseId: "c1", title: "Course 1", status: "published" });
+    await createCourse({ courseId: "c2", title: "Course 2", status: "published" });
     const path = await createLearningPath({ pathId: "p1", title: "Path", courseIds: ["c1", "c2"] });
     const student = studentWith({ assignedLearningPathIds: [path.pathId] });
     expect(await userHasCourseAccess(student, "c2")).toBe(true);
   });
 
   it("denies access to a course that's neither directly assigned nor in an assigned path", async () => {
+    await createCourse({ courseId: "c1", title: "Course 1", status: "published" });
+    await createCourse({ courseId: "c3", title: "Course 3", status: "published" });
     const path = await createLearningPath({ pathId: "p1", title: "Path", courseIds: ["c1"] });
     const student = studentWith({ assignedLearningPathIds: [path.pathId], assignedCourseIds: ["c2"] });
     expect(await userHasCourseAccess(student, "c3")).toBe(false);
   });
 
   it("denies access to a student with no assignments at all", async () => {
+    await createCourse({ courseId: "c1", title: "Course 1", status: "published" });
     const student = studentWith({});
     expect(await userHasCourseAccess(student, "c1")).toBe(false);
+  });
+
+  it("denies access to a course that doesn't exist", async () => {
+    const student = studentWith({ assignedCourseIds: ["missing"] });
+    expect(await userHasCourseAccess(student, "missing")).toBe(false);
   });
 });

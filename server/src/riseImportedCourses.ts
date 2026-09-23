@@ -10,7 +10,8 @@ export const aiEngineeringCourse = parseCourse({
   "courseId": "rise-ai-engineering-foundations",
   "title": "AI Engineering Foundations: Building Real-World Intelligent Systems",
   "description": "Ready to step into one of the fastest-growing fields in tech? This course demystifies AI engineering and shows you how intelligent systems are designed, built, and deployed in the real world. Guided by practical examples—like Netflix recommendations and Google Maps rerouting—you’ll discover the essential skills and roles that power modern AI applications. Whether you’re new to programming or looking to upskill for a career in AI, you’ll gain the confidence and know-how to start building impactful AI solutions.",
-  "theme": {}
+  "theme": {},
+  "status": "published"
 });
 
 export const aiEngineeringModules: Module[] = [

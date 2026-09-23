@@ -138,7 +138,13 @@ export function createCourse(input: {
 
 export function patchCourse(
   courseId: string,
-  patch: { title?: string; description?: string; category?: string; theme?: Partial<Course["theme"]> }
+  patch: {
+    title?: string;
+    description?: string;
+    category?: string;
+    theme?: Partial<Course["theme"]>;
+    status?: Course["status"];
+  }
 ): Promise<Course> {
   return request(`/api/courses/${courseId}`, { method: "PATCH", body: JSON.stringify(patch) });
 }
