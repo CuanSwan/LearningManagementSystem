@@ -1457,17 +1457,6 @@ a.path-snake-link:hover .path-snake-bubble {
   gap: 0.6rem;
 }
 
-.student-lesson-ai-badge {
-  font-size: 0.68rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  padding: 0.2rem 0.5rem;
-  border: 1px solid var(--border-strong-alpha);
-  border-radius: 0;
-  color: var(--text-secondary);
-}
-
 .student-lesson-complete-badge {
   flex-shrink: 0;
   font-size: 0.7rem;
