@@ -1549,6 +1549,29 @@ a.path-snake-link:hover .path-snake-bubble {
   border: none;
 }
 
+/* Shown in place of the player when the video link is missing or fails to
+   load - keeps the same 16:9 footprint as a real embed (via
+   .video-lesson-embed) so the page doesn't jump, rather than leaving a
+   blank/broken player behind. */
+.video-lesson-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.video-lesson-fallback p {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 1.5rem;
+  text-align: center;
+  color: #cbd5e1;
+  font-size: 0.9rem;
+}
+
 .video-lesson-transcript {
   margin-top: 0.75rem;
 }
