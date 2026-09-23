@@ -71,6 +71,9 @@ export function StudentCourse() {
     (sum, m) => sum + m.lessons.filter((l) => completedIds.has(l.lessonId)).length,
     0
   );
+  const totalModules = modules.length;
+  const completedModules = modules.filter((m) => isModuleComplete(m, completedIds)).length;
+  const percentComplete = totalLessons > 0 ? Math.round((totalCompleted / totalLessons) * 100) : 0;
 
   return (
     <>
@@ -82,18 +85,25 @@ export function StudentCourse() {
       {course.description && <p className="course-description">{course.description}</p>}
 
       {totalLessons > 0 && (
-        <div className="progress-summary">
-          <div className="progress-bar">
-            <div className="progress-bar-fill" style={{ width: `${(totalCompleted / totalLessons) * 100}%` }} />
+        <div className="course-progress-header">
+          <div className="course-progress-track">
+            <div className="course-progress-fill" style={{ width: `${percentComplete}%` }} />
+            <span className="course-progress-percent">{percentComplete}%</span>
           </div>
-          <span>
-            {totalCompleted} of {totalLessons} lessons complete
-          </span>
+          <div className="course-progress-footer">
+            <div className="course-progress-counters">
+              <span>
+                {totalCompleted} of {totalLessons} lessons complete
+              </span>
+              <span>
+                {completedModules} of {totalModules} modules complete
+              </span>
+            </div>
+            {user?.membershipExpiresAt !== undefined && (
+              <span className="membership-countdown">{daysRemainingLabel(user.membershipExpiresAt)}</span>
+            )}
+          </div>
         </div>
-      )}
-
-      {user?.membershipExpiresAt !== undefined && (
-        <p className="membership-countdown">{daysRemainingLabel(user.membershipExpiresAt)}</p>
       )}
 
       {modules.length === 0 ? (

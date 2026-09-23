@@ -2596,10 +2596,58 @@ a.path-snake-link:hover .path-snake-bubble {
   transition: width 0.2s ease;
 }
 
-.membership-countdown {
-  margin: -0.75rem 0 1.5rem;
-  font-size: 0.8rem;
+.course-progress-header {
+  margin: 1.5rem 0;
+}
+
+.course-progress-track {
+  position: relative;
+  width: 100%;
+  height: 22px;
+  border-radius: 11px;
+  background: var(--track-bg);
+  overflow: hidden;
+}
+
+.course-progress-fill {
+  height: 100%;
+  background: var(--theme-primary, #3e6259);
+  transition: width 0.2s ease;
+}
+
+.course-progress-percent {
+  position: absolute;
+  left: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 0.1rem 0.5rem;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.35);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.course-progress-footer {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
   color: var(--text-secondary);
+}
+
+.course-progress-counters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.membership-countdown {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
 }
 
 /* --- Auth: top bar, login/register, user management --- */
