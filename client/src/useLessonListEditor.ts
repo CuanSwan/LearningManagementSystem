@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { Lesson, LessonType, WordingStyle } from "./types.js";
+import { generateId } from "./id.js";
 import { createBlankLesson } from "./lessonTemplates.js";
 
 // Shared drag/reorder/swap/remove logic for a module's lesson list, used by
@@ -47,7 +48,7 @@ export function useLessonListEditor(initial: Lesson[] = []) {
     if (libraryLesson.type === "examBreakdown") return;
     const displaced = lessons.find((l) => l.lessonId === targetId);
     if (!displaced || displaced.type === "examBreakdown") return;
-    const copy = { ...libraryLesson, lessonId: crypto.randomUUID(), order: displaced.order } as Lesson;
+    const copy = { ...libraryLesson, lessonId: generateId(), order: displaced.order } as Lesson;
     setLessons((prev) => prev.map((l) => (l.lessonId === targetId ? copy : l)));
     setSavedLessons((prev) => [...prev, displaced]);
   }
@@ -79,7 +80,7 @@ export function useLessonListEditor(initial: Lesson[] = []) {
   // to duplicate into others.
   function appendLibrary(libraryLesson: Lesson) {
     if (libraryLesson.type === "examBreakdown") return;
-    setLessons((prev) => [...prev, { ...libraryLesson, lessonId: crypto.randomUUID(), order: prev.length + 1 }]);
+    setLessons((prev) => [...prev, { ...libraryLesson, lessonId: generateId(), order: prev.length + 1 }]);
   }
 
   function importLesson(lesson: Lesson) {
