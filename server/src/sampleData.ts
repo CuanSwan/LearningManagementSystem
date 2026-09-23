@@ -9,7 +9,6 @@ const projectManagementFundamentals = parseCourse({
   title: "Project Management Fundamentals",
   description: "Plan, schedule & control projects from business case to closure.",
   category: "Core",
-  theme: { primaryColor: "#0d0d0d" },
 });
 
 const agileScrumInPractice = parseCourse({
@@ -17,7 +16,6 @@ const agileScrumInPractice = parseCourse({
   title: "Agile & Scrum in Practice",
   description: "Run iterative delivery with sprints, backlogs & retrospectives.",
   category: "Core",
-  theme: { primaryColor: "#2dd4bf" },
 });
 
 const pythonProgrammingEssentials = parseCourse({
@@ -25,7 +23,6 @@ const pythonProgrammingEssentials = parseCourse({
   title: "Python Programming Essentials",
   description: "Write, test & structure your first Python applications.",
   category: "Coding",
-  theme: { primaryColor: "#c9920e" },
 });
 
 const networkingInfrastructure = parseCourse({
@@ -33,7 +30,6 @@ const networkingInfrastructure = parseCourse({
   title: "Networking & Infrastructure",
   description: "Understand how networks, servers & cloud services fit together.",
   category: "IT",
-  theme: { primaryColor: "#c2185b" },
 });
 
 const businessAnalysisFoundations = parseCourse({
@@ -41,7 +37,6 @@ const businessAnalysisFoundations = parseCourse({
   title: "Business Analysis Foundations",
   description: "Gather requirements & translate them into workable solutions.",
   category: "Business",
-  theme: { primaryColor: "#6a3fd1" },
 });
 
 const cyberSecurityAwareness = parseCourse({
@@ -49,7 +44,6 @@ const cyberSecurityAwareness = parseCourse({
   title: "Cyber Security Awareness",
   description: "Recognise everyday threats & protect organisational data.",
   category: "IT",
-  theme: { primaryColor: "#6b7280" },
 });
 
 const sampleModules: Module[] = [
