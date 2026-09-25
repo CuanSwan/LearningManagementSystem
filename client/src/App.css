@@ -729,6 +729,12 @@ a.course-side-menu-lesson:hover {
   gap: 0.4rem;
 }
 
+.module-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .module-status {
   font-size: 0.78rem;
   color: var(--text-tertiary);

@@ -1,9 +1,29 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { suggestTheme } from "../themeSuggestion.js";
-import type { Course, CourseStatus, Module, ThemeOverride } from "../types.js";
+import type { Course, CourseStatus, Module, ReviewStatus, ThemeOverride } from "../types.js";
 import { createModule, deleteCourse, getCourse, listModulesByCourse, patchCourse } from "../api.js";
 import { ThemeOverrideFields } from "../components/ThemeOverrideFields.js";
+
+const REVIEW_BADGE_LABEL: Record<ReviewStatus, string> = {
+  changesRequested: "Changes requested",
+  changed: "Ready to resubmit",
+  needsReview: "Awaiting review",
+};
+
+// The one status worth surfacing at a glance for a module that has several
+// active flags (its own, plus any of its lessons') - whatever needs the
+// admin's attention soonest. changesRequested and changed both mean the
+// ball is in the admin's court; needsReview means it's already been sent
+// back and there's nothing to do but wait, so it only shows if nothing
+// more urgent is also true.
+function moduleReviewBadge(module: Module): ReviewStatus | null {
+  const statuses = [module.reviewStatus, ...module.lessons.map((l) => l.reviewStatus)];
+  if (statuses.includes("changesRequested")) return "changesRequested";
+  if (statuses.includes("changed")) return "changed";
+  if (statuses.includes("needsReview")) return "needsReview";
+  return null;
+}
 
 export function AdminCourseDetail() {
   const { courseId } = useParams<{ courseId: string }>();
@@ -118,12 +138,18 @@ export function AdminCourseDetail() {
       <section>
         <h2>Modules</h2>
         <ul className="module-list">
-          {modules.map((m) => (
-            <li key={m.moduleId}>
-              <Link to={`/admin/modules/${m.moduleId}`}>{m.seed.title}</Link>
-              <span className="module-status"> ({m.status})</span>
-            </li>
-          ))}
+          {modules.map((m) => {
+            const badge = moduleReviewBadge(m);
+            return (
+              <li key={m.moduleId}>
+                <Link to={`/admin/modules/${m.moduleId}`}>{m.seed.title}</Link>
+                <span className="module-status"> ({m.status})</span>
+                {badge && (
+                  <span className={`review-panel-status review-panel-status-${badge}`}>{REVIEW_BADGE_LABEL[badge]}</span>
+                )}
+              </li>
+            );
+          })}
         </ul>
 
         <form className="course-form" onSubmit={handleCreateModule}>
