@@ -1482,6 +1482,121 @@ a.path-snake-link:hover .path-snake-bubble {
   width: 100%;
 }
 
+/* Only ever rendered for admin/super_admin/reviewer - see
+   LessonReviewPanel.tsx, which returns null outright for a student. */
+.lesson-review-panel {
+  width: 100%;
+  margin-top: 0.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px dashed var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.lesson-review-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.lesson-review-header h4 {
+  margin: 0;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-tertiary);
+}
+
+.lesson-review-status {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.3rem 0.65rem;
+  border-radius: 0;
+  color: #fff;
+}
+
+.lesson-review-status-changesRequested {
+  background: #a4453b;
+}
+
+.lesson-review-status-changed {
+  background: #b8862c;
+}
+
+.lesson-review-status-needsReview {
+  background: #3e6259;
+}
+
+.lesson-review-empty {
+  font-size: 0.85rem;
+  color: var(--text-tertiary);
+  margin: 0;
+}
+
+.lesson-review-comments {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.lesson-review-comments li {
+  background: var(--surface-warm);
+  border: 1px solid var(--border-subtle);
+  padding: 0.75rem 1rem;
+}
+
+.lesson-review-comment-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.78rem;
+  color: var(--text-tertiary);
+  margin-bottom: 0.35rem;
+}
+
+.lesson-review-comments p {
+  margin: 0;
+}
+
+.lesson-review-error {
+  color: #a4453b;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.lesson-review-compose {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.lesson-review-compose textarea {
+  width: 100%;
+  resize: vertical;
+  font-family: inherit;
+  font-size: 0.9rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border-strong);
+}
+
+.lesson-review-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.lesson-review-clear-btn {
+  background: none;
+  border: 1px dashed var(--border-strong);
+}
+
 .quiz-question {
   border: none;
   margin: 0;

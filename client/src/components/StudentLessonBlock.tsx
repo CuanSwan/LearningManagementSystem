@@ -1,5 +1,6 @@
-import type { Lesson, LessonType } from "../types.js";
+import type { Lesson, LessonReviewStatus, LessonType } from "../types.js";
 import { LessonRenderer } from "./LessonRenderer.js";
+import { LessonReviewPanel } from "./LessonReviewPanel.js";
 
 // Each of these reads as a self-contained visual (its own counter/title/
 // stations sit inside the component itself) - the type label on top of
@@ -15,13 +16,17 @@ const DYNAMIC_COMPONENT_TYPES: Set<LessonType> = new Set([
 ]);
 
 export function StudentLessonBlock({
+  moduleId,
   lesson,
   isComplete,
   onComplete,
+  onReviewStatusChange,
 }: {
+  moduleId: string;
   lesson: Lesson;
   isComplete: boolean;
   onComplete: () => void;
+  onReviewStatusChange: (lessonId: string, reviewStatus: LessonReviewStatus | undefined) => void;
 }) {
   const isDynamicComponent = DYNAMIC_COMPONENT_TYPES.has(lesson.type);
   return (
@@ -35,6 +40,7 @@ export function StudentLessonBlock({
         {isComplete && <span className="student-lesson-complete-badge">✓ Completed</span>}
       </div>
       <LessonRenderer lesson={lesson} isComplete={isComplete} onComplete={onComplete} />
+      <LessonReviewPanel moduleId={moduleId} lesson={lesson} onReviewStatusChange={onReviewStatusChange} />
     </div>
   );
 }

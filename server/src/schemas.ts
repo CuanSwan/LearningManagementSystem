@@ -14,6 +14,17 @@ export type ModuleStatus = z.infer<typeof ModuleStatusSchema>;
 export const CourseStatusSchema = z.enum(["draft", "published"]);
 export type CourseStatus = z.infer<typeof CourseStatusSchema>;
 
+// The reviewer/admin review cycle a single lesson moves through - absent
+// means no review flag is active. "changesRequested": a reviewer left a
+// comment, the ball is in the admin's court. "changed": the admin has
+// edited the lesson's content since that comment (set automatically by
+// saveModule - see store.ts) but hasn't resubmitted it yet. "needsReview":
+// the admin explicitly resubmitted it, the ball is back in the reviewer's
+// court. The reviewer clears the flag (back to absent) once satisfied, or
+// leaves another comment to send it back to "changesRequested".
+export const LessonReviewStatusSchema = z.enum(["changesRequested", "changed", "needsReview"]);
+export type LessonReviewStatus = z.infer<typeof LessonReviewStatusSchema>;
+
 // Every schema below that's persisted (module, course, learning path) can
 // have any of its optional fields read back from Mongo as a literal `null`
 // instead of genuinely absent - the driver used to silently turn an
@@ -190,6 +201,7 @@ const LessonBaseSchema = z.object({
   source: LessonSourceSchema,
   wordingStyle: WordingStyleSchema,
   order: z.number().int().nonnegative(),
+  reviewStatus: nullableOptional(LessonReviewStatusSchema),
 });
 
 export const TextLessonSchema = LessonBaseSchema.extend({

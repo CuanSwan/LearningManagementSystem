@@ -7,8 +7,11 @@ import type { Database } from "./db/index.js";
 import { parseCourse, parseLearningPath, parseModule } from "./schemas.js";
 import type { User } from "./userSchema.js";
 import {
+  clearLessonReview,
   createCourse,
   createLearningPath,
+  createModule,
+  flagLessonChangesRequested,
   getCourse,
   getLearningPath,
   getModule,
@@ -20,8 +23,21 @@ import {
   seedCourse,
   seedLearningPath,
   seedModule,
+  submitLessonForReview,
   userHasCourseAccess,
 } from "./store.js";
+
+function textLesson(lessonId: string, body: string) {
+  return {
+    lessonId,
+    schemaVersion: 1,
+    source: "human" as const,
+    wordingStyle: "shortened" as const,
+    order: 1,
+    type: "text" as const,
+    content: { body },
+  };
+}
 
 function studentWith(assignments: Partial<Pick<User, "assignedLearningPathIds" | "assignedCourseIds">>): User {
   return {
@@ -175,5 +191,67 @@ describe("userHasCourseAccess", () => {
   it("denies access to a course that doesn't exist", async () => {
     const student = studentWith({ assignedCourseIds: ["missing"] });
     expect(await userHasCourseAccess(student, "missing")).toBe(false);
+  });
+});
+
+describe("lesson review workflow", () => {
+  it("flagLessonChangesRequested sets a lesson's reviewStatus regardless of its prior state", async () => {
+    const module = await createModule({ title: "M", objective: "O", lessons: [textLesson("l1", "Original")] });
+    const updated = await flagLessonChangesRequested(module.moduleId, "l1");
+    expect(updated?.lessons[0].reviewStatus).toBe("changesRequested");
+  });
+
+  it("saveModule automatically advances a changed lesson from changesRequested to changed", async () => {
+    const module = await createModule({ title: "M", objective: "O", lessons: [textLesson("l1", "Original")] });
+    await flagLessonChangesRequested(module.moduleId, "l1");
+
+    const saved = await saveModule(module.moduleId, { ...module, lessons: [textLesson("l1", "Edited")] });
+    expect(saved.lessons[0].reviewStatus).toBe("changed");
+  });
+
+  it("saveModule leaves a changesRequested lesson alone if its content didn't actually change", async () => {
+    const module = await createModule({ title: "M", objective: "O", lessons: [textLesson("l1", "Original")] });
+    await flagLessonChangesRequested(module.moduleId, "l1");
+
+    const saved = await saveModule(module.moduleId, { ...module, lessons: [textLesson("l1", "Original")] });
+    expect(saved.lessons[0].reviewStatus).toBe("changesRequested");
+  });
+
+  it("saveModule preserves a lesson with no review status at all", async () => {
+    const module = await createModule({ title: "M", objective: "O", lessons: [textLesson("l1", "Original")] });
+    const saved = await saveModule(module.moduleId, { ...module, lessons: [textLesson("l1", "Edited")] });
+    expect(saved.lessons[0].reviewStatus).toBeUndefined();
+  });
+
+  it("submitLessonForReview moves a lesson to needsReview", async () => {
+    const module = await createModule({ title: "M", objective: "O", lessons: [textLesson("l1", "Original")] });
+    await flagLessonChangesRequested(module.moduleId, "l1");
+    await saveModule(module.moduleId, { ...module, lessons: [textLesson("l1", "Edited")] });
+
+    const updated = await submitLessonForReview(module.moduleId, "l1");
+    expect(updated?.lessons[0].reviewStatus).toBe("needsReview");
+  });
+
+  it("saveModule un-does a stale needsReview if the lesson is edited again before the reviewer re-checks it", async () => {
+    const module = await createModule({ title: "M", objective: "O", lessons: [textLesson("l1", "Original")] });
+    await flagLessonChangesRequested(module.moduleId, "l1");
+    await submitLessonForReview(module.moduleId, "l1");
+
+    const saved = await saveModule(module.moduleId, { ...module, lessons: [textLesson("l1", "Edited again")] });
+    expect(saved.lessons[0].reviewStatus).toBe("changed");
+  });
+
+  it("clearLessonReview removes the review flag entirely", async () => {
+    const module = await createModule({ title: "M", objective: "O", lessons: [textLesson("l1", "Original")] });
+    await flagLessonChangesRequested(module.moduleId, "l1");
+
+    const updated = await clearLessonReview(module.moduleId, "l1");
+    expect(updated?.lessons[0].reviewStatus).toBeUndefined();
+  });
+
+  it("returns undefined from the status helpers for a module that doesn't exist", async () => {
+    expect(await flagLessonChangesRequested("missing", "l1")).toBeUndefined();
+    expect(await submitLessonForReview("missing", "l1")).toBeUndefined();
+    expect(await clearLessonReview("missing", "l1")).toBeUndefined();
   });
 });

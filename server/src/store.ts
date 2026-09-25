@@ -145,10 +145,64 @@ export async function createModule(input: {
   return module;
 }
 
+// An admin's edit form never carries reviewStatus itself (it doesn't know
+// about the review workflow), so every save has to carry each lesson's
+// existing status forward by hand rather than letting it default away.
+// While doing that, a lesson whose content actually changed and was
+// sitting at "changesRequested" or "needsReview" (the reviewer's or the
+// admin's own earlier resubmission) automatically advances to "changed" -
+// the admin never has to remember a separate step just to record that they
+// made an edit, and a further edit after resubmitting correctly un-does a
+// now-stale "needsReview" instead of leaving the reviewer looking at
+// content that moved again after they were told it was ready.
 export async function saveModule(moduleId: string, data: unknown): Promise<Module> {
-  const module = parseModule({ ...(data as object), moduleId });
+  const existing = await modules.get(moduleId);
+  const incoming = parseModule({ ...(data as object), moduleId });
+  const module = parseModule({
+    ...incoming,
+    lessons: incoming.lessons.map((lesson) => {
+      const previous = existing?.lessons.find((l) => l.lessonId === lesson.lessonId);
+      if (!previous) return lesson;
+      const contentChanged = JSON.stringify(lesson.content) !== JSON.stringify(previous.content);
+      const staleStatus = previous.reviewStatus === "changesRequested" || previous.reviewStatus === "needsReview";
+      return { ...lesson, reviewStatus: contentChanged && staleStatus ? "changed" : previous.reviewStatus };
+    }),
+  });
   await modules.set(moduleId, module);
   return module;
+}
+
+async function setLessonReviewStatus(
+  moduleId: string,
+  lessonId: string,
+  reviewStatus: Module["lessons"][number]["reviewStatus"]
+): Promise<Module | undefined> {
+  const existing = await modules.get(moduleId);
+  if (!existing) return undefined;
+  const module = parseModule({
+    ...existing,
+    lessons: existing.lessons.map((l) => (l.lessonId === lessonId ? { ...l, reviewStatus } : l)),
+  });
+  await modules.set(moduleId, module);
+  return module;
+}
+
+// A reviewer's new comment always puts the lesson back in "changesRequested",
+// regardless of whatever state it was already in - a fresh comment is always
+// the most current signal of what the admin needs to look at.
+export function flagLessonChangesRequested(moduleId: string, lessonId: string): Promise<Module | undefined> {
+  return setLessonReviewStatus(moduleId, lessonId, "changesRequested");
+}
+
+// The admin's explicit "send back to the reviewer" action.
+export function submitLessonForReview(moduleId: string, lessonId: string): Promise<Module | undefined> {
+  return setLessonReviewStatus(moduleId, lessonId, "needsReview");
+}
+
+// Closes the loop - the reviewer (or an admin) is satisfied and clears the
+// flag entirely, whatever state it was in.
+export function clearLessonReview(moduleId: string, lessonId: string): Promise<Module | undefined> {
+  return setLessonReviewStatus(moduleId, lessonId, undefined);
 }
 
 // Removes a module from its course, turning it into a reusable library entry
