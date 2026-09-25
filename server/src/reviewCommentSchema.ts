@@ -1,13 +1,14 @@
 import { z } from "zod";
 
-// A reviewer's note on a specific lesson - visible to admin/super_admin/
-// reviewer only, never a student (see index.ts's route guards). Purely a
-// running log: there's no per-comment resolved flag, since the lesson's
-// own reviewStatus (see schemas.ts) is what actually drives the workflow -
+// A reviewer's note on a specific lesson, or on a module as a whole when
+// lessonId is absent - visible to admin/super_admin/reviewer only, never a
+// student (see index.ts's route guards). Purely a running log: there's no
+// per-comment resolved flag, since the lesson's or module's own
+// reviewStatus (see schemas.ts) is what actually drives the workflow -
 // these are the reasoning behind it, not state themselves.
 export const ReviewCommentSchema = z.object({
   commentId: z.string(),
-  lessonId: z.string(),
+  lessonId: z.string().optional(),
   moduleId: z.string(),
   authorUserId: z.string(),
   authorName: z.string(),

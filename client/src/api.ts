@@ -226,6 +226,23 @@ export function clearLessonReview(moduleId: string, lessonId: string): Promise<M
   return request(`/api/modules/${moduleId}/lessons/${lessonId}/clear-review`, { method: "PATCH" });
 }
 
+// Same workflow as a lesson's, but for the module as a whole.
+export function listModuleComments(moduleId: string): Promise<ReviewComment[]> {
+  return request(`/api/modules/${moduleId}/comments`);
+}
+
+export function postModuleComment(moduleId: string, body: string): Promise<ReviewComment> {
+  return request(`/api/modules/${moduleId}/comments`, { method: "POST", body: JSON.stringify({ body }) });
+}
+
+export function submitModuleForReview(moduleId: string): Promise<Module> {
+  return request(`/api/modules/${moduleId}/submit-for-review`, { method: "PATCH" });
+}
+
+export function clearModuleReview(moduleId: string): Promise<Module> {
+  return request(`/api/modules/${moduleId}/clear-review`, { method: "PATCH" });
+}
+
 // Removes a module from its course, turning it into a reusable library entry.
 // A module with no lessons yet is deleted outright instead (returns null) -
 // see server/src/store.ts's unassignModule for why.

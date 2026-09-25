@@ -11,8 +11,17 @@ export function listCommentsForLesson(lessonId: string): Promise<ReviewComment[]
   return reviewComments.list({ lessonId });
 }
 
+// A module-level comment is a ReviewComment with no lessonId. Filtering
+// this in JS after list({ moduleId }), rather than passing lessonId:
+// undefined into the store's own filter, since a store's Partial<T> match
+// isn't guaranteed to mean "field absent" for an explicitly-undefined value.
+export async function listCommentsForModule(moduleId: string): Promise<ReviewComment[]> {
+  const all = await reviewComments.list({ moduleId });
+  return all.filter((c) => !c.lessonId);
+}
+
 export async function createReviewComment(input: {
-  lessonId: string;
+  lessonId?: string;
   moduleId: string;
   authorUserId: string;
   authorName: string;
