@@ -7,9 +7,10 @@ export type LessonSource = "human" | "ai_generated";
 export type WordingStyle = "official" | "shortened";
 export type ModuleStatus = "draft" | "ai_generated" | "published";
 
-// The reviewer/admin cycle a lesson moves through - see server/src/schemas.ts
-// for the full state machine. Absent means no review flag is active.
-export type LessonReviewStatus = "changesRequested" | "changed" | "needsReview";
+// The reviewer/admin cycle a lesson OR a whole module moves through - see
+// server/src/schemas.ts for the full state machine. Absent means no review
+// flag is active. A lesson's own status and its module's are independent.
+export type ReviewStatus = "changesRequested" | "changed" | "needsReview";
 
 interface LessonBase {
   lessonId: string;
@@ -17,7 +18,7 @@ interface LessonBase {
   source: LessonSource;
   wordingStyle: WordingStyle;
   order: number;
-  reviewStatus?: LessonReviewStatus;
+  reviewStatus?: ReviewStatus;
 }
 
 export interface TextLesson extends LessonBase {
@@ -205,9 +206,11 @@ export interface ModuleSeed {
   rawContent?: string;
 }
 
+// A reviewer's note on a specific lesson, or on a module as a whole when
+// lessonId is absent.
 export interface ReviewComment {
   commentId: string;
-  lessonId: string;
+  lessonId?: string;
   moduleId: string;
   authorUserId: string;
   authorName: string;
@@ -226,6 +229,8 @@ export interface Module {
   status: ModuleStatus;
   seed: ModuleSeed;
   lessons: Lesson[];
+  // A reviewer flagging the module as a whole - see ReviewStatus.
+  reviewStatus?: ReviewStatus;
 }
 
 export interface ThemeValues {

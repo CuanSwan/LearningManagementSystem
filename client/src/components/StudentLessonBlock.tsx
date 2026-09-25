@@ -1,6 +1,7 @@
-import type { Lesson, LessonReviewStatus, LessonType } from "../types.js";
+import { clearLessonReview, listLessonComments, postLessonComment, submitLessonForReview } from "../api.js";
+import type { Lesson, LessonType, ReviewStatus } from "../types.js";
 import { LessonRenderer } from "./LessonRenderer.js";
-import { LessonReviewPanel } from "./LessonReviewPanel.js";
+import { ReviewPanel } from "./ReviewPanel.js";
 
 // Each of these reads as a self-contained visual (its own counter/title/
 // stations sit inside the component itself) - the type label on top of
@@ -26,7 +27,7 @@ export function StudentLessonBlock({
   lesson: Lesson;
   isComplete: boolean;
   onComplete: () => void;
-  onReviewStatusChange: (lessonId: string, reviewStatus: LessonReviewStatus | undefined) => void;
+  onReviewStatusChange: (lessonId: string, reviewStatus: ReviewStatus | undefined) => void;
 }) {
   const isDynamicComponent = DYNAMIC_COMPONENT_TYPES.has(lesson.type);
   return (
@@ -40,7 +41,15 @@ export function StudentLessonBlock({
         {isComplete && <span className="student-lesson-complete-badge">✓ Completed</span>}
       </div>
       <LessonRenderer lesson={lesson} isComplete={isComplete} onComplete={onComplete} />
-      <LessonReviewPanel moduleId={moduleId} lesson={lesson} onReviewStatusChange={onReviewStatusChange} />
+      <ReviewPanel
+        targetKey={lesson.lessonId}
+        reviewStatus={lesson.reviewStatus}
+        fetchComments={() => listLessonComments(moduleId, lesson.lessonId)}
+        postComment={(body) => postLessonComment(moduleId, lesson.lessonId, body)}
+        submitForReview={() => submitLessonForReview(moduleId, lesson.lessonId)}
+        clearReview={() => clearLessonReview(moduleId, lesson.lessonId)}
+        onReviewStatusChange={(status) => onReviewStatusChange(lesson.lessonId, status)}
+      />
     </div>
   );
 }

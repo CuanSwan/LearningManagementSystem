@@ -8,10 +8,12 @@ import { parseCourse, parseLearningPath, parseModule } from "./schemas.js";
 import type { User } from "./userSchema.js";
 import {
   clearLessonReview,
+  clearModuleReview,
   createCourse,
   createLearningPath,
   createModule,
   flagLessonChangesRequested,
+  flagModuleChangesRequested,
   getCourse,
   getLearningPath,
   getModule,
@@ -24,6 +26,7 @@ import {
   seedLearningPath,
   seedModule,
   submitLessonForReview,
+  submitModuleForReview,
   userHasCourseAccess,
 } from "./store.js";
 
@@ -253,5 +256,69 @@ describe("lesson review workflow", () => {
     expect(await flagLessonChangesRequested("missing", "l1")).toBeUndefined();
     expect(await submitLessonForReview("missing", "l1")).toBeUndefined();
     expect(await clearLessonReview("missing", "l1")).toBeUndefined();
+  });
+});
+
+describe("module review workflow", () => {
+  it("flagModuleChangesRequested sets the module's own reviewStatus", async () => {
+    const module = await createModule({ title: "M", objective: "O", lessons: [textLesson("l1", "Original")] });
+    const updated = await flagModuleChangesRequested(module.moduleId);
+    expect(updated?.reviewStatus).toBe("changesRequested");
+  });
+
+  it("saveModule automatically advances the module from changesRequested to changed when its seed changes", async () => {
+    const module = await createModule({ title: "M", objective: "O", lessons: [textLesson("l1", "Original")] });
+    await flagModuleChangesRequested(module.moduleId);
+
+    const saved = await saveModule(module.moduleId, {
+      ...module,
+      seed: { ...module.seed, objective: "A rewritten objective" },
+    });
+    expect(saved.reviewStatus).toBe("changed");
+  });
+
+  it("saveModule leaves the module's changesRequested alone if nothing about it actually changed", async () => {
+    const module = await createModule({ title: "M", objective: "O", lessons: [textLesson("l1", "Original")] });
+    await flagModuleChangesRequested(module.moduleId);
+
+    const saved = await saveModule(module.moduleId, module);
+    expect(saved.reviewStatus).toBe("changesRequested");
+  });
+
+  it("a lesson-only edit doesn't spuriously leave the module's own status stuck - it still advances, since the module's lessons are part of its content", async () => {
+    const module = await createModule({ title: "M", objective: "O", lessons: [textLesson("l1", "Original")] });
+    await flagModuleChangesRequested(module.moduleId);
+
+    const saved = await saveModule(module.moduleId, { ...module, lessons: [textLesson("l1", "Edited")] });
+    expect(saved.reviewStatus).toBe("changed");
+  });
+
+  it("submitModuleForReview moves the module to needsReview", async () => {
+    const module = await createModule({ title: "M", objective: "O", lessons: [] });
+    await flagModuleChangesRequested(module.moduleId);
+    const updated = await submitModuleForReview(module.moduleId);
+    expect(updated?.reviewStatus).toBe("needsReview");
+  });
+
+  it("clearModuleReview removes the module's review flag entirely", async () => {
+    const module = await createModule({ title: "M", objective: "O", lessons: [] });
+    await flagModuleChangesRequested(module.moduleId);
+    const updated = await clearModuleReview(module.moduleId);
+    expect(updated?.reviewStatus).toBeUndefined();
+  });
+
+  it("a module's reviewStatus and a lesson's reviewStatus are independent of each other", async () => {
+    const module = await createModule({ title: "M", objective: "O", lessons: [textLesson("l1", "Original")] });
+    await flagLessonChangesRequested(module.moduleId, "l1");
+
+    const updated = await getModule(module.moduleId);
+    expect(updated?.reviewStatus).toBeUndefined();
+    expect(updated?.lessons[0].reviewStatus).toBe("changesRequested");
+  });
+
+  it("returns undefined from the module status helpers for a module that doesn't exist", async () => {
+    expect(await flagModuleChangesRequested("missing")).toBeUndefined();
+    expect(await submitModuleForReview("missing")).toBeUndefined();
+    expect(await clearModuleReview("missing")).toBeUndefined();
   });
 });

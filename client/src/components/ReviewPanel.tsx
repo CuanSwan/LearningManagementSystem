@@ -1,27 +1,39 @@
 import { useEffect, useState } from "react";
-import { clearLessonReview, listLessonComments, postLessonComment, submitLessonForReview } from "../api.js";
 import { useAuth } from "../auth.js";
-import type { Lesson, LessonReviewStatus, ReviewComment } from "../types.js";
+import type { ReviewComment, ReviewStatus } from "../types.js";
 
-const STATUS_LABEL: Record<LessonReviewStatus, string> = {
+const STATUS_LABEL: Record<ReviewStatus, string> = {
   changesRequested: "Changes requested",
   changed: "Changed - ready to resubmit",
   needsReview: "Needs review",
 };
 
-// Sits at the bottom of every lesson, but renders nothing at all for a
-// student - a reviewer leaves notes here for the admin to act on, and this
-// is also where the admin resubmits once they've made the change. See
-// server/src/schemas.ts's LessonReviewStatusSchema for the full workflow
-// this drives.
-export function LessonReviewPanel({
-  moduleId,
-  lesson,
+// Reused for both a single lesson (at the bottom of its content) and a
+// whole module (under its title/objective) - a reviewer leaves notes here
+// for the admin to act on, and this is also where the admin resubmits once
+// they've made the change. Renders nothing at all for a student. See
+// server/src/schemas.ts's ReviewStatusSchema for the full workflow.
+export function ReviewPanel({
+  targetKey,
+  reviewStatus,
+  fetchComments,
+  postComment,
+  submitForReview,
+  clearReview,
   onReviewStatusChange,
 }: {
-  moduleId: string;
-  lesson: Lesson;
-  onReviewStatusChange: (lessonId: string, reviewStatus: LessonReviewStatus | undefined) => void;
+  // Identifies what this panel is showing comments for (a lessonId, or a
+  // fixed string like "module") - the carousel keeps the same
+  // StudentLessonBlock instance mounted across Next/Previous (only its
+  // `lesson` prop changes), so this drives the refetch directly rather than
+  // relying on a remount that never happens.
+  targetKey: string;
+  reviewStatus: ReviewStatus | undefined;
+  fetchComments: () => Promise<ReviewComment[]>;
+  postComment: (body: string) => Promise<ReviewComment>;
+  submitForReview: () => Promise<unknown>;
+  clearReview: () => Promise<unknown>;
+  onReviewStatusChange: (reviewStatus: ReviewStatus | undefined) => void;
 }) {
   const { user } = useAuth();
   const canSeeReview = user?.role === "admin" || user?.role === "super_admin" || user?.role === "reviewer";
@@ -35,14 +47,21 @@ export function LessonReviewPanel({
 
   useEffect(() => {
     if (!canSeeReview) return;
+    setComments(null);
+    setDraft("");
+    setError(null);
     let cancelled = false;
-    listLessonComments(moduleId, lesson.lessonId)
+    fetchComments()
       .then((list) => !cancelled && setComments(list))
       .catch(() => !cancelled && setComments([]));
     return () => {
       cancelled = true;
     };
-  }, [moduleId, lesson.lessonId, canSeeReview]);
+    // fetchComments/postComment/etc. are fresh closures every render from
+    // the caller - targetKey is what actually identifies a new thing to
+    // show, so that (plus canSeeReview) is the real dependency here.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canSeeReview, targetKey]);
 
   if (!canSeeReview) return null;
 
@@ -52,10 +71,10 @@ export function LessonReviewPanel({
     setBusy(true);
     setError(null);
     try {
-      const comment = await postLessonComment(moduleId, lesson.lessonId, body);
+      const comment = await postComment(body);
       setComments((prev) => [...(prev ?? []), comment]);
       setDraft("");
-      onReviewStatusChange(lesson.lessonId, "changesRequested");
+      onReviewStatusChange("changesRequested");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Couldn't post that comment.");
     } finally {
@@ -67,8 +86,8 @@ export function LessonReviewPanel({
     setBusy(true);
     setError(null);
     try {
-      await submitLessonForReview(moduleId, lesson.lessonId);
-      onReviewStatusChange(lesson.lessonId, "needsReview");
+      await submitForReview();
+      onReviewStatusChange("needsReview");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Couldn't submit this for review.");
     } finally {
@@ -80,8 +99,8 @@ export function LessonReviewPanel({
     setBusy(true);
     setError(null);
     try {
-      await clearLessonReview(moduleId, lesson.lessonId);
-      onReviewStatusChange(lesson.lessonId, undefined);
+      await clearReview();
+      onReviewStatusChange(undefined);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Couldn't clear the review flag.");
     } finally {
@@ -90,25 +109,23 @@ export function LessonReviewPanel({
   }
 
   return (
-    <div className="lesson-review-panel">
-      <div className="lesson-review-header">
+    <div className="review-panel">
+      <div className="review-panel-header">
         <h4>Reviewer notes</h4>
-        {lesson.reviewStatus && (
-          <span className={`lesson-review-status lesson-review-status-${lesson.reviewStatus}`}>
-            {STATUS_LABEL[lesson.reviewStatus]}
-          </span>
+        {reviewStatus && (
+          <span className={`review-panel-status review-panel-status-${reviewStatus}`}>{STATUS_LABEL[reviewStatus]}</span>
         )}
       </div>
 
       {comments === null ? (
-        <p className="lesson-review-empty">Loading comments...</p>
+        <p className="review-panel-empty">Loading comments...</p>
       ) : comments.length === 0 ? (
-        <p className="lesson-review-empty">No comments yet.</p>
+        <p className="review-panel-empty">No comments yet.</p>
       ) : (
-        <ul className="lesson-review-comments">
+        <ul className="review-panel-comments">
           {comments.map((c) => (
             <li key={c.commentId}>
-              <div className="lesson-review-comment-meta">
+              <div className="review-panel-comment-meta">
                 <strong>{c.authorName}</strong>
                 <span>{new Date(c.createdAt).toLocaleString()}</span>
               </div>
@@ -118,10 +135,10 @@ export function LessonReviewPanel({
         </ul>
       )}
 
-      {error && <p className="lesson-review-error">{error}</p>}
+      {error && <p className="review-panel-error">{error}</p>}
 
       {isReviewer && (
-        <div className="lesson-review-compose">
+        <div className="review-panel-compose">
           <textarea
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
@@ -134,14 +151,14 @@ export function LessonReviewPanel({
         </div>
       )}
 
-      <div className="lesson-review-actions">
-        {isAdmin && lesson.reviewStatus === "changed" && (
+      <div className="review-panel-actions">
+        {isAdmin && reviewStatus === "changed" && (
           <button type="button" onClick={handleSubmitForReview} disabled={busy}>
             Submit for review
           </button>
         )}
-        {(isAdmin || isReviewer) && lesson.reviewStatus && (
-          <button type="button" className="lesson-review-clear-btn" onClick={handleClear} disabled={busy}>
+        {(isAdmin || isReviewer) && reviewStatus && (
+          <button type="button" className="review-panel-clear-btn" onClick={handleClear} disabled={busy}>
             Clear review flag
           </button>
         )}

@@ -1,13 +1,24 @@
 import { useCallback, useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import type { Course, Lesson, LessonReviewStatus, Module } from "../types.js";
-import { getCourse, getModule, getProgress, listModulesByCourse, setLessonProgress } from "../api.js";
+import type { Course, Lesson, Module, ReviewStatus } from "../types.js";
+import {
+  clearModuleReview,
+  getCourse,
+  getModule,
+  getProgress,
+  listModuleComments,
+  listModulesByCourse,
+  postModuleComment,
+  setLessonProgress,
+  submitModuleForReview,
+} from "../api.js";
 import { useAuth } from "../auth.js";
 import { BackButton } from "../components/BackButton.js";
 import { Breadcrumb } from "../components/Breadcrumb.js";
 import { CourseSideMenu } from "../components/CourseSideMenu.js";
 import { LessonCarousel } from "../components/LessonCarousel.js";
 import { ModuleCompleteModal } from "../components/ModuleCompleteModal.js";
+import { ReviewPanel } from "../components/ReviewPanel.js";
 import { StudentLessonBlock } from "../components/StudentLessonBlock.js";
 import { isModuleLocked } from "../courseProgress.js";
 import { useDisplayPreference } from "../displayPreference.js";
@@ -84,12 +95,16 @@ export function StudentModule() {
   // Keeps the displayed status badge (and which review actions show up) in
   // sync immediately after a comment/submit/clear action, without needing
   // a full refetch of the module.
-  function handleReviewStatusChange(lessonId: string, reviewStatus: LessonReviewStatus | undefined) {
+  function handleReviewStatusChange(lessonId: string, reviewStatus: ReviewStatus | undefined) {
     setModule((prev) =>
       prev
         ? { ...prev, lessons: prev.lessons.map((l) => (l.lessonId === lessonId ? { ...l, reviewStatus } : l)) }
         : prev
     );
+  }
+
+  function handleModuleReviewStatusChange(reviewStatus: ReviewStatus | undefined) {
+    setModule((prev) => (prev ? { ...prev, reviewStatus } : prev));
   }
 
   if (!course || !foundModule) return <p>Loading...</p>;
@@ -126,6 +141,16 @@ export function StudentModule() {
       <BackButton to={`/courses/${courseId}`} label={`Back to ${course.title}`} />
       <h1>{foundModule.seed.title}</h1>
       <p className="course-description">{foundModule.seed.objective}</p>
+
+      <ReviewPanel
+        targetKey={moduleId!}
+        reviewStatus={foundModule.reviewStatus}
+        fetchComments={() => listModuleComments(moduleId!)}
+        postComment={(body) => postModuleComment(moduleId!, body)}
+        submitForReview={() => submitModuleForReview(moduleId!)}
+        clearReview={() => clearModuleReview(moduleId!)}
+        onReviewStatusChange={handleModuleReviewStatusChange}
+      />
 
       {usesCarousel ? (
         <LessonCarousel

@@ -145,29 +145,59 @@ export async function createModule(input: {
   return module;
 }
 
+function stripLessonReviewStatus(lesson: Module["lessons"][number]) {
+  const { reviewStatus: _reviewStatus, ...rest } = lesson;
+  return rest;
+}
+
+// A signature of everything about a module EXCEPT the review-workflow
+// fields themselves (its own reviewStatus and each lesson's) - used to ask
+// "did the admin actually change anything here" without the act of
+// carrying a status forward (below) looking like a change in itself.
+function moduleContentSignature(m: Module): string {
+  return JSON.stringify({
+    seed: m.seed,
+    category: m.category,
+    courseId: m.courseId,
+    status: m.status,
+    lessons: m.lessons.map(stripLessonReviewStatus),
+  });
+}
+
+function isStaleReviewStatus(status: Module["reviewStatus"]): boolean {
+  return status === "changesRequested" || status === "needsReview";
+}
+
 // An admin's edit form never carries reviewStatus itself (it doesn't know
-// about the review workflow), so every save has to carry each lesson's
-// existing status forward by hand rather than letting it default away.
-// While doing that, a lesson whose content actually changed and was
-// sitting at "changesRequested" or "needsReview" (the reviewer's or the
-// admin's own earlier resubmission) automatically advances to "changed" -
-// the admin never has to remember a separate step just to record that they
-// made an edit, and a further edit after resubmitting correctly un-does a
-// now-stale "needsReview" instead of leaving the reviewer looking at
-// content that moved again after they were told it was ready.
+// about the review workflow), so every save has to carry the existing
+// status - the module's own, and each lesson's - forward by hand rather
+// than letting it default away. While doing that, anything whose content
+// actually changed and was sitting at "changesRequested" or "needsReview"
+// (the reviewer's comment, or the admin's own earlier resubmission)
+// automatically advances to "changed" - the admin never has to remember a
+// separate step just to record that they made an edit, and a further edit
+// after resubmitting correctly un-does a now-stale "needsReview" instead of
+// leaving the reviewer looking at content that moved again after they were
+// told it was ready. The module's own status and each lesson's are tracked
+// independently of each other, driven by their own content diff.
 export async function saveModule(moduleId: string, data: unknown): Promise<Module> {
   const existing = await modules.get(moduleId);
   const incoming = parseModule({ ...(data as object), moduleId });
-  const module = parseModule({
-    ...incoming,
-    lessons: incoming.lessons.map((lesson) => {
-      const previous = existing?.lessons.find((l) => l.lessonId === lesson.lessonId);
-      if (!previous) return lesson;
-      const contentChanged = JSON.stringify(lesson.content) !== JSON.stringify(previous.content);
-      const staleStatus = previous.reviewStatus === "changesRequested" || previous.reviewStatus === "needsReview";
-      return { ...lesson, reviewStatus: contentChanged && staleStatus ? "changed" : previous.reviewStatus };
-    }),
+
+  const lessons = incoming.lessons.map((lesson) => {
+    const previous = existing?.lessons.find((l) => l.lessonId === lesson.lessonId);
+    if (!previous) return lesson;
+    const contentChanged = JSON.stringify(lesson.content) !== JSON.stringify(previous.content);
+    return { ...lesson, reviewStatus: contentChanged && isStaleReviewStatus(previous.reviewStatus) ? "changed" : previous.reviewStatus };
   });
+
+  const withLessons = { ...incoming, lessons };
+  const moduleContentChanged = existing ? moduleContentSignature(withLessons) !== moduleContentSignature(existing) : false;
+  const module = parseModule({
+    ...withLessons,
+    reviewStatus: moduleContentChanged && isStaleReviewStatus(existing?.reviewStatus) ? "changed" : existing?.reviewStatus,
+  });
+
   await modules.set(moduleId, module);
   return module;
 }
@@ -187,11 +217,24 @@ async function setLessonReviewStatus(
   return module;
 }
 
-// A reviewer's new comment always puts the lesson back in "changesRequested",
-// regardless of whatever state it was already in - a fresh comment is always
-// the most current signal of what the admin needs to look at.
+async function setModuleReviewStatus(moduleId: string, reviewStatus: Module["reviewStatus"]): Promise<Module | undefined> {
+  const existing = await modules.get(moduleId);
+  if (!existing) return undefined;
+  const module = parseModule({ ...existing, reviewStatus });
+  await modules.set(moduleId, module);
+  return module;
+}
+
+// A reviewer's new comment always puts the lesson (or module) back in
+// "changesRequested", regardless of whatever state it was already in - a
+// fresh comment is always the most current signal of what the admin needs
+// to look at.
 export function flagLessonChangesRequested(moduleId: string, lessonId: string): Promise<Module | undefined> {
   return setLessonReviewStatus(moduleId, lessonId, "changesRequested");
+}
+
+export function flagModuleChangesRequested(moduleId: string): Promise<Module | undefined> {
+  return setModuleReviewStatus(moduleId, "changesRequested");
 }
 
 // The admin's explicit "send back to the reviewer" action.
@@ -199,10 +242,18 @@ export function submitLessonForReview(moduleId: string, lessonId: string): Promi
   return setLessonReviewStatus(moduleId, lessonId, "needsReview");
 }
 
+export function submitModuleForReview(moduleId: string): Promise<Module | undefined> {
+  return setModuleReviewStatus(moduleId, "needsReview");
+}
+
 // Closes the loop - the reviewer (or an admin) is satisfied and clears the
 // flag entirely, whatever state it was in.
 export function clearLessonReview(moduleId: string, lessonId: string): Promise<Module | undefined> {
   return setLessonReviewStatus(moduleId, lessonId, undefined);
+}
+
+export function clearModuleReview(moduleId: string): Promise<Module | undefined> {
+  return setModuleReviewStatus(moduleId, undefined);
 }
 
 // Removes a module from its course, turning it into a reusable library entry

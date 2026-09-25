@@ -29,15 +29,22 @@ import { convertRiseCourse, RiseImportError } from "./riseImport.js";
 import { extractRiseRuntimeData, RiseZipError } from "./riseZip.js";
 import { seedSampleData } from "./sampleData.js";
 import { seedUsers } from "./seedUsers.js";
-import { createReviewComment, initReviewCommentStore, listCommentsForLesson } from "./reviewCommentStore.js";
+import {
+  createReviewComment,
+  initReviewCommentStore,
+  listCommentsForLesson,
+  listCommentsForModule,
+} from "./reviewCommentStore.js";
 import {
   clearLessonReview,
+  clearModuleReview,
   createCourse,
   createLearningPath,
   createModule,
   deleteCourse,
   deleteModule,
   flagLessonChangesRequested,
+  flagModuleChangesRequested,
   getCourse,
   getLearningPath,
   getModule,
@@ -50,6 +57,7 @@ import {
   patchLearningPath,
   saveModule,
   submitLessonForReview,
+  submitModuleForReview,
   unassignModule,
   userHasCourseAccess,
 } from "./store.js";
@@ -651,6 +659,57 @@ app.patch(
     res.json(module);
   }
 );
+
+// --- Module-level review comments - same workflow as a lesson's, but for
+// the module as a whole (structure, ordering, overall content). ---
+
+app.get("/api/modules/:moduleId/comments", requireRole("admin", "super_admin", "reviewer"), async (req, res) => {
+  const module = await getModule(req.params.moduleId);
+  if (!module) {
+    res.status(404).json({ error: "Module not found" });
+    return;
+  }
+  res.json(await listCommentsForModule(req.params.moduleId));
+});
+
+app.post("/api/modules/:moduleId/comments", requireRole("reviewer"), async (req, res) => {
+  const parsed = CreateReviewCommentSchema.safeParse(req.body);
+  if (!parsed.success) {
+    sendValidationError(res, parsed.error);
+    return;
+  }
+  const module = await getModule(req.params.moduleId);
+  if (!module) {
+    res.status(404).json({ error: "Module not found" });
+    return;
+  }
+  const comment = await createReviewComment({
+    moduleId: req.params.moduleId,
+    authorUserId: req.user!.userId,
+    authorName: req.user!.name,
+    body: parsed.data.body,
+  });
+  await flagModuleChangesRequested(req.params.moduleId);
+  res.status(201).json(comment);
+});
+
+app.patch("/api/modules/:moduleId/submit-for-review", requireRole("admin", "super_admin"), async (req, res) => {
+  const module = await submitModuleForReview(req.params.moduleId);
+  if (!module) {
+    res.status(404).json({ error: "Module not found" });
+    return;
+  }
+  res.json(module);
+});
+
+app.patch("/api/modules/:moduleId/clear-review", requireRole("admin", "super_admin", "reviewer"), async (req, res) => {
+  const module = await clearModuleReview(req.params.moduleId);
+  if (!module) {
+    res.status(404).json({ error: "Module not found" });
+    return;
+  }
+  res.json(module);
+});
 
 // --- Learning paths ---
 

@@ -4,7 +4,12 @@ import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createFileStore } from "./db/fileStore.js";
 import type { Database } from "./db/index.js";
-import { createReviewComment, initReviewCommentStore, listCommentsForLesson } from "./reviewCommentStore.js";
+import {
+  createReviewComment,
+  initReviewCommentStore,
+  listCommentsForLesson,
+  listCommentsForModule,
+} from "./reviewCommentStore.js";
 
 let dir: string;
 
@@ -48,5 +53,25 @@ describe("listCommentsForLesson", () => {
 
   it("returns an empty array for a lesson with no comments", async () => {
     expect(await listCommentsForLesson("nothing-here")).toEqual([]);
+  });
+});
+
+describe("listCommentsForModule", () => {
+  it("returns only module-level comments (lessonId absent), not any lesson's", async () => {
+    await createReviewComment({ moduleId: "m1", authorUserId: "u1", authorName: "Rita", body: "Module note" });
+    await createReviewComment({ lessonId: "l1", moduleId: "m1", authorUserId: "u1", authorName: "Rita", body: "Lesson note" });
+
+    const comments = await listCommentsForModule("m1");
+    expect(comments).toHaveLength(1);
+    expect(comments[0].body).toBe("Module note");
+  });
+
+  it("doesn't mix in another module's comments", async () => {
+    await createReviewComment({ moduleId: "m1", authorUserId: "u1", authorName: "Rita", body: "For m1" });
+    await createReviewComment({ moduleId: "m2", authorUserId: "u1", authorName: "Rita", body: "For m2" });
+
+    const comments = await listCommentsForModule("m1");
+    expect(comments).toHaveLength(1);
+    expect(comments[0].body).toBe("For m1");
   });
 });

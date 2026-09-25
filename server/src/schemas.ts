@@ -14,16 +14,19 @@ export type ModuleStatus = z.infer<typeof ModuleStatusSchema>;
 export const CourseStatusSchema = z.enum(["draft", "published"]);
 export type CourseStatus = z.infer<typeof CourseStatusSchema>;
 
-// The reviewer/admin review cycle a single lesson moves through - absent
-// means no review flag is active. "changesRequested": a reviewer left a
-// comment, the ball is in the admin's court. "changed": the admin has
-// edited the lesson's content since that comment (set automatically by
+// The reviewer/admin review cycle a lesson OR a whole module moves through -
+// absent means no review flag is active. "changesRequested": a reviewer
+// left a comment, the ball is in the admin's court. "changed": the admin
+// has edited the content since that comment (set automatically by
 // saveModule - see store.ts) but hasn't resubmitted it yet. "needsReview":
 // the admin explicitly resubmitted it, the ball is back in the reviewer's
 // court. The reviewer clears the flag (back to absent) once satisfied, or
-// leaves another comment to send it back to "changesRequested".
-export const LessonReviewStatusSchema = z.enum(["changesRequested", "changed", "needsReview"]);
-export type LessonReviewStatus = z.infer<typeof LessonReviewStatusSchema>;
+// leaves another comment to send it back to "changesRequested". A lesson's
+// own status and its module's status are independent - a reviewer can flag
+// the module as a whole (its structure, ordering, overall content) without
+// that implying anything about any one lesson inside it, and vice versa.
+export const ReviewStatusSchema = z.enum(["changesRequested", "changed", "needsReview"]);
+export type ReviewStatus = z.infer<typeof ReviewStatusSchema>;
 
 // Every schema below that's persisted (module, course, learning path) can
 // have any of its optional fields read back from Mongo as a literal `null`
@@ -201,7 +204,7 @@ const LessonBaseSchema = z.object({
   source: LessonSourceSchema,
   wordingStyle: WordingStyleSchema,
   order: z.number().int().nonnegative(),
-  reviewStatus: nullableOptional(LessonReviewStatusSchema),
+  reviewStatus: nullableOptional(ReviewStatusSchema),
 });
 
 export const TextLessonSchema = LessonBaseSchema.extend({
@@ -349,6 +352,9 @@ export const ModuleSchema = z.object({
   status: ModuleStatusSchema,
   seed: ModuleSeedSchema,
   lessons: z.array(LessonSchema),
+  // A reviewer flagging the module as a whole - its structure, ordering, or
+  // overall content - independent of any one lesson's own reviewStatus.
+  reviewStatus: nullableOptional(ReviewStatusSchema),
 });
 
 export type Module = z.infer<typeof ModuleSchema>;
