@@ -729,9 +729,30 @@ a.course-side-menu-lesson:hover {
   gap: 0.4rem;
 }
 
+.module-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .module-status {
   font-size: 0.78rem;
   color: var(--text-tertiary);
+  flex: 1;
+}
+
+.copy-embed-link-btn {
+  font-size: 0.78rem;
+  background: none;
+  border: 1px dashed var(--border-strong);
+  border-radius: 4px;
+  padding: 0.3rem 0.55rem;
+  cursor: pointer;
+}
+
+.copy-embed-link-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* --- Student view: streamlined, theme-driven --- */
