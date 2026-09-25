@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import type { Course, Lesson, Module } from "../types.js";
 import { getCourse, getModule, getProgress, listModulesByCourse, setLessonProgress } from "../api.js";
 import { useAuth } from "../auth.js";
@@ -9,6 +9,7 @@ import { CourseSideMenu } from "../components/CourseSideMenu.js";
 import { LessonCarousel } from "../components/LessonCarousel.js";
 import { ModuleCompleteModal } from "../components/ModuleCompleteModal.js";
 import { StudentLessonBlock } from "../components/StudentLessonBlock.js";
+import { isModuleLocked } from "../courseProgress.js";
 import { useDisplayPreference } from "../displayPreference.js";
 import { describeLesson } from "../lessonTemplates.js";
 import { Theme, themeStyle } from "../theme.js";
@@ -23,6 +24,7 @@ export function StudentModule() {
   const { courseId, moduleId } = useParams<{ courseId: string; moduleId: string }>();
   const { user } = useAuth();
   const isReviewer = user?.role === "reviewer";
+  const navigate = useNavigate();
   const location = useLocation();
   const activeLessonId = location.hash.startsWith(LESSON_HASH_PREFIX)
     ? location.hash.slice(LESSON_HASH_PREFIX.length)
@@ -85,6 +87,13 @@ export function StudentModule() {
   const completedCount = orderedLessons.filter((l) => completedIds.has(l.lessonId)).length;
   const moduleIndex = courseModules.findIndex((m) => m.moduleId === moduleId);
   const nextModule = moduleIndex >= 0 ? (courseModules[moduleIndex + 1] ?? null) : null;
+  // Same rule CourseSideMenu/StudentCourse already unlock modules by - always
+  // open for a reviewer/admin/super_admin, gated on this module's completion
+  // for a student. Lets the carousel's last-lesson Next button carry a
+  // student straight into the next module the moment they've earned it,
+  // instead of only offering that via the completion modal below.
+  const nextModuleReachable =
+    nextModule !== null && !isModuleLocked(courseModules, moduleIndex + 1, completedIds, user?.role ?? "student");
   // Accessible mode reuses the carousel's one-lesson-at-a-time layout; only the
   // font/sizing changes, via the accessible-mode class applied below.
   const usesCarousel = mode === "carousel" || mode === "accessible";
@@ -119,6 +128,10 @@ export function StudentModule() {
           initialLessonId={activeLessonId}
           onComplete={markComplete}
           onCurrentLessonChange={handleCurrentLessonChange}
+          nextModuleTitle={nextModule?.seed.title}
+          onNextModule={
+            nextModuleReachable && nextModule ? () => navigate(`/courses/${courseId}/modules/${nextModule.moduleId}`) : undefined
+          }
         />
       ) : (
         <>
