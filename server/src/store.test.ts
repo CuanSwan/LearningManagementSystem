@@ -31,6 +31,7 @@ function studentWith(assignments: Partial<Pick<User, "assignedLearningPathIds" |
     role: "student",
     assignedLearningPathIds: [],
     assignedCourseIds: [],
+    authOrigin: "password",
     ...assignments,
   };
 }

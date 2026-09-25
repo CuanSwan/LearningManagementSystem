@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { buildEmbedLink } from "../embedLink.js";
 import { suggestTheme } from "../themeSuggestion.js";
 import type { Course, Module, ThemeOverride } from "../types.js";
 import { createModule, deleteCourse, getCourse, listModulesByCourse, patchCourse } from "../api.js";
@@ -17,6 +18,7 @@ export function AdminCourseDetail() {
   const [moduleObjective, setModuleObjective] = useState("");
   const [moduleError, setModuleError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [copiedModuleId, setCopiedModuleId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!courseId) return;
@@ -50,6 +52,13 @@ export function AdminCourseDetail() {
     } catch (err) {
       setModuleError((err as Error).message);
     }
+  }
+
+  async function handleCopyEmbedLink(moduleId: string) {
+    const link = buildEmbedLink(window.location.origin, courseId!, moduleId);
+    await navigator.clipboard.writeText(link);
+    setCopiedModuleId(moduleId);
+    setTimeout(() => setCopiedModuleId((current) => (current === moduleId ? null : current)), 2000);
   }
 
   async function handleDeleteCourse() {
@@ -109,6 +118,19 @@ export function AdminCourseDetail() {
             <li key={m.moduleId}>
               <Link to={`/admin/modules/${m.moduleId}`}>{m.seed.title}</Link>
               <span className="module-status"> ({m.status})</span>
+              <button
+                type="button"
+                className="copy-embed-link-btn"
+                onClick={() => handleCopyEmbedLink(m.moduleId)}
+                disabled={m.status !== "published"}
+                title={
+                  m.status !== "published"
+                    ? "Publish this module first - an embed link only works once it's published"
+                    : "Copy a Thinkific embed link for this module"
+                }
+              >
+                {copiedModuleId === m.moduleId ? "Copied!" : "Copy Thinkific embed link"}
+              </button>
             </li>
           ))}
         </ul>

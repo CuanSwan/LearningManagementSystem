@@ -6,6 +6,8 @@ import { createFileStore } from "./db/fileStore.js";
 import type { Database } from "./db/index.js";
 import {
   createUser,
+  findOrCreateEmbedUser,
+  grantCourseAccess,
   initUserStore,
   setUserAssignments,
   updatePassword,
@@ -77,5 +79,61 @@ describe("setUserAssignments", () => {
 
   it("returns undefined for a userId that doesn't exist", async () => {
     expect(await setUserAssignments("missing", { assignedLearningPathIds: [], assignedCourseIds: [] })).toBeUndefined();
+  });
+});
+
+describe("findOrCreateEmbedUser", () => {
+  it("provisions a new passwordless student account on first use", async () => {
+    const user = await findOrCreateEmbedUser("student@example.com");
+    expect(user?.role).toBe("student");
+    expect(user?.authOrigin).toBe("embed");
+    expect(user?.assignedCourseIds).toEqual([]);
+  });
+
+  it("reuses the same account on a repeat visit instead of creating another", async () => {
+    const first = await findOrCreateEmbedUser("student@example.com");
+    const second = await findOrCreateEmbedUser("student@example.com");
+    expect(second?.userId).toBe(first?.userId);
+  });
+
+  it("refuses an email that already belongs to a normal password account", async () => {
+    const real = await createUser({ email: "admin@example.com", name: "Admin", password: "Password1", role: "admin" });
+    const result = await findOrCreateEmbedUser("admin@example.com");
+    expect(result).toBeUndefined();
+    // And doesn't touch the real account either.
+    expect(await verifyCredentials("admin@example.com", "Password1")).not.toBeUndefined();
+    expect(real.authOrigin).toBe("password");
+  });
+
+  it("is case-insensitive about email, matching createUser/verifyCredentials", async () => {
+    const first = await findOrCreateEmbedUser("Student@Example.com");
+    const second = await findOrCreateEmbedUser("student@example.com");
+    expect(second?.userId).toBe(first?.userId);
+  });
+});
+
+describe("grantCourseAccess", () => {
+  it("adds a course to a user with no prior assignments", async () => {
+    const user = await findOrCreateEmbedUser("student@example.com");
+    const updated = await grantCourseAccess(user!.userId, "c1");
+    expect(updated?.assignedCourseIds).toEqual(["c1"]);
+  });
+
+  it("is additive - never drops a course already granted", async () => {
+    const user = await findOrCreateEmbedUser("student@example.com");
+    await grantCourseAccess(user!.userId, "c1");
+    const updated = await grantCourseAccess(user!.userId, "c2");
+    expect(updated?.assignedCourseIds).toEqual(["c1", "c2"]);
+  });
+
+  it("doesn't duplicate a course granted twice", async () => {
+    const user = await findOrCreateEmbedUser("student@example.com");
+    await grantCourseAccess(user!.userId, "c1");
+    const updated = await grantCourseAccess(user!.userId, "c1");
+    expect(updated?.assignedCourseIds).toEqual(["c1"]);
+  });
+
+  it("returns undefined for a userId that doesn't exist", async () => {
+    expect(await grantCourseAccess("missing", "c1")).toBeUndefined();
   });
 });

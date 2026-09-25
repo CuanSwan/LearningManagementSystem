@@ -1,0 +1,7 @@
+# Same SPA fallback as netlify.toml's [[redirects]] block, duplicated here
+# because a manual/CLI deploy of a pre-built dist/ folder (as opposed to a
+# git-triggered build) doesn't read netlify.toml at all - only a
+# _redirects file inside the published directory itself. Vite copies
+# everything in this public/ folder into dist/ verbatim, so this ships
+# with every build either way.
+/*   /index.html   200

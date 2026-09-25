@@ -1,6 +1,6 @@
 import { hashPassword, verifyPassword } from "./auth.js";
 import type { Database, DocumentStore } from "./db/index.js";
-import { UserSchema, type User, type UserRole } from "./userSchema.js";
+import { UserSchema, type AuthOrigin, type User, type UserRole } from "./userSchema.js";
 
 interface StoredUser extends Record<string, unknown> {
   userId: string;
@@ -10,6 +10,9 @@ interface StoredUser extends Record<string, unknown> {
   passwordHash: string;
   assignedLearningPathIds?: string[];
   assignedCourseIds?: string[];
+  // Absent for every account created before this field existed - toPublicUser
+  // defaults that to "password", the correct reading for all of them.
+  authOrigin?: AuthOrigin;
 }
 
 let users: DocumentStore<StoredUser>;
@@ -29,6 +32,7 @@ function toPublicUser(stored: StoredUser): User {
     role: stored.role,
     assignedLearningPathIds: stored.assignedLearningPathIds ?? [],
     assignedCourseIds: stored.assignedCourseIds ?? [],
+    authOrigin: stored.authOrigin ?? "password",
   });
 }
 
@@ -51,6 +55,7 @@ export async function createUser(input: {
     passwordHash: hashPassword(input.password),
     assignedLearningPathIds: [],
     assignedCourseIds: [],
+    authOrigin: "password",
   };
   try {
     await users.set(stored.userId, stored);
@@ -115,4 +120,57 @@ export async function updatePassword(userId: string, newPassword: string): Promi
 export async function userExistsByEmail(email: string): Promise<boolean> {
   const matches = await users.list({ email: email.toLowerCase() });
   return matches.length > 0;
+}
+
+// Looks up or provisions the account an embed link logs into (see
+// server/src/index.ts's /api/embed). Returns undefined if that email
+// already belongs to a normal password account - an embed link must never
+// be able to sign in as an existing real account, even one whose owner
+// happens to match the email a caller supplied, so it refuses outright
+// rather than reusing or shadowing it.
+export async function findOrCreateEmbedUser(email: string): Promise<User | undefined> {
+  const lower = email.toLowerCase();
+  const matches = await users.list({ email: lower });
+  const existing = matches[0];
+  if (existing) {
+    return existing.authOrigin === "embed" ? toPublicUser(existing) : undefined;
+  }
+
+  const stored: StoredUser = {
+    userId: crypto.randomUUID(),
+    email: lower,
+    name: lower,
+    role: "student",
+    // A random, never-revealed password - this account has no way to log in
+    // through the normal password form (an empty/guessable hash here would
+    // let anyone who knows this email in that way instead).
+    passwordHash: hashPassword(crypto.randomUUID()),
+    assignedLearningPathIds: [],
+    assignedCourseIds: [],
+    authOrigin: "embed",
+  };
+  try {
+    await users.set(stored.userId, stored);
+  } catch (err) {
+    // Same race as createUser's - a concurrent embed request for the same
+    // email may have already won by the time this write lands.
+    if ((err as { code?: number }).code === 11000) {
+      const race = (await users.list({ email: lower }))[0];
+      return race && race.authOrigin === "embed" ? toPublicUser(race) : undefined;
+    }
+    throw err;
+  }
+  return toPublicUser(stored);
+}
+
+// Additive - never removes a course an admin (or an earlier embed visit)
+// already granted. A repeat embed visit for a narrower set of courses must
+// not silently revoke access to ones granted before it.
+export async function grantCourseAccess(userId: string, courseId: string): Promise<User | undefined> {
+  const stored = await users.get(userId);
+  if (!stored) return undefined;
+  const assignedCourseIds = stored.assignedCourseIds ?? [];
+  if (assignedCourseIds.includes(courseId)) return toPublicUser(stored);
+  const updated = await users.update(userId, { assignedCourseIds: [...assignedCourseIds, courseId] });
+  return updated ? toPublicUser(updated) : undefined;
 }
