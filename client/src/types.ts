@@ -7,12 +7,17 @@ export type LessonSource = "human" | "ai_generated";
 export type WordingStyle = "official" | "shortened";
 export type ModuleStatus = "draft" | "ai_generated" | "published";
 
+// The reviewer/admin cycle a lesson moves through - see server/src/schemas.ts
+// for the full state machine. Absent means no review flag is active.
+export type LessonReviewStatus = "changesRequested" | "changed" | "needsReview";
+
 interface LessonBase {
   lessonId: string;
   schemaVersion: number;
   source: LessonSource;
   wordingStyle: WordingStyle;
   order: number;
+  reviewStatus?: LessonReviewStatus;
 }
 
 export interface TextLesson extends LessonBase {
@@ -198,6 +203,16 @@ export interface ModuleSeed {
   objective: string;
   authorNotes?: string;
   rawContent?: string;
+}
+
+export interface ReviewComment {
+  commentId: string;
+  lessonId: string;
+  moduleId: string;
+  authorUserId: string;
+  authorName: string;
+  body: string;
+  createdAt: number;
 }
 
 export interface Module {

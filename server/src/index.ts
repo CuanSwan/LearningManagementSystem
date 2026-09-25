@@ -29,12 +29,15 @@ import { convertRiseCourse, RiseImportError } from "./riseImport.js";
 import { extractRiseRuntimeData, RiseZipError } from "./riseZip.js";
 import { seedSampleData } from "./sampleData.js";
 import { seedUsers } from "./seedUsers.js";
+import { createReviewComment, initReviewCommentStore, listCommentsForLesson } from "./reviewCommentStore.js";
 import {
+  clearLessonReview,
   createCourse,
   createLearningPath,
   createModule,
   deleteCourse,
   deleteModule,
+  flagLessonChangesRequested,
   getCourse,
   getLearningPath,
   getModule,
@@ -46,6 +49,7 @@ import {
   patchCourse,
   patchLearningPath,
   saveModule,
+  submitLessonForReview,
   unassignModule,
   userHasCourseAccess,
 } from "./store.js";
@@ -578,6 +582,76 @@ app.delete("/api/modules/:moduleId", requireRole("admin", "super_admin"), async 
   res.status(204).end();
 });
 
+// --- Lesson review comments (admin/super_admin/reviewer only - never a student) ---
+
+const CreateReviewCommentSchema = z.object({ body: z.string().min(1) });
+
+async function findLessonOr404(moduleId: string, lessonId: string, res: Response) {
+  const module = await getModule(moduleId);
+  const lesson = module?.lessons.find((l) => l.lessonId === lessonId);
+  if (!module || !lesson) {
+    res.status(404).json({ error: "Lesson not found" });
+    return undefined;
+  }
+  return module;
+}
+
+app.get(
+  "/api/modules/:moduleId/lessons/:lessonId/comments",
+  requireRole("admin", "super_admin", "reviewer"),
+  async (req, res) => {
+    if (!(await findLessonOr404(req.params.moduleId, req.params.lessonId, res))) return;
+    res.json(await listCommentsForLesson(req.params.lessonId));
+  }
+);
+
+// Only a reviewer posts a comment - posting one is also what flags the
+// lesson "changesRequested" (see flagLessonChangesRequested), which is
+// what actually drives the admin-facing side of the workflow.
+app.post("/api/modules/:moduleId/lessons/:lessonId/comments", requireRole("reviewer"), async (req, res) => {
+  const parsed = CreateReviewCommentSchema.safeParse(req.body);
+  if (!parsed.success) {
+    sendValidationError(res, parsed.error);
+    return;
+  }
+  if (!(await findLessonOr404(req.params.moduleId, req.params.lessonId, res))) return;
+  const comment = await createReviewComment({
+    lessonId: req.params.lessonId,
+    moduleId: req.params.moduleId,
+    authorUserId: req.user!.userId,
+    authorName: req.user!.name,
+    body: parsed.data.body,
+  });
+  await flagLessonChangesRequested(req.params.moduleId, req.params.lessonId);
+  res.status(201).json(comment);
+});
+
+app.patch(
+  "/api/modules/:moduleId/lessons/:lessonId/submit-for-review",
+  requireRole("admin", "super_admin"),
+  async (req, res) => {
+    const module = await submitLessonForReview(req.params.moduleId, req.params.lessonId);
+    if (!module) {
+      res.status(404).json({ error: "Module not found" });
+      return;
+    }
+    res.json(module);
+  }
+);
+
+app.patch(
+  "/api/modules/:moduleId/lessons/:lessonId/clear-review",
+  requireRole("admin", "super_admin", "reviewer"),
+  async (req, res) => {
+    const module = await clearLessonReview(req.params.moduleId, req.params.lessonId);
+    if (!module) {
+      res.status(404).json({ error: "Module not found" });
+      return;
+    }
+    res.json(module);
+  }
+);
+
 // --- Learning paths ---
 
 const CreateLearningPathInputSchema = z.object({
@@ -712,7 +786,14 @@ app.use((err: unknown, req: Request, res: Response, _next: NextFunction) => {
 
 async function main() {
   const db = await connectDb();
-  await Promise.all([initStore(db), initUserStore(db), initVoucherStore(db), initProgressStore(db), initPreferencesStore(db)]);
+  await Promise.all([
+    initStore(db),
+    initUserStore(db),
+    initVoucherStore(db),
+    initProgressStore(db),
+    initPreferencesStore(db),
+    initReviewCommentStore(db),
+  ]);
 
   await seedUsers();
   await seedSampleData();

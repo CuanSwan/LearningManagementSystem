@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import type { Course, Lesson, Module } from "../types.js";
+import type { Course, Lesson, LessonReviewStatus, Module } from "../types.js";
 import { getCourse, getModule, getProgress, listModulesByCourse, setLessonProgress } from "../api.js";
 import { useAuth } from "../auth.js";
 import { BackButton } from "../components/BackButton.js";
@@ -81,6 +81,17 @@ export function StudentModule() {
     if (nowComplete && !wasComplete) setShowCompleteModal(true);
   }
 
+  // Keeps the displayed status badge (and which review actions show up) in
+  // sync immediately after a comment/submit/clear action, without needing
+  // a full refetch of the module.
+  function handleReviewStatusChange(lessonId: string, reviewStatus: LessonReviewStatus | undefined) {
+    setModule((prev) =>
+      prev
+        ? { ...prev, lessons: prev.lessons.map((l) => (l.lessonId === lessonId ? { ...l, reviewStatus } : l)) }
+        : prev
+    );
+  }
+
   if (!course || !foundModule) return <p>Loading...</p>;
   const resolved = Theme.default().withOverrides(course.theme);
   const orderedLessons = [...foundModule.lessons].sort((a, b) => a.order - b.order);
@@ -123,11 +134,13 @@ export function StudentModule() {
           // otherwise plain internal state that a prop change alone can't
           // reset once already mounted.
           key={`${moduleId}-${activeLessonId ?? "start"}`}
+          moduleId={moduleId!}
           lessons={orderedLessons}
           completedIds={completedIds}
           initialLessonId={activeLessonId}
           onComplete={markComplete}
           onCurrentLessonChange={handleCurrentLessonChange}
+          onReviewStatusChange={handleReviewStatusChange}
           nextModuleTitle={nextModule?.seed.title}
           onNextModule={
             nextModuleReachable && nextModule ? () => navigate(`/courses/${courseId}/modules/${nextModule.moduleId}`) : undefined
@@ -153,9 +166,11 @@ export function StudentModule() {
             {orderedLessons.map((lesson) => (
               <div key={lesson.lessonId} id={`lesson-${lesson.lessonId}`}>
                 <StudentLessonBlock
+                  moduleId={moduleId!}
                   lesson={lesson}
                   isComplete={completedIds.has(lesson.lessonId)}
                   onComplete={() => markComplete(lesson.lessonId)}
+                  onReviewStatusChange={handleReviewStatusChange}
                 />
               </div>
             ))}

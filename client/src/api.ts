@@ -6,6 +6,7 @@ import type {
   LessonDisplayMode,
   Module,
   PublicVoucher,
+  ReviewComment,
   User,
   UserRole,
   Voucher,
@@ -202,6 +203,27 @@ export function createModule(input: {
 
 export function saveModule(moduleId: string, module: Module): Promise<Module> {
   return request(`/api/modules/${moduleId}`, { method: "PUT", body: JSON.stringify(module) });
+}
+
+// Review comments (admin/super_admin/reviewer only - the server 403s a
+// student). See server/src/index.ts for the full lesson review workflow.
+export function listLessonComments(moduleId: string, lessonId: string): Promise<ReviewComment[]> {
+  return request(`/api/modules/${moduleId}/lessons/${lessonId}/comments`);
+}
+
+export function postLessonComment(moduleId: string, lessonId: string, body: string): Promise<ReviewComment> {
+  return request(`/api/modules/${moduleId}/lessons/${lessonId}/comments`, {
+    method: "POST",
+    body: JSON.stringify({ body }),
+  });
+}
+
+export function submitLessonForReview(moduleId: string, lessonId: string): Promise<Module> {
+  return request(`/api/modules/${moduleId}/lessons/${lessonId}/submit-for-review`, { method: "PATCH" });
+}
+
+export function clearLessonReview(moduleId: string, lessonId: string): Promise<Module> {
+  return request(`/api/modules/${moduleId}/lessons/${lessonId}/clear-review`, { method: "PATCH" });
 }
 
 // Removes a module from its course, turning it into a reusable library entry.

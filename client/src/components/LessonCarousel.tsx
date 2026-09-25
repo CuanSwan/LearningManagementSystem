@@ -1,21 +1,25 @@
 import { useEffect, useState } from "react";
-import type { Lesson } from "../types.js";
+import type { Lesson, LessonReviewStatus } from "../types.js";
 import { StudentLessonBlock } from "./StudentLessonBlock.js";
 
 export function LessonCarousel({
+  moduleId,
   lessons,
   completedIds,
   initialLessonId,
   onComplete,
   onCurrentLessonChange,
+  onReviewStatusChange,
   nextModuleTitle,
   onNextModule,
 }: {
+  moduleId: string;
   lessons: Lesson[];
   completedIds: Set<string>;
   initialLessonId?: string;
   onComplete: (lessonId: string) => void;
   onCurrentLessonChange?: (lesson: Lesson) => void;
+  onReviewStatusChange: (lessonId: string, reviewStatus: LessonReviewStatus | undefined) => void;
   // Absent when there's no next module, or it's locked for this user - the
   // Next button stays disabled at the last lesson the same way it always
   // has. Provided, it turns that same button into a way to keep moving
@@ -39,9 +43,11 @@ export function LessonCarousel({
   return (
     <div className="lesson-carousel">
       <StudentLessonBlock
+        moduleId={moduleId}
         lesson={lesson}
         isComplete={completedIds.has(lesson.lessonId)}
         onComplete={() => onComplete(lesson.lessonId)}
+        onReviewStatusChange={onReviewStatusChange}
       />
 
       <div className="carousel-dots" role="tablist" aria-label="Lessons">
