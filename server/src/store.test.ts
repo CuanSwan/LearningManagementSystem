@@ -133,12 +133,6 @@ describe("userHasCourseAccess", () => {
     expect(await userHasCourseAccess(admin, "any-course")).toBe(true);
   });
 
-  it("always grants access to a reviewer, even to a draft course", async () => {
-    await createCourse({ courseId: "any-course", title: "Draft Course" });
-    const reviewer: User = { ...studentWith({}), role: "reviewer" };
-    expect(await userHasCourseAccess(reviewer, "any-course")).toBe(true);
-  });
-
   it("grants access to a directly assigned, published course", async () => {
     await createCourse({ courseId: "c1", title: "Course 1", status: "published" });
     const student = studentWith({ assignedCourseIds: ["c1"] });

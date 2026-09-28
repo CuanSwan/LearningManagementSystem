@@ -11,9 +11,9 @@ export function StudentCatalog() {
   const { user } = useAuth();
   const [courses, setCourses] = useState<Course[]>([]);
   const [learningPaths, setLearningPaths] = useState<LearningPath[]>([]);
-  // Same "who's reviewing/authoring content" bypass as isCourseAccessible -
-  // only they should even see that a draft course exists in the catalog.
-  const isPrivileged = user?.role === "admin" || user?.role === "super_admin" || user?.role === "reviewer";
+  // Same bypass as isCourseAccessible - only an admin/super_admin should
+  // even see that a draft course exists in the catalog.
+  const isPrivileged = user?.role === "admin" || user?.role === "super_admin";
 
   useEffect(() => {
     listCourses().then(setCourses);

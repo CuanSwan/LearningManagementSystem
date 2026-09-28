@@ -84,8 +84,8 @@ export function StudentModule() {
   const moduleIndex = courseModules.findIndex((m) => m.moduleId === moduleId);
   const nextModule = moduleIndex >= 0 ? (courseModules[moduleIndex + 1] ?? null) : null;
   // Same rule CourseSideMenu/StudentCourse already unlock modules by - always
-  // open for a reviewer/admin/super_admin, gated on this module's completion
-  // for a student. Lets the carousel's last-lesson Next button carry a
+  // open for an admin/super_admin, gated on this module's completion for a
+  // student. Lets the carousel's last-lesson Next button carry a
   // student straight into the next module the moment they've earned it,
   // instead of only offering that via the completion modal below.
   const nextModuleReachable =

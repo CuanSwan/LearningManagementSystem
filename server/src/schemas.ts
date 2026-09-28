@@ -353,8 +353,8 @@ export const CourseSchema = z.object({
   // Only the fields this course chooses to override - see Theme.withOverrides() on the client.
   theme: ThemeOverrideSchema.default({}),
   // Same idea as a module's status - a course starts as a draft, invisible
-  // to anyone but admins/super_admins/reviewers, until explicitly published
-  // (see userHasCourseAccess). Defaults to "draft" rather than requiring
+  // to anyone but admins/super_admins, until explicitly published (see
+  // userHasCourseAccess). Defaults to "draft" rather than requiring
   // every course-creation call site to say so explicitly, the same way
   // `theme` above defaults to no overrides.
   status: CourseStatusSchema.default("draft"),

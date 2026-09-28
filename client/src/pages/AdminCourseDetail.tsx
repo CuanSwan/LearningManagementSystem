@@ -100,8 +100,8 @@ export function AdminCourseDetail() {
           </select>
         </label>
         <p className="field-hint">
-          A draft course is invisible to students - even ones it's assigned to - until you publish it. Admins and
-          reviewers can always see and open it either way.
+          A draft course is invisible to students - even ones it's assigned to - until you publish it. Admins can
+          always see and open it either way.
         </p>
         <label className="field">
           Category
