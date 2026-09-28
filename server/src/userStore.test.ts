@@ -6,12 +6,16 @@ import { createFileStore } from "./db/fileStore.js";
 import type { Database } from "./db/index.js";
 import {
   createUser,
+  getUserById,
   initUserStore,
+  listReviewersByCategory,
+  listUsers,
   setUserAssignments,
   updatePassword,
   verifyCredentials,
   verifyCurrentPassword,
 } from "./userStore.js";
+import { createVoucher, initVoucherStore } from "./voucherStore.js";
 
 let dir: string;
 
@@ -22,6 +26,10 @@ beforeEach(async () => {
     close: async () => {},
   };
   await initUserStore(db);
+  // Every user-returning function joins to the originating voucher (see
+  // toPublicUser) - needed even for tests that never pass a voucherId,
+  // since userStore.ts calls into this module unconditionally.
+  await initVoucherStore(db);
 });
 
 afterEach(async () => {
@@ -62,6 +70,37 @@ describe("createUser", () => {
     expect(user.assignedLearningPathIds).toEqual([]);
     expect(user.assignedCourseIds).toEqual([]);
   });
+
+  it("has no membership fields when created without a voucher", async () => {
+    const user = await createUser({ email: "a@b.com", name: "A", password: "Password1", role: "student" });
+    expect(user.memberSince).toBeUndefined();
+    expect(user.membershipExpiresAt).toBeUndefined();
+  });
+});
+
+describe("membership fields joined from a voucher", () => {
+  it("appear on the user returned by createUser, verifyCredentials, getUserById, and listUsers", async () => {
+    const voucher = await createVoucher({ email: "a@b.com", name: "A", role: "student" });
+    const created = await createUser({
+      email: "a@b.com",
+      name: voucher.name,
+      password: "Password1",
+      role: voucher.role,
+      voucherId: voucher.voucherId,
+    });
+    expect(created.memberSince).toBe(voucher.issuedAt);
+    expect(created.membershipExpiresAt).toBe(voucher.expiresAt);
+
+    const loggedIn = await verifyCredentials("a@b.com", "Password1");
+    expect(loggedIn?.memberSince).toBe(voucher.issuedAt);
+    expect(loggedIn?.membershipExpiresAt).toBe(voucher.expiresAt);
+
+    const fetched = await getUserById(created.userId);
+    expect(fetched?.membershipExpiresAt).toBe(voucher.expiresAt);
+
+    const listed = await listUsers();
+    expect(listed.find((u) => u.userId === created.userId)?.membershipExpiresAt).toBe(voucher.expiresAt);
+  });
 });
 
 describe("setUserAssignments", () => {
@@ -77,5 +116,39 @@ describe("setUserAssignments", () => {
 
   it("returns undefined for a userId that doesn't exist", async () => {
     expect(await setUserAssignments("missing", { assignedLearningPathIds: [], assignedCourseIds: [] })).toBeUndefined();
+  });
+});
+
+describe("reviewerCategory", () => {
+  it("is stored and returned for a reviewer created with one", async () => {
+    const user = await createUser({
+      email: "r@example.com",
+      name: "R",
+      password: "Password1!",
+      role: "reviewer",
+      reviewerCategory: "IT",
+    });
+    expect(user.reviewerCategory).toBe("IT");
+    expect((await getUserById(user.userId))?.reviewerCategory).toBe("IT");
+  });
+
+  it("is absent for a user created without one", async () => {
+    const user = await createUser({ email: "s@example.com", name: "S", password: "Password1!", role: "student" });
+    expect(user.reviewerCategory).toBeUndefined();
+  });
+});
+
+describe("listReviewersByCategory", () => {
+  it("returns only reviewers whose category matches", async () => {
+    const it1 = await createUser({ email: "it1@example.com", name: "A", password: "Password1!", role: "reviewer", reviewerCategory: "IT" });
+    await createUser({ email: "biz@example.com", name: "B", password: "Password1!", role: "reviewer", reviewerCategory: "Business" });
+    await createUser({ email: "student@example.com", name: "C", password: "Password1!", role: "student" });
+
+    const matches = await listReviewersByCategory("IT");
+    expect(matches.map((u) => u.userId)).toEqual([it1.userId]);
+  });
+
+  it("returns an empty array when no reviewer matches", async () => {
+    expect(await listReviewersByCategory("Nonexistent")).toEqual([]);
   });
 });

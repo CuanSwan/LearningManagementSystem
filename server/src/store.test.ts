@@ -5,14 +5,22 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createFileStore } from "./db/fileStore.js";
 import type { Database } from "./db/index.js";
 import { parseCourse, parseLearningPath, parseModule } from "./schemas.js";
+import { createUser, initUserStore } from "./userStore.js";
 import type { User } from "./userSchema.js";
 import {
+  assignRandomReviewer,
+  clearLessonReview,
+  clearModuleReview,
   createCourse,
   createLearningPath,
+  createModule,
+  flagLessonChangesRequested,
+  flagModuleChangesRequested,
   getCourse,
   getLearningPath,
   getModule,
   initStore,
+  listCourseCategories,
   listModulesByCourse,
   patchCourse,
   patchLearningPath,
@@ -20,8 +28,22 @@ import {
   seedCourse,
   seedLearningPath,
   seedModule,
+  submitLessonForReview,
+  submitModuleForReview,
   userHasCourseAccess,
 } from "./store.js";
+
+function textLesson(lessonId: string, body: string) {
+  return {
+    lessonId,
+    schemaVersion: 1,
+    source: "human" as const,
+    wordingStyle: "shortened" as const,
+    order: 1,
+    type: "text" as const,
+    content: { body },
+  };
+}
 
 function studentWith(assignments: Partial<Pick<User, "assignedLearningPathIds" | "assignedCourseIds">>): User {
   return {
@@ -44,6 +66,7 @@ beforeEach(async () => {
     close: async () => {},
   };
   await initStore(db);
+  await initUserStore(db);
 });
 
 afterEach(async () => {
@@ -126,30 +149,231 @@ describe("seedLearningPath", () => {
 });
 
 describe("userHasCourseAccess", () => {
-  it("always grants access to an admin", async () => {
+  it("always grants access to an admin, even to a draft course", async () => {
+    await createCourse({ courseId: "any-course", title: "Draft Course" });
     const admin: User = { ...studentWith({}), role: "admin" };
     expect(await userHasCourseAccess(admin, "any-course")).toBe(true);
   });
 
-  it("grants access to a directly assigned course", async () => {
+  it("always grants access to a reviewer, even to a draft course", async () => {
+    await createCourse({ courseId: "any-course", title: "Draft Course" });
+    const reviewer: User = { ...studentWith({}), role: "reviewer" };
+    expect(await userHasCourseAccess(reviewer, "any-course")).toBe(true);
+  });
+
+  it("grants access to a directly assigned, published course", async () => {
+    await createCourse({ courseId: "c1", title: "Course 1", status: "published" });
     const student = studentWith({ assignedCourseIds: ["c1"] });
     expect(await userHasCourseAccess(student, "c1")).toBe(true);
   });
 
-  it("grants access to a course reached via an assigned learning path", async () => {
+  it("denies access to a directly assigned course that's still a draft", async () => {
+    await createCourse({ courseId: "c1", title: "Course 1" });
+    const student = studentWith({ assignedCourseIds: ["c1"] });
+    expect(await userHasCourseAccess(student, "c1")).toBe(false);
+  });
+
+  it("grants access to a published course reached via an assigned learning path", async () => {
+    await createCourse({ courseId: "c1", title: "Course 1", status: "published" });
+    await createCourse({ courseId: "c2", title: "Course 2", status: "published" });
     const path = await createLearningPath({ pathId: "p1", title: "Path", courseIds: ["c1", "c2"] });
     const student = studentWith({ assignedLearningPathIds: [path.pathId] });
     expect(await userHasCourseAccess(student, "c2")).toBe(true);
   });
 
   it("denies access to a course that's neither directly assigned nor in an assigned path", async () => {
+    await createCourse({ courseId: "c1", title: "Course 1", status: "published" });
+    await createCourse({ courseId: "c3", title: "Course 3", status: "published" });
     const path = await createLearningPath({ pathId: "p1", title: "Path", courseIds: ["c1"] });
     const student = studentWith({ assignedLearningPathIds: [path.pathId], assignedCourseIds: ["c2"] });
     expect(await userHasCourseAccess(student, "c3")).toBe(false);
   });
 
   it("denies access to a student with no assignments at all", async () => {
+    await createCourse({ courseId: "c1", title: "Course 1", status: "published" });
     const student = studentWith({});
     expect(await userHasCourseAccess(student, "c1")).toBe(false);
+  });
+
+  it("denies access to a course that doesn't exist", async () => {
+    const student = studentWith({ assignedCourseIds: ["missing"] });
+    expect(await userHasCourseAccess(student, "missing")).toBe(false);
+  });
+});
+
+describe("lesson review workflow", () => {
+  it("flagLessonChangesRequested sets a lesson's reviewStatus regardless of its prior state", async () => {
+    const module = await createModule({ title: "M", objective: "O", lessons: [textLesson("l1", "Original")] });
+    const updated = await flagLessonChangesRequested(module.moduleId, "l1");
+    expect(updated?.lessons[0].reviewStatus).toBe("changesRequested");
+  });
+
+  it("saveModule automatically advances a changed lesson from changesRequested to changed", async () => {
+    const module = await createModule({ title: "M", objective: "O", lessons: [textLesson("l1", "Original")] });
+    await flagLessonChangesRequested(module.moduleId, "l1");
+
+    const saved = await saveModule(module.moduleId, { ...module, lessons: [textLesson("l1", "Edited")] });
+    expect(saved.lessons[0].reviewStatus).toBe("changed");
+  });
+
+  it("saveModule leaves a changesRequested lesson alone if its content didn't actually change", async () => {
+    const module = await createModule({ title: "M", objective: "O", lessons: [textLesson("l1", "Original")] });
+    await flagLessonChangesRequested(module.moduleId, "l1");
+
+    const saved = await saveModule(module.moduleId, { ...module, lessons: [textLesson("l1", "Original")] });
+    expect(saved.lessons[0].reviewStatus).toBe("changesRequested");
+  });
+
+  it("saveModule preserves a lesson with no review status at all", async () => {
+    const module = await createModule({ title: "M", objective: "O", lessons: [textLesson("l1", "Original")] });
+    const saved = await saveModule(module.moduleId, { ...module, lessons: [textLesson("l1", "Edited")] });
+    expect(saved.lessons[0].reviewStatus).toBeUndefined();
+  });
+
+  it("submitLessonForReview moves a lesson to needsReview", async () => {
+    const module = await createModule({ title: "M", objective: "O", lessons: [textLesson("l1", "Original")] });
+    await flagLessonChangesRequested(module.moduleId, "l1");
+    await saveModule(module.moduleId, { ...module, lessons: [textLesson("l1", "Edited")] });
+
+    const updated = await submitLessonForReview(module.moduleId, "l1");
+    expect(updated?.lessons[0].reviewStatus).toBe("needsReview");
+  });
+
+  it("saveModule un-does a stale needsReview if the lesson is edited again before the reviewer re-checks it", async () => {
+    const module = await createModule({ title: "M", objective: "O", lessons: [textLesson("l1", "Original")] });
+    await flagLessonChangesRequested(module.moduleId, "l1");
+    await submitLessonForReview(module.moduleId, "l1");
+
+    const saved = await saveModule(module.moduleId, { ...module, lessons: [textLesson("l1", "Edited again")] });
+    expect(saved.lessons[0].reviewStatus).toBe("changed");
+  });
+
+  it("clearLessonReview removes the review flag entirely", async () => {
+    const module = await createModule({ title: "M", objective: "O", lessons: [textLesson("l1", "Original")] });
+    await flagLessonChangesRequested(module.moduleId, "l1");
+
+    const updated = await clearLessonReview(module.moduleId, "l1");
+    expect(updated?.lessons[0].reviewStatus).toBeUndefined();
+  });
+
+  it("returns undefined from the status helpers for a module that doesn't exist", async () => {
+    expect(await flagLessonChangesRequested("missing", "l1")).toBeUndefined();
+    expect(await submitLessonForReview("missing", "l1")).toBeUndefined();
+    expect(await clearLessonReview("missing", "l1")).toBeUndefined();
+  });
+});
+
+describe("module review workflow", () => {
+  it("flagModuleChangesRequested sets the module's own reviewStatus", async () => {
+    const module = await createModule({ title: "M", objective: "O", lessons: [textLesson("l1", "Original")] });
+    const updated = await flagModuleChangesRequested(module.moduleId);
+    expect(updated?.reviewStatus).toBe("changesRequested");
+  });
+
+  it("saveModule automatically advances the module from changesRequested to changed when its seed changes", async () => {
+    const module = await createModule({ title: "M", objective: "O", lessons: [textLesson("l1", "Original")] });
+    await flagModuleChangesRequested(module.moduleId);
+
+    const saved = await saveModule(module.moduleId, {
+      ...module,
+      seed: { ...module.seed, objective: "A rewritten objective" },
+    });
+    expect(saved.reviewStatus).toBe("changed");
+  });
+
+  it("saveModule leaves the module's changesRequested alone if nothing about it actually changed", async () => {
+    const module = await createModule({ title: "M", objective: "O", lessons: [textLesson("l1", "Original")] });
+    await flagModuleChangesRequested(module.moduleId);
+
+    const saved = await saveModule(module.moduleId, module);
+    expect(saved.reviewStatus).toBe("changesRequested");
+  });
+
+  it("a lesson-only edit doesn't spuriously leave the module's own status stuck - it still advances, since the module's lessons are part of its content", async () => {
+    const module = await createModule({ title: "M", objective: "O", lessons: [textLesson("l1", "Original")] });
+    await flagModuleChangesRequested(module.moduleId);
+
+    const saved = await saveModule(module.moduleId, { ...module, lessons: [textLesson("l1", "Edited")] });
+    expect(saved.reviewStatus).toBe("changed");
+  });
+
+  it("submitModuleForReview moves the module to needsReview", async () => {
+    const module = await createModule({ title: "M", objective: "O", lessons: [] });
+    await flagModuleChangesRequested(module.moduleId);
+    const updated = await submitModuleForReview(module.moduleId);
+    expect(updated?.reviewStatus).toBe("needsReview");
+  });
+
+  it("clearModuleReview removes the module's review flag entirely", async () => {
+    const module = await createModule({ title: "M", objective: "O", lessons: [] });
+    await flagModuleChangesRequested(module.moduleId);
+    const updated = await clearModuleReview(module.moduleId);
+    expect(updated?.reviewStatus).toBeUndefined();
+  });
+
+  it("a module's reviewStatus and a lesson's reviewStatus are independent of each other", async () => {
+    const module = await createModule({ title: "M", objective: "O", lessons: [textLesson("l1", "Original")] });
+    await flagLessonChangesRequested(module.moduleId, "l1");
+
+    const updated = await getModule(module.moduleId);
+    expect(updated?.reviewStatus).toBeUndefined();
+    expect(updated?.lessons[0].reviewStatus).toBe("changesRequested");
+  });
+
+  it("returns undefined from the module status helpers for a module that doesn't exist", async () => {
+    expect(await flagModuleChangesRequested("missing")).toBeUndefined();
+    expect(await submitModuleForReview("missing")).toBeUndefined();
+    expect(await clearModuleReview("missing")).toBeUndefined();
+  });
+});
+
+describe("listCourseCategories", () => {
+  it("returns every distinct category in use, sorted", async () => {
+    await createCourse({ courseId: "c1", title: "A", category: "IT" });
+    await createCourse({ courseId: "c2", title: "B", category: "Business" });
+    await createCourse({ courseId: "c3", title: "C", category: "IT" });
+    expect(await listCourseCategories()).toEqual(["Business", "IT"]);
+  });
+
+  it("skips courses with no category set", async () => {
+    await createCourse({ courseId: "c1", title: "A" });
+    expect(await listCourseCategories()).toEqual([]);
+  });
+});
+
+describe("assignRandomReviewer", () => {
+  async function reviewer(email: string, reviewerCategory: string) {
+    return createUser({ email, name: "R", password: "Password1!", role: "reviewer", reviewerCategory });
+  }
+
+  it("assigns the course to a reviewer whose category matches", async () => {
+    const rita = await reviewer("rita@example.com", "IT");
+    await createCourse({ courseId: "c1", title: "A", category: "IT" });
+
+    const updated = await assignRandomReviewer("c1");
+    expect(updated.assignedReviewerId).toBe(rita.userId);
+  });
+
+  it("never picks a reviewer of the wrong category", async () => {
+    await reviewer("business-rita@example.com", "Business");
+    const itRita = await reviewer("it-rita@example.com", "IT");
+    await createCourse({ courseId: "c1", title: "A", category: "IT" });
+
+    const updated = await assignRandomReviewer("c1");
+    expect(updated.assignedReviewerId).toBe(itRita.userId);
+  });
+
+  it("throws if the course has no category set", async () => {
+    await createCourse({ courseId: "c1", title: "A" });
+    await expect(assignRandomReviewer("c1")).rejects.toThrow(/no category set/);
+  });
+
+  it("throws if no reviewer exists for that category", async () => {
+    await createCourse({ courseId: "c1", title: "A", category: "IT" });
+    await expect(assignRandomReviewer("c1")).rejects.toThrow(/No reviewers are available/);
+  });
+
+  it("throws for a course that doesn't exist", async () => {
+    await expect(assignRandomReviewer("missing")).rejects.toThrow("Course not found");
   });
 });

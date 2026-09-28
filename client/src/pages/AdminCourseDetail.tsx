@@ -1,9 +1,38 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { suggestTheme } from "../themeSuggestion.js";
-import type { Course, Module, ThemeOverride } from "../types.js";
-import { createModule, deleteCourse, getCourse, listModulesByCourse, patchCourse } from "../api.js";
+import type { Course, CourseStatus, Module, ReviewStatus, ThemeOverride, User } from "../types.js";
+import {
+  createModule,
+  deleteCourse,
+  getCourse,
+  listModulesByCourse,
+  listUsers,
+  patchCourse,
+  submitCourseForReview,
+} from "../api.js";
+import { CategorySelect } from "../components/CategorySelect.js";
 import { ThemeOverrideFields } from "../components/ThemeOverrideFields.js";
+
+const REVIEW_BADGE_LABEL: Record<ReviewStatus, string> = {
+  changesRequested: "Changes requested",
+  changed: "Ready to resubmit",
+  needsReview: "Awaiting review",
+};
+
+// The one status worth surfacing at a glance for a module that has several
+// active flags (its own, plus any of its lessons') - whatever needs the
+// admin's attention soonest. changesRequested and changed both mean the
+// ball is in the admin's court; needsReview means it's already been sent
+// back and there's nothing to do but wait, so it only shows if nothing
+// more urgent is also true.
+function moduleReviewBadge(module: Module): ReviewStatus | null {
+  const statuses = [module.reviewStatus, ...module.lessons.map((l) => l.reviewStatus)];
+  if (statuses.includes("changesRequested")) return "changesRequested";
+  if (statuses.includes("changed")) return "changed";
+  if (statuses.includes("needsReview")) return "needsReview";
+  return null;
+}
 
 export function AdminCourseDetail() {
   const { courseId } = useParams<{ courseId: string }>();
@@ -12,11 +41,15 @@ export function AdminCourseDetail() {
   const [modules, setModules] = useState<Module[]>([]);
   const [theme, setTheme] = useState<ThemeOverride>({});
   const [category, setCategory] = useState("");
+  const [status, setStatus] = useState<CourseStatus>("draft");
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [moduleTitle, setModuleTitle] = useState("");
   const [moduleObjective, setModuleObjective] = useState("");
   const [moduleError, setModuleError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [users, setUsers] = useState<User[]>([]);
+  const [submitReviewStatus, setSubmitReviewStatus] = useState<"idle" | "submitting" | "error">("idle");
+  const [submitReviewError, setSubmitReviewError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!courseId) return;
@@ -24,15 +57,33 @@ export function AdminCourseDetail() {
       setCourse(c);
       setTheme(c.theme);
       setCategory(c.category ?? "");
+      setStatus(c.status);
     });
     listModulesByCourse(courseId).then(setModules);
+    listUsers().then(setUsers);
   }, [courseId]);
+
+  const assignedReviewer = users.find((u) => u.userId === course?.assignedReviewerId);
+
+  async function handleSubmitForReview() {
+    if (!courseId) return;
+    setSubmitReviewStatus("submitting");
+    setSubmitReviewError(null);
+    try {
+      const updated = await submitCourseForReview(courseId);
+      setCourse(updated);
+      setSubmitReviewStatus("idle");
+    } catch (err) {
+      setSubmitReviewError((err as Error).message);
+      setSubmitReviewStatus("error");
+    }
+  }
 
   async function handleSaveTheme() {
     if (!courseId) return;
     setSaveStatus("saving");
     try {
-      const updated = await patchCourse(courseId, { theme, category: category || undefined });
+      const updated = await patchCourse(courseId, { theme, category: category || undefined, status });
       setCourse(updated);
       setSaveStatus("saved");
     } catch {
@@ -80,10 +131,21 @@ export function AdminCourseDetail() {
       {course.description && <p>{course.description}</p>}
 
       <section>
-        <h2>Theme</h2>
+        <h2>Course settings</h2>
+        <label className="status-select">
+          Status
+          <select value={status} onChange={(e) => setStatus(e.target.value as CourseStatus)}>
+            <option value="draft">Draft</option>
+            <option value="published">Published</option>
+          </select>
+        </label>
+        <p className="field-hint">
+          A draft course is invisible to students - even ones it's assigned to - until you publish it. Admins and
+          reviewers can always see and open it either way.
+        </p>
         <label className="field">
           Category
-          <input value={category} onChange={(e) => setCategory(e.target.value)} placeholder="e.g. Core, IT, Business" />
+          <CategorySelect value={category} onChange={setCategory} />
         </label>
         <button
           type="button"
@@ -95,7 +157,7 @@ export function AdminCourseDetail() {
         <ThemeOverrideFields value={theme} onChange={setTheme} />
         <div className="save-controls">
           <button type="button" onClick={handleSaveTheme} disabled={saveStatus === "saving"}>
-            {saveStatus === "saving" ? "Saving..." : "Save theme"}
+            {saveStatus === "saving" ? "Saving..." : "Save"}
           </button>
           {saveStatus === "saved" && <span className="save-status save-status-ok">Saved</span>}
           {saveStatus === "error" && <span className="save-status save-status-error">Save failed</span>}
@@ -103,14 +165,37 @@ export function AdminCourseDetail() {
       </section>
 
       <section>
+        <h2>Review</h2>
+        <p className="field-hint">
+          Submitting for review randomly assigns this course to a reviewer whose own category matches the course&apos;s
+          above - it&apos;s informational only, so every reviewer can still see and comment on it either way.
+        </p>
+        <div className="save-controls">
+          <button type="button" onClick={handleSubmitForReview} disabled={submitReviewStatus === "submitting"}>
+            {submitReviewStatus === "submitting" ? "Submitting..." : "Submit course for review"}
+          </button>
+          {assignedReviewer && <span className="save-status save-status-ok">Assigned to: {assignedReviewer.name}</span>}
+          {submitReviewStatus === "error" && submitReviewError && (
+            <span className="save-status save-status-error">{submitReviewError}</span>
+          )}
+        </div>
+      </section>
+
+      <section>
         <h2>Modules</h2>
         <ul className="module-list">
-          {modules.map((m) => (
-            <li key={m.moduleId}>
-              <Link to={`/admin/modules/${m.moduleId}`}>{m.seed.title}</Link>
-              <span className="module-status"> ({m.status})</span>
-            </li>
-          ))}
+          {modules.map((m) => {
+            const badge = moduleReviewBadge(m);
+            return (
+              <li key={m.moduleId}>
+                <Link to={`/admin/modules/${m.moduleId}`}>{m.seed.title}</Link>
+                <span className="module-status"> ({m.status})</span>
+                {badge && (
+                  <span className={`review-panel-status review-panel-status-${badge}`}>{REVIEW_BADGE_LABEL[badge]}</span>
+                )}
+              </li>
+            );
+          })}
         </ul>
 
         <form className="course-form" onSubmit={handleCreateModule}>

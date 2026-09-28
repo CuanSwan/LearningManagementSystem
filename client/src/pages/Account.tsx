@@ -1,22 +1,35 @@
 import { useState, type FormEvent } from "react";
 import { changeMyPassword } from "../api.js";
 import { useAuth } from "../auth.js";
+import { PASSWORD_HINT, passwordMeetsRequirements } from "../passwordRules.js";
 
 export function Account() {
   const { user } = useAuth();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    setStatus("saving");
     setError(null);
+    if (newPassword !== confirmPassword) {
+      setError("Passwords don't match.");
+      setStatus("error");
+      return;
+    }
+    if (!passwordMeetsRequirements(newPassword)) {
+      setError(PASSWORD_HINT);
+      setStatus("error");
+      return;
+    }
+    setStatus("saving");
     try {
       await changeMyPassword(currentPassword, newPassword);
       setCurrentPassword("");
       setNewPassword("");
+      setConfirmPassword("");
       setStatus("saved");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not change password.");
@@ -50,6 +63,17 @@ export function Account() {
             type="password"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
+            minLength={8}
+            required
+          />
+          <span className="field-hint">{PASSWORD_HINT}</span>
+        </label>
+        <label className="field">
+          Confirm new password
+          <input
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
             minLength={8}
             required
           />

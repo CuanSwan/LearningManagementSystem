@@ -40,12 +40,12 @@ export function LearningPathDetail() {
       const loadedCourses = await Promise.all(p.courseIds.map((id) => getCourse(id)));
       setCourses(loadedCourses);
       // A course the viewer isn't assigned (directly or via this or another
-      // path) 403s on its modules - it'll render locked regardless, so
-      // there's no content worth fetching for it.
+      // path), or that's still a draft, 403s on its modules - it'll render
+      // locked regardless, so there's no content worth fetching for it.
       const moduleLists = await Promise.all(
-        p.courseIds.map((id) =>
-          !user || isCourseAccessible(user, id, allPaths)
-            ? listModulesByCourse(id).then((list) => list.filter((m) => m.status === "published"))
+        loadedCourses.map((course) =>
+          !user || isCourseAccessible(user, course, allPaths)
+            ? listModulesByCourse(course.courseId).then((list) => list.filter((m) => m.status === "published"))
             : Promise.resolve([])
         )
       );
@@ -108,6 +108,9 @@ export function LearningPathDetail() {
   const allLessons = courses.flatMap((c) => (modulesByCourse[c.courseId] ?? []).flatMap((m) => m.lessons));
   const totalLessons = allLessons.length;
   const totalCompleted = allLessons.filter((l) => completedIds.has(l.lessonId)).length;
+  // A reviewer's viewing is never recorded (see StudentModule's
+  // markComplete), so a progress bar here would just be misleading.
+  const hideProgress = user?.role === "reviewer";
 
   return (
     <main className="student-view course-page">
@@ -115,7 +118,7 @@ export function LearningPathDetail() {
       <h1>{path.title}</h1>
       {path.description && <p className="course-description">{path.description}</p>}
 
-      {totalLessons > 0 && (
+      {totalLessons > 0 && !hideProgress && (
         <div className="progress-summary">
           <div className="progress-bar">
             <div className="progress-bar-fill" style={{ width: `${(totalCompleted / totalLessons) * 100}%` }} />
@@ -143,13 +146,14 @@ export function LearningPathDetail() {
               const priorCoursesComplete = courses
                 .slice(0, index)
                 .every((c) => isCourseComplete(modulesByCourse[c.courseId] ?? [], completedIds));
-              const accessible = !user || isCourseAccessible(user, course.courseId, learningPaths);
-              // An admin/super_admin already bypasses isCourseAccessible
-              // above; also skip the sequential-progression lock so they can
-              // click straight through every course in the path while
-              // reviewing content or checking layout.
-              const isPrivileged = user?.role === "admin" || user?.role === "super_admin";
-              const locked = !isPrivileged && (!accessible || (!complete && !priorCoursesComplete));
+              const accessible = !user || isCourseAccessible(user, course, learningPaths);
+              // Admins/super_admins/reviewers don't progress through a path
+              // sequentially the way a student does - isCourseAccessible
+              // already grants them access to every course, but without this
+              // they'd still see later courses as "locked" behind the
+              // sequential-completion rule below.
+              const isPrivileged = user?.role === "admin" || user?.role === "super_admin" || user?.role === "reviewer";
+              const locked = !accessible || (!isPrivileged && !complete && !priorCoursesComplete);
               const accentColor = complete ? Theme.default().primaryColor : locked ? LOCKED_COLOR : IN_PROGRESS_COLOR;
               const lane = LANE_CLASSES[index % LANE_CLASSES.length];
 

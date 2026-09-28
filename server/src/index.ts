@@ -1,7 +1,8 @@
 import { ColorSchemeSchema, LessonDisplayModeSchema } from "./displayPreference.js";
-import { LessonSchema, ModuleSchema } from "./schemas.js";
+import { sendVoucherEmail } from "./mailer.js";
+import { CourseStatusSchema, LessonSchema, ModuleSchema } from "./schemas.js";
 import { ThemeOverrideSchema } from "./theme.js";
-import { UserRoleSchema, type UserRole } from "./userSchema.js";
+import { PasswordSchema, UserRoleSchema, type UserRole } from "./userSchema.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import express, { type NextFunction, type Request, type Response } from "express";
@@ -29,22 +30,36 @@ import { extractRiseRuntimeData, RiseZipError } from "./riseZip.js";
 import { seedSampleData } from "./sampleData.js";
 import { seedUsers } from "./seedUsers.js";
 import {
+  createReviewComment,
+  initReviewCommentStore,
+  listCommentsForLesson,
+  listCommentsForModule,
+} from "./reviewCommentStore.js";
+import {
+  assignRandomReviewer,
+  clearLessonReview,
+  clearModuleReview,
   createCourse,
   createLearningPath,
   createModule,
   deleteCourse,
   deleteModule,
+  flagLessonChangesRequested,
+  flagModuleChangesRequested,
   getCourse,
   getLearningPath,
   getModule,
   initStore,
   listAllModules,
+  listCourseCategories,
   listCourses,
   listLearningPaths,
   listModulesByCourse,
   patchCourse,
   patchLearningPath,
   saveModule,
+  submitLessonForReview,
+  submitModuleForReview,
   unassignModule,
   userHasCourseAccess,
 } from "./store.js";
@@ -59,6 +74,17 @@ import {
   verifyCredentials,
   verifyCurrentPassword,
 } from "./userStore.js";
+import {
+  checkVoucherForRegistration,
+  createVoucher,
+  getVoucher,
+  initVoucherStore,
+  listVouchers,
+  markVoucherRegistered,
+  revokeVoucher,
+  toPublicVoucher,
+  VOUCHER_REGISTRATION_ERROR_MESSAGES,
+} from "./voucherStore.js";
 
 const app = express();
 const port = process.env.PORT ?? 4000;
@@ -85,9 +111,29 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
-app.use(async (req: Request, _res: Response, next: NextFunction) => {
-  const userId = getSessionUserId(req.cookies[SESSION_COOKIE]);
-  req.user = userId ? await getUserById(userId) : undefined;
+// True once a voucher-registered user's one-year window (see
+// voucherSchema.ts's VOUCHER_VALIDITY_MS) has passed. Absent for a user
+// with no originating voucher (pre-voucher accounts, seeded demo
+// accounts), who never expire.
+function isMembershipExpired(user: { membershipExpiresAt?: number }): boolean {
+  return user.membershipExpiresAt !== undefined && Date.now() > user.membershipExpiresAt;
+}
+
+app.use(async (req: Request, res: Response, next: NextFunction) => {
+  const sessionId = req.cookies[SESSION_COOKIE];
+  const userId = getSessionUserId(sessionId);
+  const user = userId ? await getUserById(userId) : undefined;
+  // Checked on every request, not just at login - a session created before
+  // the one-year mark shouldn't keep working past it just because the user
+  // never logged out. Kill the session outright rather than leaving it to
+  // silently keep re-checking on every future request.
+  if (user && isMembershipExpired(user)) {
+    destroySession(sessionId);
+    res.clearCookie(SESSION_COOKIE, cookieOptions);
+    req.user = undefined;
+  } else {
+    req.user = user;
+  }
   next();
 });
 
@@ -126,10 +172,14 @@ function requireRole(...roles: UserRole[]) {
 
 // --- Auth ---
 
+// name and role are deliberately not part of this - both live on the
+// voucher (see voucherSchema.ts) and are copied from there, not taken from
+// the request body, so a client can't self-elevate by passing its own
+// role, and can't get a name a course admin never actually invited.
 const RegisterSchema = z.object({
+  voucherId: z.string().min(1),
   email: z.string().email(),
-  name: z.string().min(1),
-  password: z.string().min(8),
+  password: PasswordSchema,
 });
 
 const LoginSchema = z.object({
@@ -148,8 +198,29 @@ app.post("/api/auth/register", async (req, res) => {
     sendValidationError(res, parsed.error);
     return;
   }
+  const { voucherId, email, password } = parsed.data;
+
+  const voucher = await getVoucher(voucherId);
+  if (!voucher) {
+    res.status(404).json({ error: "This invitation link isn't valid." });
+    return;
+  }
+  const problem = checkVoucherForRegistration(voucher, email);
+  if (problem) {
+    res.status(400).json({ error: VOUCHER_REGISTRATION_ERROR_MESSAGES[problem] });
+    return;
+  }
+
   try {
-    const user = await createUser({ ...parsed.data, role: "student" });
+    const user = await createUser({
+      email,
+      name: voucher.name,
+      password,
+      role: voucher.role,
+      voucherId: voucher.voucherId,
+      reviewerCategory: voucher.reviewerCategory,
+    });
+    await markVoucherRegistered(voucher.voucherId, user.userId);
     setSessionCookie(res, user.userId);
     res.status(201).json(user);
   } catch (err) {
@@ -166,6 +237,10 @@ app.post("/api/auth/login", async (req, res) => {
   const user = await verifyCredentials(parsed.data.email, parsed.data.password);
   if (!user) {
     res.status(401).json({ error: "Invalid email or password" });
+    return;
+  }
+  if (isMembershipExpired(user)) {
+    res.status(401).json({ error: "Your access has expired. Contact an administrator for a new invitation." });
     return;
   }
   setSessionCookie(res, user.userId);
@@ -188,7 +263,7 @@ app.get("/api/auth/me", (req, res) => {
 
 const ChangePasswordSchema = z.object({
   currentPassword: z.string(),
-  newPassword: z.string().min(8),
+  newPassword: PasswordSchema,
 });
 
 app.put("/api/auth/me/password", requireAuth, async (req, res) => {
@@ -206,33 +281,13 @@ app.put("/api/auth/me/password", requireAuth, async (req, res) => {
   res.status(204).end();
 });
 
-// --- User management (super_admin only) ---
-
-const CreateUserInputSchema = z.object({
-  email: z.string().email(),
-  name: z.string().min(1),
-  password: z.string().min(8),
-  role: UserRoleSchema,
-});
+// --- User management ---
 
 // Listing users (name/email/role/assignments) is needed by the course/
 // learning-path assignment UI, which regular admins also use - unlike
-// creating accounts or changing role/password, which stay super_admin-only.
+// changing role/password, which stay super_admin-only.
 app.get("/api/users", requireRole("admin", "super_admin"), async (_req, res) => {
   res.json(await listUsers());
-});
-
-app.post("/api/users", requireRole("super_admin"), async (req, res) => {
-  const parsed = CreateUserInputSchema.safeParse(req.body);
-  if (!parsed.success) {
-    sendValidationError(res, parsed.error);
-    return;
-  }
-  try {
-    res.status(201).json(await createUser(parsed.data));
-  } catch (err) {
-    res.status(409).json({ error: (err as Error).message });
-  }
 });
 
 app.patch("/api/users/:userId/role", requireRole("super_admin"), async (req, res) => {
@@ -250,7 +305,7 @@ app.patch("/api/users/:userId/role", requireRole("super_admin"), async (req, res
 });
 
 app.patch("/api/users/:userId/password", requireRole("super_admin"), async (req, res) => {
-  const parsed = z.object({ newPassword: z.string().min(8) }).safeParse(req.body);
+  const parsed = z.object({ newPassword: PasswordSchema }).safeParse(req.body);
   if (!parsed.success) {
     sendValidationError(res, parsed.error);
     return;
@@ -282,6 +337,85 @@ app.patch("/api/users/:userId/assignments", requireRole("admin", "super_admin"),
   res.json(updated);
 });
 
+// --- Vouchers ---
+
+const CreateVoucherInputSchema = z.object({
+  email: z.string().email(),
+  name: z.string().min(1),
+  role: UserRoleSchema,
+  reviewerCategory: z.string().optional(),
+});
+
+// Only super_admin can issue an admin/super_admin voucher - mirrors the
+// existing rule that only super_admin can hand out privileged roles at
+// all (see the role-patch route above). A plain admin can still invite
+// students, which is the replacement for what used to be open self-signup.
+function canIssueRole(issuer: UserRole, role: UserRole): boolean {
+  return role === "student" || issuer === "super_admin";
+}
+
+app.get("/api/vouchers", requireRole("admin", "super_admin"), async (_req, res) => {
+  res.json(await listVouchers());
+});
+
+// Public and unauthenticated on purpose - the register page needs this to
+// greet the invitee by name and catch an already-used/expired/revoked
+// voucher before showing the form, before the visitor has any session.
+// voucherId is an unguessable UUID (the link's whole security model), and
+// this only ever returns the public-safe projection (see
+// voucherSchema.ts's PublicVoucherSchema) - never registeredUserId.
+app.get("/api/vouchers/:voucherId", async (req, res) => {
+  const voucher = await getVoucher(req.params.voucherId);
+  if (!voucher) {
+    res.status(404).json({ error: "This invitation link isn't valid." });
+    return;
+  }
+  res.json(toPublicVoucher(voucher));
+});
+
+app.post("/api/vouchers", requireRole("admin", "super_admin"), async (req, res) => {
+  const parsed = CreateVoucherInputSchema.safeParse(req.body);
+  if (!parsed.success) {
+    sendValidationError(res, parsed.error);
+    return;
+  }
+  if (!canIssueRole(req.user!.role, parsed.data.role)) {
+    res.status(403).json({ error: "Only a super admin can invite an admin or super admin." });
+    return;
+  }
+  if (parsed.data.role === "reviewer" && !parsed.data.reviewerCategory) {
+    res.status(400).json({ error: "A reviewer needs a category assigned." });
+    return;
+  }
+  const voucher = await createVoucher(parsed.data);
+  const emailSent = await sendVoucherEmail({
+    to: voucher.email,
+    name: voucher.name,
+    voucherId: voucher.voucherId,
+    role: voucher.role,
+    expiresAt: voucher.expiresAt,
+  });
+  res.status(201).json({ voucher, emailSent });
+});
+
+app.patch("/api/vouchers/:voucherId/revoke", requireRole("admin", "super_admin"), async (req, res) => {
+  const voucher = await getVoucher(req.params.voucherId);
+  if (!voucher) {
+    res.status(404).json({ error: "Voucher not found" });
+    return;
+  }
+  if (!canIssueRole(req.user!.role, voucher.role)) {
+    res.status(403).json({ error: "Only a super admin can revoke an admin or super admin invitation." });
+    return;
+  }
+  const updated = await revokeVoucher(req.params.voucherId);
+  if (!updated) {
+    res.status(400).json({ error: "Only a pending invitation can be revoked." });
+    return;
+  }
+  res.json(updated);
+});
+
 // --- Courses & modules ---
 
 const CreateCourseInputSchema = z.object({
@@ -296,6 +430,7 @@ const CoursePatchSchema = z.object({
   description: z.string().optional(),
   category: z.string().optional(),
   theme: ThemeOverrideSchema.optional(),
+  status: CourseStatusSchema.optional(),
 });
 
 const CreateModuleInputSchema = z.object({
@@ -311,6 +446,13 @@ const CreateModuleInputSchema = z.object({
 
 app.get("/api/courses", requireAuth, async (_req, res) => {
   res.json(await listCourses());
+});
+
+// Every category any course actually uses - what the admin UI's category
+// dropdowns (course creation, standalone modules, a reviewer's assigned
+// category) offer as existing choices, alongside their own "add new one".
+app.get("/api/categories", requireAuth, async (_req, res) => {
+  res.json(await listCourseCategories());
 });
 
 app.post("/api/courses", requireRole("admin", "super_admin"), async (req, res) => {
@@ -402,6 +544,21 @@ app.patch("/api/courses/:courseId", requireRole("admin", "super_admin"), async (
   res.json(updated);
 });
 
+// Randomly assigns this course to a reviewer whose own category matches
+// the course's (see store.ts's assignRandomReviewer) - informational, not
+// an access restriction, so this is safe to re-trigger (e.g. to reroll).
+app.patch("/api/courses/:courseId/submit-for-review", requireRole("admin", "super_admin"), async (req, res) => {
+  if (!(await getCourse(req.params.courseId))) {
+    res.status(404).json({ error: "Course not found" });
+    return;
+  }
+  try {
+    res.json(await assignRandomReviewer(req.params.courseId));
+  } catch (err) {
+    res.status(400).json({ error: (err as Error).message });
+  }
+});
+
 app.delete("/api/courses/:courseId", requireRole("admin", "super_admin"), async (req, res) => {
   await deleteCourse(req.params.courseId);
   res.status(204).end();
@@ -467,6 +624,127 @@ app.patch("/api/modules/:moduleId/unassign", requireRole("admin", "super_admin")
 app.delete("/api/modules/:moduleId", requireRole("admin", "super_admin"), async (req, res) => {
   await deleteModule(req.params.moduleId);
   res.status(204).end();
+});
+
+// --- Lesson review comments (admin/super_admin/reviewer only - never a student) ---
+
+const CreateReviewCommentSchema = z.object({ body: z.string().min(1) });
+
+async function findLessonOr404(moduleId: string, lessonId: string, res: Response) {
+  const module = await getModule(moduleId);
+  const lesson = module?.lessons.find((l) => l.lessonId === lessonId);
+  if (!module || !lesson) {
+    res.status(404).json({ error: "Lesson not found" });
+    return undefined;
+  }
+  return module;
+}
+
+app.get(
+  "/api/modules/:moduleId/lessons/:lessonId/comments",
+  requireRole("admin", "super_admin", "reviewer"),
+  async (req, res) => {
+    if (!(await findLessonOr404(req.params.moduleId, req.params.lessonId, res))) return;
+    res.json(await listCommentsForLesson(req.params.lessonId));
+  }
+);
+
+// Only a reviewer posts a comment - posting one is also what flags the
+// lesson "changesRequested" (see flagLessonChangesRequested), which is
+// what actually drives the admin-facing side of the workflow.
+app.post("/api/modules/:moduleId/lessons/:lessonId/comments", requireRole("reviewer"), async (req, res) => {
+  const parsed = CreateReviewCommentSchema.safeParse(req.body);
+  if (!parsed.success) {
+    sendValidationError(res, parsed.error);
+    return;
+  }
+  if (!(await findLessonOr404(req.params.moduleId, req.params.lessonId, res))) return;
+  const comment = await createReviewComment({
+    lessonId: req.params.lessonId,
+    moduleId: req.params.moduleId,
+    authorUserId: req.user!.userId,
+    authorName: req.user!.name,
+    body: parsed.data.body,
+  });
+  await flagLessonChangesRequested(req.params.moduleId, req.params.lessonId);
+  res.status(201).json(comment);
+});
+
+app.patch(
+  "/api/modules/:moduleId/lessons/:lessonId/submit-for-review",
+  requireRole("admin", "super_admin"),
+  async (req, res) => {
+    const module = await submitLessonForReview(req.params.moduleId, req.params.lessonId);
+    if (!module) {
+      res.status(404).json({ error: "Module not found" });
+      return;
+    }
+    res.json(module);
+  }
+);
+
+app.patch(
+  "/api/modules/:moduleId/lessons/:lessonId/clear-review",
+  requireRole("admin", "super_admin", "reviewer"),
+  async (req, res) => {
+    const module = await clearLessonReview(req.params.moduleId, req.params.lessonId);
+    if (!module) {
+      res.status(404).json({ error: "Module not found" });
+      return;
+    }
+    res.json(module);
+  }
+);
+
+// --- Module-level review comments - same workflow as a lesson's, but for
+// the module as a whole (structure, ordering, overall content). ---
+
+app.get("/api/modules/:moduleId/comments", requireRole("admin", "super_admin", "reviewer"), async (req, res) => {
+  const module = await getModule(req.params.moduleId);
+  if (!module) {
+    res.status(404).json({ error: "Module not found" });
+    return;
+  }
+  res.json(await listCommentsForModule(req.params.moduleId));
+});
+
+app.post("/api/modules/:moduleId/comments", requireRole("reviewer"), async (req, res) => {
+  const parsed = CreateReviewCommentSchema.safeParse(req.body);
+  if (!parsed.success) {
+    sendValidationError(res, parsed.error);
+    return;
+  }
+  const module = await getModule(req.params.moduleId);
+  if (!module) {
+    res.status(404).json({ error: "Module not found" });
+    return;
+  }
+  const comment = await createReviewComment({
+    moduleId: req.params.moduleId,
+    authorUserId: req.user!.userId,
+    authorName: req.user!.name,
+    body: parsed.data.body,
+  });
+  await flagModuleChangesRequested(req.params.moduleId);
+  res.status(201).json(comment);
+});
+
+app.patch("/api/modules/:moduleId/submit-for-review", requireRole("admin", "super_admin"), async (req, res) => {
+  const module = await submitModuleForReview(req.params.moduleId);
+  if (!module) {
+    res.status(404).json({ error: "Module not found" });
+    return;
+  }
+  res.json(module);
+});
+
+app.patch("/api/modules/:moduleId/clear-review", requireRole("admin", "super_admin", "reviewer"), async (req, res) => {
+  const module = await clearModuleReview(req.params.moduleId);
+  if (!module) {
+    res.status(404).json({ error: "Module not found" });
+    return;
+  }
+  res.json(module);
 });
 
 // --- Learning paths ---
@@ -603,7 +881,14 @@ app.use((err: unknown, req: Request, res: Response, _next: NextFunction) => {
 
 async function main() {
   const db = await connectDb();
-  await Promise.all([initStore(db), initUserStore(db), initProgressStore(db), initPreferencesStore(db)]);
+  await Promise.all([
+    initStore(db),
+    initUserStore(db),
+    initVoucherStore(db),
+    initProgressStore(db),
+    initPreferencesStore(db),
+    initReviewCommentStore(db),
+  ]);
 
   await seedUsers();
   await seedSampleData();

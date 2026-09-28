@@ -1,6 +1,7 @@
 import type { Database, DocumentStore } from "./db/index.js";
 import { parseCourse, parseLearningPath, parseModule, type Course, type LearningPath, type Module } from "./schemas.js";
 import type { User } from "./userSchema.js";
+import { listReviewersByCategory } from "./userStore.js";
 
 let courses: DocumentStore<Course>;
 let modules: DocumentStore<Module>;
@@ -20,6 +21,37 @@ export function listCourses(): Promise<Course[]> {
 
 export async function getCourse(courseId: string): Promise<Course | undefined> {
   return (await courses.get(courseId)) ?? undefined;
+}
+
+// Every category any course actually uses, sorted - what the admin UI's
+// category dropdowns (course creation, standalone modules, a reviewer's
+// assigned category) offer as existing choices, alongside their own
+// "add a new one" escape hatch.
+export async function listCourseCategories(): Promise<string[]> {
+  const all = await courses.list();
+  const categories = new Set(all.map((c) => c.category).filter((c): c is string => !!c));
+  return [...categories].sort();
+}
+
+// Picks uniformly at random among every reviewer whose own category
+// matches this course's - "available" just means "exists with a matching
+// category", no workload balancing. Purely informational once set (see
+// CourseSchema's assignedReviewerId) - it doesn't restrict who can
+// actually comment on the course.
+export async function assignRandomReviewer(courseId: string): Promise<Course> {
+  const course = await courses.get(courseId);
+  if (!course) throw new Error("Course not found");
+  if (!course.category) {
+    throw new Error("This course has no category set - choose one before submitting it for review.");
+  }
+  const candidates = await listReviewersByCategory(course.category);
+  if (candidates.length === 0) {
+    throw new Error(`No reviewers are available for the "${course.category}" category yet.`);
+  }
+  const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+  const updated = parseCourse({ ...course, assignedReviewerId: chosen.userId });
+  await courses.set(courseId, updated);
+  return updated;
 }
 
 // Every course, however it's created (the admin "Create a course" form or a
@@ -84,7 +116,7 @@ export async function createCourse(data: unknown): Promise<Course> {
 
 export async function patchCourse(
   courseId: string,
-  patch: { title?: string; description?: string; category?: string; theme?: unknown }
+  patch: { title?: string; description?: string; category?: string; theme?: unknown; status?: string }
 ): Promise<Course | undefined> {
   const existing = await courses.get(courseId);
   if (!existing) return undefined;
@@ -145,10 +177,115 @@ export async function createModule(input: {
   return module;
 }
 
+function stripLessonReviewStatus(lesson: Module["lessons"][number]) {
+  const { reviewStatus: _reviewStatus, ...rest } = lesson;
+  return rest;
+}
+
+// A signature of everything about a module EXCEPT the review-workflow
+// fields themselves (its own reviewStatus and each lesson's) - used to ask
+// "did the admin actually change anything here" without the act of
+// carrying a status forward (below) looking like a change in itself.
+function moduleContentSignature(m: Module): string {
+  return JSON.stringify({
+    seed: m.seed,
+    category: m.category,
+    courseId: m.courseId,
+    status: m.status,
+    lessons: m.lessons.map(stripLessonReviewStatus),
+  });
+}
+
+function isStaleReviewStatus(status: Module["reviewStatus"]): boolean {
+  return status === "changesRequested" || status === "needsReview";
+}
+
+// An admin's edit form never carries reviewStatus itself (it doesn't know
+// about the review workflow), so every save has to carry the existing
+// status - the module's own, and each lesson's - forward by hand rather
+// than letting it default away. While doing that, anything whose content
+// actually changed and was sitting at "changesRequested" or "needsReview"
+// (the reviewer's comment, or the admin's own earlier resubmission)
+// automatically advances to "changed" - the admin never has to remember a
+// separate step just to record that they made an edit, and a further edit
+// after resubmitting correctly un-does a now-stale "needsReview" instead of
+// leaving the reviewer looking at content that moved again after they were
+// told it was ready. The module's own status and each lesson's are tracked
+// independently of each other, driven by their own content diff.
 export async function saveModule(moduleId: string, data: unknown): Promise<Module> {
-  const module = parseModule({ ...(data as object), moduleId });
+  const existing = await modules.get(moduleId);
+  const incoming = parseModule({ ...(data as object), moduleId });
+
+  const lessons = incoming.lessons.map((lesson) => {
+    const previous = existing?.lessons.find((l) => l.lessonId === lesson.lessonId);
+    if (!previous) return lesson;
+    const contentChanged = JSON.stringify(lesson.content) !== JSON.stringify(previous.content);
+    return { ...lesson, reviewStatus: contentChanged && isStaleReviewStatus(previous.reviewStatus) ? "changed" : previous.reviewStatus };
+  });
+
+  const withLessons = { ...incoming, lessons };
+  const moduleContentChanged = existing ? moduleContentSignature(withLessons) !== moduleContentSignature(existing) : false;
+  const module = parseModule({
+    ...withLessons,
+    reviewStatus: moduleContentChanged && isStaleReviewStatus(existing?.reviewStatus) ? "changed" : existing?.reviewStatus,
+  });
+
   await modules.set(moduleId, module);
   return module;
+}
+
+async function setLessonReviewStatus(
+  moduleId: string,
+  lessonId: string,
+  reviewStatus: Module["lessons"][number]["reviewStatus"]
+): Promise<Module | undefined> {
+  const existing = await modules.get(moduleId);
+  if (!existing) return undefined;
+  const module = parseModule({
+    ...existing,
+    lessons: existing.lessons.map((l) => (l.lessonId === lessonId ? { ...l, reviewStatus } : l)),
+  });
+  await modules.set(moduleId, module);
+  return module;
+}
+
+async function setModuleReviewStatus(moduleId: string, reviewStatus: Module["reviewStatus"]): Promise<Module | undefined> {
+  const existing = await modules.get(moduleId);
+  if (!existing) return undefined;
+  const module = parseModule({ ...existing, reviewStatus });
+  await modules.set(moduleId, module);
+  return module;
+}
+
+// A reviewer's new comment always puts the lesson (or module) back in
+// "changesRequested", regardless of whatever state it was already in - a
+// fresh comment is always the most current signal of what the admin needs
+// to look at.
+export function flagLessonChangesRequested(moduleId: string, lessonId: string): Promise<Module | undefined> {
+  return setLessonReviewStatus(moduleId, lessonId, "changesRequested");
+}
+
+export function flagModuleChangesRequested(moduleId: string): Promise<Module | undefined> {
+  return setModuleReviewStatus(moduleId, "changesRequested");
+}
+
+// The admin's explicit "send back to the reviewer" action.
+export function submitLessonForReview(moduleId: string, lessonId: string): Promise<Module | undefined> {
+  return setLessonReviewStatus(moduleId, lessonId, "needsReview");
+}
+
+export function submitModuleForReview(moduleId: string): Promise<Module | undefined> {
+  return setModuleReviewStatus(moduleId, "needsReview");
+}
+
+// Closes the loop - the reviewer (or an admin) is satisfied and clears the
+// flag entirely, whatever state it was in.
+export function clearLessonReview(moduleId: string, lessonId: string): Promise<Module | undefined> {
+  return setLessonReviewStatus(moduleId, lessonId, undefined);
+}
+
+export function clearModuleReview(moduleId: string): Promise<Module | undefined> {
+  return setModuleReviewStatus(moduleId, undefined);
 }
 
 // Removes a module from its course, turning it into a reusable library entry
@@ -226,9 +363,17 @@ export async function seedLearningPath(path: LearningPath): Promise<void> {
 // admin assigned it to them directly, or assigned a learning path that
 // includes it - browsing the catalog itself (title/description) is never
 // gated, only what's inside. Admins/super_admins always have full access,
-// since they're the ones managing this content.
+// since they're the ones managing this content - reviewers get the same
+// unrestricted access, so they can view any course without needing
+// assignments (the client never calls the completion endpoint for a
+// reviewer, so this doesn't give them anything to "complete"). A draft
+// course is invisible to everyone else, even a student it's directly
+// assigned to - it isn't ready to be seen yet, which is the whole point of
+// having a reviewer look it over before it's published.
 export async function userHasCourseAccess(user: User, courseId: string): Promise<boolean> {
-  if (user.role === "admin" || user.role === "super_admin") return true;
+  if (user.role === "admin" || user.role === "super_admin" || user.role === "reviewer") return true;
+  const course = await courses.get(courseId);
+  if (!course || course.status !== "published") return false;
   if (user.assignedCourseIds.includes(courseId)) return true;
   if (user.assignedLearningPathIds.length === 0) return false;
   const assignedPaths = await Promise.all(user.assignedLearningPathIds.map((id) => learningPaths.get(id)));

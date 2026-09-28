@@ -1,4 +1,16 @@
-import type { ColorScheme, Course, LearningPath, Lesson, LessonDisplayMode, Module, User, UserRole } from "./types.js";
+import type {
+  ColorScheme,
+  Course,
+  LearningPath,
+  Lesson,
+  LessonDisplayMode,
+  Module,
+  PublicVoucher,
+  ReviewComment,
+  User,
+  UserRole,
+  Voucher,
+} from "./types.js";
 
 // In production this points at the deployed API (e.g. Render); in local
 // dev it's left empty and vite.config.ts's proxy forwards /api requests
@@ -35,8 +47,11 @@ export function login(email: string, password: string): Promise<User> {
   return request("/api/auth/login", { method: "POST", body: JSON.stringify({ email, password }) });
 }
 
-export function register(email: string, name: string, password: string): Promise<User> {
-  return request("/api/auth/register", { method: "POST", body: JSON.stringify({ email, name, password }) });
+// name and role aren't collected here - they come from the voucher, which
+// the server looks up by voucherId and copies from, so they can't be
+// spoofed via the request body.
+export function register(voucherId: string, email: string, password: string): Promise<User> {
+  return request("/api/auth/register", { method: "POST", body: JSON.stringify({ voucherId, email, password }) });
 }
 
 export async function logout(): Promise<void> {
@@ -45,10 +60,6 @@ export async function logout(): Promise<void> {
 
 export function listUsers(): Promise<User[]> {
   return request("/api/users");
-}
-
-export function createUser(input: { email: string; name: string; password: string; role: UserRole }): Promise<User> {
-  return request("/api/users", { method: "POST", body: JSON.stringify(input) });
 }
 
 export function setUserRole(userId: string, role: UserRole): Promise<User> {
@@ -90,8 +101,36 @@ export async function resetUserPassword(userId: string, newPassword: string): Pr
   }
 }
 
+export function listVouchers(): Promise<Voucher[]> {
+  return request("/api/vouchers");
+}
+
+// Unauthenticated on purpose - the register page needs this before the
+// visitor has any session, to greet them by name and catch an
+// already-used/expired/revoked voucher before showing the form.
+export function getVoucherPublic(voucherId: string): Promise<PublicVoucher> {
+  return request(`/api/vouchers/${voucherId}`);
+}
+
+export function createVoucher(
+  input: { email: string; name: string; role: UserRole; reviewerCategory?: string }
+): Promise<{ voucher: Voucher; emailSent: boolean }> {
+  return request("/api/vouchers", { method: "POST", body: JSON.stringify(input) });
+}
+
+export function revokeVoucher(voucherId: string): Promise<Voucher> {
+  return request(`/api/vouchers/${voucherId}/revoke`, { method: "PATCH" });
+}
+
 export function listCourses(): Promise<Course[]> {
   return request("/api/courses");
+}
+
+// Every category any course actually uses - what the category dropdowns
+// (course creation, standalone modules, a reviewer's assigned category)
+// offer as existing choices, alongside their own "add new one" escape hatch.
+export function listCategories(): Promise<string[]> {
+  return request("/api/categories");
 }
 
 export function getCourse(courseId: string): Promise<Course> {
@@ -109,9 +148,23 @@ export function createCourse(input: {
 
 export function patchCourse(
   courseId: string,
-  patch: { title?: string; description?: string; category?: string; theme?: Partial<Course["theme"]> }
+  patch: {
+    title?: string;
+    description?: string;
+    category?: string;
+    theme?: Partial<Course["theme"]>;
+    status?: Course["status"];
+  }
 ): Promise<Course> {
   return request(`/api/courses/${courseId}`, { method: "PATCH", body: JSON.stringify(patch) });
+}
+
+// Randomly assigns this course to a reviewer whose own category matches the
+// course's - informational, not an access restriction, so this is safe to
+// re-trigger (e.g. to reroll). Throws (via `request`'s error handling) if the
+// course has no category set or no reviewer exists for that category.
+export function submitCourseForReview(courseId: string): Promise<Course> {
+  return request(`/api/courses/${courseId}/submit-for-review`, { method: "PATCH" });
 }
 
 // Permanent - cannot be undone. The course's modules aren't deleted with it:
@@ -167,6 +220,44 @@ export function createModule(input: {
 
 export function saveModule(moduleId: string, module: Module): Promise<Module> {
   return request(`/api/modules/${moduleId}`, { method: "PUT", body: JSON.stringify(module) });
+}
+
+// Review comments (admin/super_admin/reviewer only - the server 403s a
+// student). See server/src/index.ts for the full lesson review workflow.
+export function listLessonComments(moduleId: string, lessonId: string): Promise<ReviewComment[]> {
+  return request(`/api/modules/${moduleId}/lessons/${lessonId}/comments`);
+}
+
+export function postLessonComment(moduleId: string, lessonId: string, body: string): Promise<ReviewComment> {
+  return request(`/api/modules/${moduleId}/lessons/${lessonId}/comments`, {
+    method: "POST",
+    body: JSON.stringify({ body }),
+  });
+}
+
+export function submitLessonForReview(moduleId: string, lessonId: string): Promise<Module> {
+  return request(`/api/modules/${moduleId}/lessons/${lessonId}/submit-for-review`, { method: "PATCH" });
+}
+
+export function clearLessonReview(moduleId: string, lessonId: string): Promise<Module> {
+  return request(`/api/modules/${moduleId}/lessons/${lessonId}/clear-review`, { method: "PATCH" });
+}
+
+// Same workflow as a lesson's, but for the module as a whole.
+export function listModuleComments(moduleId: string): Promise<ReviewComment[]> {
+  return request(`/api/modules/${moduleId}/comments`);
+}
+
+export function postModuleComment(moduleId: string, body: string): Promise<ReviewComment> {
+  return request(`/api/modules/${moduleId}/comments`, { method: "POST", body: JSON.stringify({ body }) });
+}
+
+export function submitModuleForReview(moduleId: string): Promise<Module> {
+  return request(`/api/modules/${moduleId}/submit-for-review`, { method: "PATCH" });
+}
+
+export function clearModuleReview(moduleId: string): Promise<Module> {
+  return request(`/api/modules/${moduleId}/clear-review`, { method: "PATCH" });
 }
 
 // Removes a module from its course, turning it into a reusable library entry.

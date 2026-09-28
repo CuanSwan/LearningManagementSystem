@@ -729,6 +729,12 @@ a.course-side-menu-lesson:hover {
   gap: 0.4rem;
 }
 
+.module-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .module-status {
   font-size: 0.78rem;
   color: var(--text-tertiary);
@@ -1463,17 +1469,6 @@ a.path-snake-link:hover .path-snake-bubble {
   gap: 0.6rem;
 }
 
-.student-lesson-ai-badge {
-  font-size: 0.68rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  padding: 0.2rem 0.5rem;
-  border: 1px solid var(--border-strong-alpha);
-  border-radius: 0;
-  color: var(--text-secondary);
-}
-
 .student-lesson-complete-badge {
   flex-shrink: 0;
   font-size: 0.7rem;
@@ -1491,6 +1486,122 @@ a.path-snake-link:hover .path-snake-bubble {
   border-radius: 0;
   padding: 0;
   width: 100%;
+}
+
+/* Only ever rendered for admin/super_admin/reviewer - see ReviewPanel.tsx,
+   which returns null outright for a student. Used both for a single
+   lesson (StudentLessonBlock) and for a whole module (StudentModule). */
+.review-panel {
+  width: 100%;
+  margin-top: 0.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px dashed var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.review-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.review-panel-header h4 {
+  margin: 0;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-tertiary);
+}
+
+.review-panel-status {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.3rem 0.65rem;
+  border-radius: 0;
+  color: #fff;
+}
+
+.review-panel-status-changesRequested {
+  background: #a4453b;
+}
+
+.review-panel-status-changed {
+  background: #b8862c;
+}
+
+.review-panel-status-needsReview {
+  background: #3e6259;
+}
+
+.review-panel-empty {
+  font-size: 0.85rem;
+  color: var(--text-tertiary);
+  margin: 0;
+}
+
+.review-panel-comments {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.review-panel-comments li {
+  background: var(--surface-warm);
+  border: 1px solid var(--border-subtle);
+  padding: 0.75rem 1rem;
+}
+
+.review-panel-comment-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.78rem;
+  color: var(--text-tertiary);
+  margin-bottom: 0.35rem;
+}
+
+.review-panel-comments p {
+  margin: 0;
+}
+
+.review-panel-error {
+  color: #a4453b;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.review-panel-compose {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.review-panel-compose textarea {
+  width: 100%;
+  resize: vertical;
+  font-family: inherit;
+  font-size: 0.9rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border-strong);
+}
+
+.review-panel-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.review-panel-clear-btn {
+  background: none;
+  border: 1px dashed var(--border-strong);
 }
 
 .quiz-question {
@@ -2624,6 +2735,62 @@ a.path-snake-link:hover .path-snake-bubble {
   height: 100%;
   background: var(--theme-primary, #3e6259);
   transition: width 0.2s ease;
+}
+
+.course-progress-header {
+  margin: 1.5rem 0;
+}
+
+.course-progress-track {
+  position: relative;
+  width: 100%;
+  height: 14px;
+  border-radius: 7px;
+  background: var(--track-bg);
+  overflow: hidden;
+}
+
+.course-progress-fill {
+  height: 100%;
+  border-radius: 7px;
+  background: var(--theme-primary, #3e6259);
+  transition: width 0.2s ease;
+}
+
+.course-progress-percent {
+  position: absolute;
+  left: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 0 0.4rem;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.35);
+  font-size: 0.65rem;
+  line-height: 14px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.course-progress-footer {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.course-progress-counters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.membership-countdown {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
 }
 
 /* --- Auth: top bar, login/register, user management --- */
