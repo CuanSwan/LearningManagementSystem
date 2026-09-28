@@ -106,28 +106,31 @@ function escapeHtml(text: string): string {
   return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-// Rise's `paragraph` fields are sometimes already `<p>...</p>`-wrapped HTML
-// and sometimes plain text, inconsistently, even within the same course -
-// pass the former through untouched (it'll still go through sanitizeHtml
-// downstream) and escape+wrap the latter so it renders as its own block
-// instead of a stray line with no paragraph boundary.
+// Rise's rich-text fields (`paragraph`, `heading`, list items) are wrapped in
+// a single outer `<p>...</p>` or `<div>...</div>` about as often as they're
+// plain text, inconsistently, even within the same course. Matches either
+// wrapper tag and captures its inner markup.
+const WRAPPED_BLOCK = /^<(p|div)[^>]*>([\s\S]*)<\/\1>$/i;
+
+// Pass an already-wrapped paragraph through untouched (it'll still go
+// through sanitizeHtml downstream) and escape+wrap plain text so it renders
+// as its own block instead of a stray line with no paragraph boundary.
 function asParagraphHtml(raw: string | undefined): string {
   if (!raw) return "";
   const trimmed = raw.trim();
   if (!trimmed) return "";
-  return /^<p[\s>]/i.test(trimmed) ? trimmed : `<p>${escapeHtml(trimmed)}</p>`;
+  return WRAPPED_BLOCK.test(trimmed) ? trimmed : `<p>${escapeHtml(trimmed)}</p>`;
 }
 
-// A `<p>text</p>`-wrapped field's inner markup, for use inside a tag that's
-// already block-level and doesn't need a nested <p> (an <li>, or a heading).
-// Rise wraps rich-text fields in `<p>` inconsistently (see asParagraphHtml) -
-// a field with no wrapping is assumed to be plain text and escaped, same as
+// A wrapped field's inner markup, for use inside a tag that's already
+// block-level and doesn't need a nested <p>/<div> (an <li>, or a heading).
+// A field with no wrapping is assumed to be plain text and escaped, same as
 // asParagraphHtml does for a bare paragraph.
 function unwrapBlockHtml(raw: string | undefined): string {
   if (!raw) return "";
   const trimmed = raw.trim();
-  const match = /^<p[^>]*>([\s\S]*)<\/p>$/i.exec(trimmed);
-  if (match) return match[1];
+  const match = WRAPPED_BLOCK.exec(trimmed);
+  if (match) return match[2];
   return escapeHtml(trimmed);
 }
 

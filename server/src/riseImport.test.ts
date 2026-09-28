@@ -181,6 +181,41 @@ describe("convertRiseCourse", () => {
     expect(body).not.toContain("&lt;p&gt;");
   });
 
+  it("unwraps a `<div>...</div>`-wrapped heading, paragraph, and list item the same way as `<p>`", () => {
+    // Rise also wraps some rich-text fields in a <div> instead of a <p> -
+    // just as inconsistently as the <p> case above.
+    const result = convertRiseCourse(
+      riseCourse([
+        {
+          id: "l1",
+          title: "M",
+          items: [
+            {
+              id: "b1",
+              type: "text",
+              family: "text",
+              items: [{ heading: "<div>Three Pillars</div>", paragraph: "<div>Body text.</div>" }],
+            },
+            {
+              id: "b2",
+              type: "list",
+              family: "list",
+              items: [{ paragraph: "<div>List item.</div>" }],
+            },
+          ],
+        },
+      ])
+    );
+    // The list block is a directly-adjacent text-type lesson, so it merges
+    // into the same lesson as the heading+paragraph block above.
+    expect(result.modules[0].lessons).toHaveLength(1);
+    const body = (result.modules[0].lessons[0].content as { body: string }).body;
+    expect(body).toContain("<h2>Three Pillars</h2>");
+    expect(body).toContain("<div>Body text.</div>");
+    expect(body).toContain("<ol><li>List item.</li></ol>");
+    expect(body).not.toContain("&lt;div&gt;");
+  });
+
   it("converts a bulleted list into a <ul>", () => {
     const result = convertRiseCourse(
       riseCourse([
