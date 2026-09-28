@@ -421,6 +421,35 @@ a.course-side-menu-lesson:hover {
   cursor: grabbing;
 }
 
+/* Portaled into document.body (see ComponentPreviewPopover) so it can float
+   free of the library panel's own scroll clipping - position is set inline
+   per-hover from the hovered item's bounding rect. */
+.library-item-preview-popover {
+  position: fixed;
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  background: var(--surface-card);
+  box-shadow: 0 4px 16px var(--shadow-color-strong);
+  pointer-events: none;
+  z-index: 35;
+}
+
+.library-item-preview-canvas {
+  transform-origin: top left;
+  padding: 0.75rem;
+}
+
+.library-item-preview-fallback {
+  padding: 0.85rem;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.library-item-preview-fallback p {
+  margin: 0 0 0.4rem;
+}
+
 .library-item-saved {
   display: flex;
   flex-direction: column;
