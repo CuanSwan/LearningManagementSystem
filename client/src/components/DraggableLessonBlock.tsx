@@ -1,5 +1,6 @@
 import type { Lesson, LessonType, WordingStyle } from "../types.js";
 import { EXISTING_LESSON_MIME, LIBRARY_LESSON_MIME, NEW_LESSON_MIME, SAVED_LESSON_MIME } from "../dnd.js";
+import { lessonTypeLabel } from "../lessonTemplates.js";
 import { LessonEditorForm } from "./LessonEditorForm.js";
 import { LessonRenderer } from "./LessonRenderer.js";
 
@@ -46,10 +47,13 @@ export function DraggableLessonBlock({
       }}
     >
       <div className="admin-lesson-toolbar">
-        <span aria-hidden="true">
-          {lesson.type === "examBreakdown"
-            ? "⠿ drag to move - required, can't be removed or swapped out"
-            : "⠿ drag to move or drop a library block here to swap"}
+        <span className="admin-lesson-toolbar-info">
+          <span className="admin-lesson-type-badge">{lessonTypeLabel(lesson.type)}</span>
+          <span aria-hidden="true">
+            {lesson.type === "examBreakdown"
+              ? "⠿ drag to move - required, can't be removed or swapped out"
+              : "⠿ drag to move or drop a library block here to swap"}
+          </span>
         </span>
         <div className="admin-lesson-actions">
           <button type="button" onClick={() => onToggleEdit(lesson.lessonId)}>
