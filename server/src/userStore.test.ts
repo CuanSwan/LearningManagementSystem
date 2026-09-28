@@ -174,6 +174,9 @@ describe("grantCourseAccess", () => {
 
   it("returns undefined for a userId that doesn't exist", async () => {
     expect(await grantCourseAccess("missing", "c1")).toBeUndefined();
+  });
+});
+
 describe("reviewerCategory", () => {
   it("is stored and returned for a reviewer created with one", async () => {
     const user = await createUser({

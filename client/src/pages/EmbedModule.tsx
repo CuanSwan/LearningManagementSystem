@@ -88,9 +88,13 @@ export function EmbedModule() {
         {orderedLessons.map((lesson) => (
           <StudentLessonBlock
             key={lesson.lessonId}
+            moduleId={moduleId!}
             lesson={lesson}
             isComplete={completedIds.has(lesson.lessonId)}
             onComplete={() => markComplete(lesson.lessonId)}
+            // An embed visitor is always a student (see findOrCreateEmbedUser) -
+            // the review panel never renders for one, so this never fires.
+            onReviewStatusChange={() => {}}
           />
         ))}
       </div>

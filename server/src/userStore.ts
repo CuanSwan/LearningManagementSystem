@@ -194,6 +194,8 @@ export async function grantCourseAccess(userId: string, courseId: string): Promi
   if (assignedCourseIds.includes(courseId)) return toPublicUser(stored);
   const updated = await users.update(userId, { assignedCourseIds: [...assignedCourseIds, courseId] });
   return updated ? toPublicUser(updated) : undefined;
+}
+
 // Filtered in JS after the role-only store filter, rather than passing
 // reviewerCategory into the store's own filter, since not every reviewer
 // necessarily has one set yet and a store's Partial<T> match isn't
