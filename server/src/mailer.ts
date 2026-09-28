@@ -19,7 +19,6 @@ export function voucherSignUpLink(voucherId: string): string {
 
 const ROLE_LABELS: Record<UserRole, string> = {
   student: "student",
-  reviewer: "reviewer",
   admin: "admin",
   super_admin: "super admin",
 };

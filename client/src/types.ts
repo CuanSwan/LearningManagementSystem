@@ -239,7 +239,7 @@ export interface LearningPath {
   courseIds: string[];
 }
 
-export type UserRole = "student" | "reviewer" | "admin" | "super_admin";
+export type UserRole = "student" | "admin" | "super_admin";
 
 // "embed" is an account auto-provisioned from an embed link (see api.ts's
 // embedLogin) - it has no usable password and only ever exists to hold
