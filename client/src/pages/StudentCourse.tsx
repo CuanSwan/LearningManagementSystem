@@ -77,9 +77,6 @@ export function StudentCourse() {
   const totalModules = modules.length;
   const completedModules = modules.filter((m) => isModuleComplete(m, completedIds)).length;
   const percentComplete = totalLessons > 0 ? Math.round((totalCompleted / totalLessons) * 100) : 0;
-  // A reviewer's viewing is never recorded (see StudentModule's markComplete),
-  // so a progress bar showing a permanent 0% would just be misleading.
-  const isReviewer = user?.role === "reviewer";
 
   return (
     <>
@@ -90,7 +87,7 @@ export function StudentCourse() {
         <h1>{course.title}</h1>
       {course.description && <p className="course-description">{course.description}</p>}
 
-      {totalLessons > 0 && !isReviewer && (
+      {totalLessons > 0 && (
         <div className="course-progress-header">
           <div className="course-progress-track">
             <div className="course-progress-fill" style={{ width: `${percentComplete}%` }} />

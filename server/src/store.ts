@@ -226,15 +226,11 @@ export async function seedLearningPath(path: LearningPath): Promise<void> {
 // admin assigned it to them directly, or assigned a learning path that
 // includes it - browsing the catalog itself (title/description) is never
 // gated, only what's inside. Admins/super_admins always have full access,
-// since they're the ones managing this content - reviewers get the same
-// unrestricted access, so they can view any course without needing
-// assignments (the client never calls the completion endpoint for a
-// reviewer, so this doesn't give them anything to "complete"). A draft
-// course is invisible to everyone else, even a student it's directly
-// assigned to - it isn't ready to be seen yet, which is the whole point of
-// having a reviewer look it over before it's published.
+// since they're the ones managing this content. A draft course is invisible
+// to everyone else, even a student it's directly assigned to - it isn't
+// ready to be seen yet.
 export async function userHasCourseAccess(user: User, courseId: string): Promise<boolean> {
-  if (user.role === "admin" || user.role === "super_admin" || user.role === "reviewer") return true;
+  if (user.role === "admin" || user.role === "super_admin") return true;
   const course = await courses.get(courseId);
   if (!course || course.status !== "published") return false;
   if (user.assignedCourseIds.includes(courseId)) return true;

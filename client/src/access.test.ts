@@ -66,19 +66,9 @@ describe("isCourseAccessible", () => {
     expect(isCourseAccessible(superAdmin, course("unassigned-course"), [])).toBe(true);
   });
 
-  it("grants a reviewer access to any course regardless of assignments", () => {
-    const reviewer: User = { ...student(), role: "reviewer" };
-    expect(isCourseAccessible(reviewer, course("unassigned-course"), [])).toBe(true);
-  });
-
   it("grants an admin access to a draft course", () => {
     const admin: User = { ...student(), role: "admin" };
     expect(isCourseAccessible(admin, course("c1", "draft"), [])).toBe(true);
-  });
-
-  it("grants a reviewer access to a draft course", () => {
-    const reviewer: User = { ...student(), role: "reviewer" };
-    expect(isCourseAccessible(reviewer, course("c1", "draft"), [])).toBe(true);
   });
 
   it("grants a student access to a directly assigned, published course", () => {
