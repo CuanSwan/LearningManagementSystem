@@ -1,3 +1,4 @@
+import { JSDOM } from "jsdom";
 import type { Lesson, LessonSource, WordingStyle } from "./schemas.js";
 
 // Loose types for the parts of Rise 360's undocumented internal export
@@ -106,11 +107,31 @@ function escapeHtml(text: string): string {
   return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-// Rise's rich-text fields (`paragraph`, `heading`, list items) are wrapped in
-// a single outer `<p>...</p>` or `<div>...</div>` about as often as they're
-// plain text, inconsistently, even within the same course. Matches either
-// wrapper tag and captures its inner markup.
-const WRAPPED_BLOCK = /^<(p|div)[^>]*>([\s\S]*)<\/\1>$/i;
+// Rise's rich-text fields (`paragraph`, `heading`, list items) come through
+// wrapped in `<p>...</p>` or `<div>...</div>` about as often as they're
+// plain text, inconsistently, even within the same course. Parsed with a
+// real DOM (jsdom) rather than a regex, so this can't be fooled by:
+//  - a field that happens to contain literal "<" text that merely looks
+//    like a tag (e.g. Rise's own `<not-a-tag>` in one of our tests) - a
+//    regex like /^<p[^>]*>.../ can't tell that apart from a real element,
+//    but a real HTML parser only produces an Element for real markup.
+//  - sibling wrapper tags, e.g. "<div>A</div><div>B</div>" - a regex
+//    anchored on the first open tag and last close tag greedily captures
+//    "A</div><div>B" as if it were one wrapper's contents; parsing finds
+//    two distinct top-level elements instead.
+// Returns each top-level element only when every non-blank top-level node
+// is a <p> or <div> (Rise's only observed wrapper tags) - anything else
+// (plain text, or a mix of text and tags) is treated as plain text.
+function riseWrapperElements(html: string): Element[] | null {
+  const fragment = JSDOM.fragment(html);
+  const nodes = Array.from(fragment.childNodes).filter(
+    (node) => node.nodeType !== node.TEXT_NODE || (node.textContent ?? "").trim() !== ""
+  );
+  if (nodes.length === 0) return null;
+  const isWrapper = (node: ChildNode): node is Element =>
+    node.nodeType === node.ELEMENT_NODE && ((node as Element).tagName === "P" || (node as Element).tagName === "DIV");
+  return nodes.every(isWrapper) ? (nodes as Element[]) : null;
+}
 
 // Pass an already-wrapped paragraph through untouched (it'll still go
 // through sanitizeHtml downstream) and escape+wrap plain text so it renders
@@ -119,7 +140,7 @@ function asParagraphHtml(raw: string | undefined): string {
   if (!raw) return "";
   const trimmed = raw.trim();
   if (!trimmed) return "";
-  return WRAPPED_BLOCK.test(trimmed) ? trimmed : `<p>${escapeHtml(trimmed)}</p>`;
+  return riseWrapperElements(trimmed) ? trimmed : `<p>${escapeHtml(trimmed)}</p>`;
 }
 
 // A wrapped field's inner markup, for use inside a tag that's already
@@ -129,8 +150,9 @@ function asParagraphHtml(raw: string | undefined): string {
 function unwrapBlockHtml(raw: string | undefined): string {
   if (!raw) return "";
   const trimmed = raw.trim();
-  const match = WRAPPED_BLOCK.exec(trimmed);
-  if (match) return match[2];
+  if (!trimmed) return "";
+  const wrappers = riseWrapperElements(trimmed);
+  if (wrappers) return wrappers.map((el) => el.innerHTML).join("");
   return escapeHtml(trimmed);
 }
 

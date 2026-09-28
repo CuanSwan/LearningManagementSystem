@@ -216,6 +216,32 @@ describe("convertRiseCourse", () => {
     expect(body).not.toContain("&lt;div&gt;");
   });
 
+  it("treats sibling wrapper tags as separate elements instead of mismatching them as one", () => {
+    // A regex anchored on the first "<div>" and the last "</div>" would
+    // greedily capture "A</div><div>B" as if it were the contents of one
+    // wrapper - parsing a real DOM finds two separate top-level elements
+    // instead, so both survive as real markup rather than one mismatched
+    // fragment (or, in a plain-text fallback, visibly escaped tags).
+    const result = convertRiseCourse(
+      riseCourse([
+        {
+          id: "l1",
+          title: "M",
+          items: [
+            {
+              id: "b1",
+              type: "text",
+              family: "text",
+              items: [{ paragraph: "<div>A</div><div>B</div>" }],
+            },
+          ],
+        },
+      ])
+    );
+    const body = (result.modules[0].lessons[0].content as { body: string }).body;
+    expect(body).toBe("<div>A</div><div>B</div>");
+  });
+
   it("converts a bulleted list into a <ul>", () => {
     const result = convertRiseCourse(
       riseCourse([
