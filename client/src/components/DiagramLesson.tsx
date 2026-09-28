@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { resolveAssetUrl } from "../assetUrl.js";
 import type { DiagramLesson as DiagramLessonType } from "../types.js";
 
 export function DiagramLesson({
@@ -21,7 +22,7 @@ export function DiagramLesson({
 
   return (
     <div className="diagram-lesson">
-      <img src={content.imageUrl} alt="" className="diagram-lesson-image" />
+      <img src={resolveAssetUrl(content.imageUrl)} alt="" className="diagram-lesson-image" />
     </div>
   );
 }

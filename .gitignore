@@ -320,6 +320,9 @@ dist/
 # server/db/fileStore.ts JSON-backed data (used when MONGODB_URI isn't set)
 server/.data/
 
+# server/src/uploads.ts local file storage for uploaded lesson images
+server/.uploads/
+
 # Visual Studio 6 build log
 *.plg
 

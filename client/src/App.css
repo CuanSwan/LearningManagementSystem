@@ -1659,6 +1659,14 @@ a.path-snake-link:hover .path-snake-bubble {
   display: block;
 }
 
+.diagram-editor-preview {
+  max-width: 100%;
+  max-height: 220px;
+  border: 1px solid var(--border-default);
+  border-radius: 4px;
+  display: block;
+}
+
 .flashcard-lesson {
   display: flex;
   flex-wrap: wrap;

@@ -1,8 +1,11 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useState } from "react";
+import { uploadImage } from "../api.js";
+import { resolveAssetUrl } from "../assetUrl.js";
 import type {
   AccordionLesson,
   CardGridLesson,
   DialLesson,
+  DiagramLesson,
   ExamBreakdownLesson,
   FlashcardLesson,
   HotspotsLesson,
@@ -150,6 +153,55 @@ function PracticalEditor({
           <option value="checklist">Checklist</option>
         </select>
       </label>
+    </div>
+  );
+}
+
+function DiagramEditor({
+  content,
+  onChange,
+}: {
+  content: DiagramLesson["content"];
+  onChange: (content: DiagramLesson["content"]) => void;
+}) {
+  const [status, setStatus] = useState<"idle" | "uploading" | "error">("idle");
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleFile(file: File) {
+    setStatus("uploading");
+    setError(null);
+    try {
+      const { url } = await uploadImage(file);
+      onChange({ imageUrl: url });
+      setStatus("idle");
+    } catch (err) {
+      setStatus("error");
+      setError(err instanceof Error ? err.message : "Upload failed");
+    }
+  }
+
+  return (
+    <div className="field-group">
+      <label className="field">
+        Image URL
+        <input value={content.imageUrl} onChange={(e) => onChange({ imageUrl: e.target.value })} />
+      </label>
+      <label className="field">
+        Or upload an image
+        <input
+          type="file"
+          accept="image/png,image/jpeg,image/gif,image/webp"
+          disabled={status === "uploading"}
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            e.target.value = "";
+            if (file) void handleFile(file);
+          }}
+        />
+      </label>
+      {status === "uploading" && <p>Uploading...</p>}
+      {status === "error" && error && <p className="import-error">{error}</p>}
+      {content.imageUrl && <img src={resolveAssetUrl(content.imageUrl)} alt="" className="diagram-editor-preview" />}
     </div>
   );
 }
@@ -764,15 +816,7 @@ export function LessonEditorForm({
     case "practical":
       return <PracticalEditor content={lesson.content} onChange={onChange} />;
     case "diagram":
-      return (
-        <label className="field">
-          Image URL
-          <input
-            value={lesson.content.imageUrl}
-            onChange={(e) => onChange({ imageUrl: e.target.value })}
-          />
-        </label>
-      );
+      return <DiagramEditor content={lesson.content} onChange={onChange} />;
     case "flashcard":
       return <FlashcardEditor content={lesson.content} onChange={onChange} />;
     case "accordion":
