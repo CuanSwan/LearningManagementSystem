@@ -1,4 +1,4 @@
-import type { LearningPath, User } from "./types.js";
+import type { Course, LearningPath, User } from "./types.js";
 
 // The set of courses a student can actually enter: directly assigned ones,
 // plus every course in any learning path they're assigned. This is only
@@ -12,8 +12,18 @@ export function computeAccessibleCourseIds(user: User, learningPaths: LearningPa
 
 // Browsing the catalog (course title/description) is never gated - only
 // entering a course's actual content is. An admin/super_admin always has
-// access to every course, since they're the ones managing this content.
-export function isCourseAccessible(user: User, courseId: string, learningPaths: LearningPath[]): boolean {
-  if (user.role === "admin" || user.role === "super_admin") return true;
-  return computeAccessibleCourseIds(user, learningPaths).has(courseId);
+// access to every course, since they're the ones managing this content -
+// reviewers get the same unrestricted access, but never track progress
+// (see StudentCourse/StudentModule), so viewing doesn't record anything.
+// A draft course is off-limits to everyone else, even someone it's directly
+// assigned to - it isn't ready to be seen yet (see also the server's
+// userHasCourseAccess, which enforces the same rule).
+export function isCourseAccessible(
+  user: User,
+  course: Pick<Course, "courseId" | "status">,
+  learningPaths: LearningPath[]
+): boolean {
+  if (user.role === "admin" || user.role === "super_admin" || user.role === "reviewer") return true;
+  if (course.status !== "published") return false;
+  return computeAccessibleCourseIds(user, learningPaths).has(course.courseId);
 }

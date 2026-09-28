@@ -1,6 +1,7 @@
 import { hashPassword, verifyPassword } from "./auth.js";
 import type { Database, DocumentStore } from "./db/index.js";
 import { UserSchema, type AuthOrigin, type User, type UserRole } from "./userSchema.js";
+import { getVoucher } from "./voucherStore.js";
 
 interface StoredUser extends Record<string, unknown> {
   userId: string;
@@ -13,6 +14,12 @@ interface StoredUser extends Record<string, unknown> {
   // Absent for every account created before this field existed - toPublicUser
   // defaults that to "password", the correct reading for all of them.
   authOrigin?: AuthOrigin;
+  // Absent for a user created before vouchers existed (or the seeded demo
+  // accounts, which skip vouchers entirely) - see UserSchema's
+  // memberSince/membershipExpiresAt for what this drives.
+  voucherId?: string;
+  // Only meaningful for role "reviewer" - see UserSchema.
+  reviewerCategory?: string;
 }
 
 let users: DocumentStore<StoredUser>;
@@ -24,7 +31,14 @@ export async function initUserStore(db: Database): Promise<void> {
   users = await db.createStore<StoredUser>("users", "userId", [{ fields: { email: 1 }, unique: true }]);
 }
 
-function toPublicUser(stored: StoredUser): User {
+async function toPublicUser(stored: StoredUser): Promise<User> {
+  // A user with no voucherId (pre-voucher accounts, seeded demo accounts)
+  // never expires - membership fields simply stay absent for them. A
+  // dangling voucherId (the voucher record itself somehow missing) is
+  // treated the same way rather than as an error, since the alternative -
+  // failing to load the user at all - would be worse than just not
+  // showing membership info for them.
+  const voucher = stored.voucherId ? await getVoucher(stored.voucherId) : undefined;
   return UserSchema.parse({
     userId: stored.userId,
     email: stored.email,
@@ -33,6 +47,9 @@ function toPublicUser(stored: StoredUser): User {
     assignedLearningPathIds: stored.assignedLearningPathIds ?? [],
     assignedCourseIds: stored.assignedCourseIds ?? [],
     authOrigin: stored.authOrigin ?? "password",
+    memberSince: voucher?.issuedAt,
+    membershipExpiresAt: voucher?.expiresAt,
+    reviewerCategory: stored.reviewerCategory,
   });
 }
 
@@ -41,6 +58,8 @@ export async function createUser(input: {
   name: string;
   password: string;
   role: UserRole;
+  voucherId?: string;
+  reviewerCategory?: string;
 }): Promise<User> {
   const email = input.email.toLowerCase();
   const existing = await users.list({ email });
@@ -56,6 +75,8 @@ export async function createUser(input: {
     assignedLearningPathIds: [],
     assignedCourseIds: [],
     authOrigin: "password",
+    voucherId: input.voucherId,
+    reviewerCategory: input.reviewerCategory,
   };
   try {
     await users.set(stored.userId, stored);
@@ -87,7 +108,7 @@ export async function getUserById(userId: string): Promise<User | undefined> {
 }
 
 export async function listUsers(): Promise<User[]> {
-  return (await users.list()).map(toPublicUser);
+  return Promise.all((await users.list()).map(toPublicUser));
 }
 
 export async function setUserRole(userId: string, role: UserRole): Promise<User | undefined> {
@@ -173,4 +194,11 @@ export async function grantCourseAccess(userId: string, courseId: string): Promi
   if (assignedCourseIds.includes(courseId)) return toPublicUser(stored);
   const updated = await users.update(userId, { assignedCourseIds: [...assignedCourseIds, courseId] });
   return updated ? toPublicUser(updated) : undefined;
+// Filtered in JS after the role-only store filter, rather than passing
+// reviewerCategory into the store's own filter, since not every reviewer
+// necessarily has one set yet and a store's Partial<T> match isn't
+// guaranteed to mean "field equals this" the same way across backends.
+export async function listReviewersByCategory(category: string): Promise<User[]> {
+  const matches = await users.list({ role: "reviewer" });
+  return Promise.all(matches.filter((u) => u.reviewerCategory === category).map(toPublicUser));
 }

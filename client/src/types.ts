@@ -7,12 +7,18 @@ export type LessonSource = "human" | "ai_generated";
 export type WordingStyle = "official" | "shortened";
 export type ModuleStatus = "draft" | "ai_generated" | "published";
 
+// The reviewer/admin cycle a lesson OR a whole module moves through - see
+// server/src/schemas.ts for the full state machine. Absent means no review
+// flag is active. A lesson's own status and its module's are independent.
+export type ReviewStatus = "changesRequested" | "changed" | "needsReview";
+
 interface LessonBase {
   lessonId: string;
   schemaVersion: number;
   source: LessonSource;
   wordingStyle: WordingStyle;
   order: number;
+  reviewStatus?: ReviewStatus;
 }
 
 export interface TextLesson extends LessonBase {
@@ -200,6 +206,18 @@ export interface ModuleSeed {
   rawContent?: string;
 }
 
+// A reviewer's note on a specific lesson, or on a module as a whole when
+// lessonId is absent.
+export interface ReviewComment {
+  commentId: string;
+  lessonId?: string;
+  moduleId: string;
+  authorUserId: string;
+  authorName: string;
+  body: string;
+  createdAt: number;
+}
+
 export interface Module {
   moduleId: string;
   // Absent when the module isn't (or is no longer) part of any course - see
@@ -211,6 +229,8 @@ export interface Module {
   status: ModuleStatus;
   seed: ModuleSeed;
   lessons: Lesson[];
+  // A reviewer flagging the module as a whole - see ReviewStatus.
+  reviewStatus?: ReviewStatus;
 }
 
 export interface ThemeValues {
@@ -221,12 +241,18 @@ export interface ThemeValues {
 
 export type ThemeOverride = Partial<ThemeValues>;
 
+export type CourseStatus = "draft" | "published";
+
 export interface Course {
   courseId: string;
   title: string;
   description?: string;
   category?: string;
   theme: ThemeOverride;
+  status: CourseStatus;
+  // The reviewer randomly assigned when this course was last submitted for
+  // review - informational only, not an access restriction.
+  assignedReviewerId?: string;
 }
 
 export interface LearningPath {
@@ -236,7 +262,7 @@ export interface LearningPath {
   courseIds: string[];
 }
 
-export type UserRole = "student" | "admin" | "super_admin";
+export type UserRole = "student" | "reviewer" | "admin" | "super_admin";
 
 // "embed" is an account auto-provisioned from an embed link (see api.ts's
 // embedLogin) - it has no usable password and only ever exists to hold
@@ -251,7 +277,37 @@ export interface User {
   assignedLearningPathIds: string[];
   assignedCourseIds: string[];
   authOrigin: AuthOrigin;
+  // Absent for a user with no originating voucher (pre-voucher accounts,
+  // seeded demo accounts) - such a user never expires.
+  memberSince?: number;
+  membershipExpiresAt?: number;
+  // Only meaningful for role "reviewer" - the one course category this
+  // reviewer handles.
+  reviewerCategory?: string;
 }
+
+export type VoucherStatus = "pending" | "registered" | "revoked";
+
+export interface Voucher {
+  voucherId: string;
+  email: string;
+  name: string;
+  role: UserRole;
+  issuedAt: number;
+  // Absent for an admin/super_admin voucher - those never expire.
+  expiresAt?: number;
+  status: VoucherStatus;
+  registeredUserId?: string;
+  registeredAt?: number;
+  // Only meaningful when role is "reviewer" - carried through registration
+  // onto the resulting user's own reviewerCategory.
+  reviewerCategory?: string;
+}
+
+// What GET /api/vouchers/:voucherId (public, unauthenticated - used by the
+// register page) returns - never registeredUserId/registeredAt, which
+// would leak another user's id to anyone holding an already-used link.
+export type PublicVoucher = Omit<Voucher, "registeredUserId" | "registeredAt">;
 
 export type LessonDisplayMode = "vertical" | "carousel" | "accessible";
 

@@ -9,6 +9,7 @@ import { Breadcrumb } from "../components/Breadcrumb.js";
 import { CourseSideMenu } from "../components/CourseSideMenu.js";
 import { isModuleComplete, isModuleLocked } from "../courseProgress.js";
 import { describeLesson } from "../lessonTemplates.js";
+import { daysRemainingLabel } from "../membership.js";
 import { Theme, themeStyle } from "../theme.js";
 
 function truncate(text: string, maxLength: number): string {
@@ -33,7 +34,10 @@ export function StudentCourse() {
     getProgress().then((p) => setCompletedIds(new Set(p.completedLessonIds)));
   }, [courseId]);
 
-  const accessible = !user || isCourseAccessible(user, courseId!, learningPaths);
+  // course hasn't loaded yet - treat as accessible for now so the module
+  // fetch below (gated on `accessible`, not on `course`) isn't held up
+  // waiting on it; the real check re-runs once course.status is known.
+  const accessible = !user || !course || isCourseAccessible(user, course, learningPaths);
 
   useEffect(() => {
     if (!courseId || !accessible) return;
@@ -70,6 +74,12 @@ export function StudentCourse() {
     (sum, m) => sum + m.lessons.filter((l) => completedIds.has(l.lessonId)).length,
     0
   );
+  const totalModules = modules.length;
+  const completedModules = modules.filter((m) => isModuleComplete(m, completedIds)).length;
+  const percentComplete = totalLessons > 0 ? Math.round((totalCompleted / totalLessons) * 100) : 0;
+  // A reviewer's viewing is never recorded (see StudentModule's markComplete),
+  // so a progress bar showing a permanent 0% would just be misleading.
+  const isReviewer = user?.role === "reviewer";
 
   return (
     <>
@@ -80,14 +90,25 @@ export function StudentCourse() {
         <h1>{course.title}</h1>
       {course.description && <p className="course-description">{course.description}</p>}
 
-      {totalLessons > 0 && (
-        <div className="progress-summary">
-          <div className="progress-bar">
-            <div className="progress-bar-fill" style={{ width: `${(totalCompleted / totalLessons) * 100}%` }} />
+      {totalLessons > 0 && !isReviewer && (
+        <div className="course-progress-header">
+          <div className="course-progress-track">
+            <div className="course-progress-fill" style={{ width: `${percentComplete}%` }} />
+            <span className="course-progress-percent">{percentComplete}%</span>
           </div>
-          <span>
-            {totalCompleted} of {totalLessons} lessons complete
-          </span>
+          <div className="course-progress-footer">
+            <div className="course-progress-counters">
+              <span>
+                {totalCompleted} of {totalLessons} lessons complete
+              </span>
+              <span>
+                {completedModules} of {totalModules} modules complete
+              </span>
+            </div>
+            {user?.membershipExpiresAt !== undefined && (
+              <span className="membership-countdown">{daysRemainingLabel(user.membershipExpiresAt)}</span>
+            )}
+          </div>
         </div>
       )}
 
