@@ -112,9 +112,7 @@ export function getVoucherPublic(voucherId: string): Promise<PublicVoucher> {
   return request(`/api/vouchers/${voucherId}`);
 }
 
-export function createVoucher(
-  input: { email: string; name: string; role: UserRole; reviewerCategory?: string }
-): Promise<{ voucher: Voucher; emailSent: boolean }> {
+export function createVoucher(input: { email: string; name: string; role: UserRole }): Promise<{ voucher: Voucher; emailSent: boolean }> {
   return request("/api/vouchers", { method: "POST", body: JSON.stringify(input) });
 }
 
@@ -124,13 +122,6 @@ export function revokeVoucher(voucherId: string): Promise<Voucher> {
 
 export function listCourses(): Promise<Course[]> {
   return request("/api/courses");
-}
-
-// Every category any course actually uses - what the category dropdowns
-// (course creation, standalone modules, a reviewer's assigned category)
-// offer as existing choices, alongside their own "add new one" escape hatch.
-export function listCategories(): Promise<string[]> {
-  return request("/api/categories");
 }
 
 export function getCourse(courseId: string): Promise<Course> {
@@ -157,14 +148,6 @@ export function patchCourse(
   }
 ): Promise<Course> {
   return request(`/api/courses/${courseId}`, { method: "PATCH", body: JSON.stringify(patch) });
-}
-
-// Randomly assigns this course to a reviewer whose own category matches the
-// course's - informational, not an access restriction, so this is safe to
-// re-trigger (e.g. to reroll). Throws (via `request`'s error handling) if the
-// course has no category set or no reviewer exists for that category.
-export function submitCourseForReview(courseId: string): Promise<Course> {
-  return request(`/api/courses/${courseId}/submit-for-review`, { method: "PATCH" });
 }
 
 // Permanent - cannot be undone. The course's modules aren't deleted with it:

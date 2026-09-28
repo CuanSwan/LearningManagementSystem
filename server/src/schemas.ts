@@ -376,10 +376,6 @@ export const CourseSchema = z.object({
   // every course-creation call site to say so explicitly, the same way
   // `theme` above defaults to no overrides.
   status: CourseStatusSchema.default("draft"),
-  // The reviewer randomly assigned when this course was last submitted for
-  // review (see store.ts's assignRandomReviewer) - informational only, not
-  // an access restriction: any reviewer can still comment on any course.
-  assignedReviewerId: nullableOptional(z.string()),
 });
 
 export type Course = z.infer<typeof CourseSchema>;

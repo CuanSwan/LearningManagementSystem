@@ -12,19 +12,13 @@ export async function initVoucherStore(db: Database): Promise<void> {
   vouchers = await db.createStore<Voucher>("vouchers", "voucherId", [{ fields: { email: 1 } }]);
 }
 
-export async function createVoucher(input: {
-  email: string;
-  name: string;
-  role: UserRole;
-  reviewerCategory?: string;
-}): Promise<Voucher> {
+export async function createVoucher(input: { email: string; name: string; role: UserRole }): Promise<Voucher> {
   const issuedAt = Date.now();
   const voucher = VoucherSchema.parse({
     voucherId: crypto.randomUUID(),
     email: input.email.toLowerCase(),
     name: input.name,
     role: input.role,
-    reviewerCategory: input.reviewerCategory,
     issuedAt,
     // Only a student's access is meant to lapse on a clock - an admin or
     // super_admin voucher (and the account it becomes) never expires.

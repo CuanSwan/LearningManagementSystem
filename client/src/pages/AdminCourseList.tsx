@@ -4,7 +4,6 @@ import { Theme } from "../theme.js";
 import { suggestTheme } from "../themeSuggestion.js";
 import type { Course, ThemeOverride } from "../types.js";
 import { createCourse, importRiseCourse, listCourses } from "../api.js";
-import { CategorySelect } from "../components/CategorySelect.js";
 import { ThemeOverrideFields } from "../components/ThemeOverrideFields.js";
 
 export function AdminCourseList() {
@@ -98,7 +97,7 @@ export function AdminCourseList() {
         </label>
         <label className="field">
           Category
-          <CategorySelect value={category} onChange={setCategory} />
+          <input value={category} onChange={(e) => setCategory(e.target.value)} placeholder="e.g. Core, IT, Business" />
         </label>
         <button
           type="button"
@@ -130,7 +129,7 @@ export function AdminCourseList() {
         </label>
         <label className="field">
           Category
-          <CategorySelect value={riseCategory} onChange={setRiseCategory} />
+          <input value={riseCategory} onChange={(e) => setRiseCategory(e.target.value)} placeholder="e.g. Core, IT, Business" />
         </label>
         <button type="submit" disabled={!riseFile || riseStatus === "importing"}>
           {riseStatus === "importing" ? "Importing..." : "Import course"}

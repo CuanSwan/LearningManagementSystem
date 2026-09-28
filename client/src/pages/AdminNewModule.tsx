@@ -3,7 +3,6 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import type { Lesson, LessonType } from "../types.js";
 import { createModule } from "../api.js";
 import { AdminToolsPanel } from "../components/AdminToolsPanel.js";
-import { CategorySelect } from "../components/CategorySelect.js";
 import { DraggableLessonBlock } from "../components/DraggableLessonBlock.js";
 import { LIBRARY_LESSON_MIME, NEW_LESSON_MIME, SAVED_LESSON_MIME } from "../dnd.js";
 import { useLessonListEditor } from "../useLessonListEditor.js";
@@ -71,7 +70,7 @@ export function AdminNewModule() {
         </label>
         <label className="field">
           Category
-          <CategorySelect value={category} onChange={setCategory} />
+          <input value={category} onChange={(e) => setCategory(e.target.value)} placeholder="e.g. Core, IT, Business" />
         </label>
       </div>
 

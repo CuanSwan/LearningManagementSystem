@@ -55,16 +55,6 @@ describe("createVoucher", () => {
     const voucher = await createVoucher({ email: "a@b.com", name: "A", role: "admin" });
     expect(await getVoucher(voucher.voucherId)).toEqual(voucher);
   });
-
-  it("carries reviewerCategory through for a reviewer voucher", async () => {
-    const voucher = await createVoucher({ email: "a@b.com", name: "A", role: "reviewer", reviewerCategory: "IT" });
-    expect(voucher.reviewerCategory).toBe("IT");
-  });
-
-  it("leaves reviewerCategory absent when not given", async () => {
-    const voucher = await createVoucher({ email: "a@b.com", name: "A", role: "student" });
-    expect(voucher.reviewerCategory).toBeUndefined();
-  });
 });
 
 describe("listVouchers", () => {

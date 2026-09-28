@@ -10,7 +10,6 @@ import {
   grantCourseAccess,
   getUserById,
   initUserStore,
-  listReviewersByCategory,
   listUsers,
   setUserAssignments,
   updatePassword,
@@ -174,39 +173,5 @@ describe("grantCourseAccess", () => {
 
   it("returns undefined for a userId that doesn't exist", async () => {
     expect(await grantCourseAccess("missing", "c1")).toBeUndefined();
-  });
-});
-
-describe("reviewerCategory", () => {
-  it("is stored and returned for a reviewer created with one", async () => {
-    const user = await createUser({
-      email: "r@example.com",
-      name: "R",
-      password: "Password1!",
-      role: "reviewer",
-      reviewerCategory: "IT",
-    });
-    expect(user.reviewerCategory).toBe("IT");
-    expect((await getUserById(user.userId))?.reviewerCategory).toBe("IT");
-  });
-
-  it("is absent for a user created without one", async () => {
-    const user = await createUser({ email: "s@example.com", name: "S", password: "Password1!", role: "student" });
-    expect(user.reviewerCategory).toBeUndefined();
-  });
-});
-
-describe("listReviewersByCategory", () => {
-  it("returns only reviewers whose category matches", async () => {
-    const it1 = await createUser({ email: "it1@example.com", name: "A", password: "Password1!", role: "reviewer", reviewerCategory: "IT" });
-    await createUser({ email: "biz@example.com", name: "B", password: "Password1!", role: "reviewer", reviewerCategory: "Business" });
-    await createUser({ email: "student@example.com", name: "C", password: "Password1!", role: "student" });
-
-    const matches = await listReviewersByCategory("IT");
-    expect(matches.map((u) => u.userId)).toEqual([it1.userId]);
-  });
-
-  it("returns an empty array when no reviewer matches", async () => {
-    expect(await listReviewersByCategory("Nonexistent")).toEqual([]);
   });
 });

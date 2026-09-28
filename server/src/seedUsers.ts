@@ -4,16 +4,6 @@ const DEMO_USERS = [
   { email: "super@example.com", name: "Sam Superadmin", password: "SuperAdmin123!", role: "super_admin" as const },
   { email: "admin@example.com", name: "Alex Admin", password: "Admin123!", role: "admin" as const },
   { email: "student@example.com", name: "Sam Student", password: "Student123!", role: "student" as const },
-  // Matches sampleData.ts's "Core" category (Project Management
-  // Fundamentals, Agile & Scrum in Practice) so there's a real course this
-  // account can be auto-assigned to review out of the box.
-  {
-    email: "reviewer@example.com",
-    name: "Rita Reviewer",
-    password: "Reviewer123!",
-    role: "reviewer" as const,
-    reviewerCategory: "Core",
-  },
   // One demo student per seeded learning path (see sampleData.ts), pre-assigned
   // so the assignment/access-control feature has something to demo out of the
   // box without an admin having to set it up by hand first.
