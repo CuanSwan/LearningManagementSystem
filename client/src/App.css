@@ -1497,10 +1497,9 @@ a.path-snake-link:hover .path-snake-bubble {
   width: 100%;
 }
 
-/* Only ever rendered for admin/super_admin/reviewer - see ReviewPanel.tsx,
-   which returns null outright for a student. Used both for a single
-   lesson (StudentLessonBlock) and for a whole module (StudentModule). */
-.review-panel {
+/* Only ever rendered for admin/super_admin/reviewer - see
+   LessonReviewPanel.tsx, which returns null outright for a student. */
+.lesson-review-panel {
   width: 100%;
   margin-top: 0.5rem;
   padding-top: 1.25rem;
@@ -1510,14 +1509,14 @@ a.path-snake-link:hover .path-snake-bubble {
   gap: 0.75rem;
 }
 
-.review-panel-header {
+.lesson-review-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
 }
 
-.review-panel-header h4 {
+.lesson-review-header h4 {
   margin: 0;
   font-size: 0.85rem;
   text-transform: uppercase;
@@ -1525,7 +1524,7 @@ a.path-snake-link:hover .path-snake-bubble {
   color: var(--text-tertiary);
 }
 
-.review-panel-status {
+.lesson-review-status {
   flex-shrink: 0;
   font-size: 0.7rem;
   font-weight: 700;
@@ -1536,25 +1535,25 @@ a.path-snake-link:hover .path-snake-bubble {
   color: #fff;
 }
 
-.review-panel-status-changesRequested {
+.lesson-review-status-changesRequested {
   background: #a4453b;
 }
 
-.review-panel-status-changed {
+.lesson-review-status-changed {
   background: #b8862c;
 }
 
-.review-panel-status-needsReview {
+.lesson-review-status-needsReview {
   background: #3e6259;
 }
 
-.review-panel-empty {
+.lesson-review-empty {
   font-size: 0.85rem;
   color: var(--text-tertiary);
   margin: 0;
 }
 
-.review-panel-comments {
+.lesson-review-comments {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -1563,13 +1562,13 @@ a.path-snake-link:hover .path-snake-bubble {
   gap: 0.75rem;
 }
 
-.review-panel-comments li {
+.lesson-review-comments li {
   background: var(--surface-warm);
   border: 1px solid var(--border-subtle);
   padding: 0.75rem 1rem;
 }
 
-.review-panel-comment-meta {
+.lesson-review-comment-meta {
   display: flex;
   justify-content: space-between;
   gap: 1rem;
@@ -1578,23 +1577,23 @@ a.path-snake-link:hover .path-snake-bubble {
   margin-bottom: 0.35rem;
 }
 
-.review-panel-comments p {
+.lesson-review-comments p {
   margin: 0;
 }
 
-.review-panel-error {
+.lesson-review-error {
   color: #a4453b;
   font-size: 0.85rem;
   margin: 0;
 }
 
-.review-panel-compose {
+.lesson-review-compose {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-.review-panel-compose textarea {
+.lesson-review-compose textarea {
   width: 100%;
   resize: vertical;
   font-family: inherit;
@@ -1603,12 +1602,12 @@ a.path-snake-link:hover .path-snake-bubble {
   border: 1px solid var(--border-strong);
 }
 
-.review-panel-actions {
+.lesson-review-actions {
   display: flex;
   gap: 0.75rem;
 }
 
-.review-panel-clear-btn {
+.lesson-review-clear-btn {
   background: none;
   border: 1px dashed var(--border-strong);
 }
