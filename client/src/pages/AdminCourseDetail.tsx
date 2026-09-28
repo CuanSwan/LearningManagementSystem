@@ -2,29 +2,9 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { buildEmbedLink } from "../embedLink.js";
 import { suggestTheme } from "../themeSuggestion.js";
-import type { Course, CourseStatus, Module, ReviewStatus, ThemeOverride } from "../types.js";
+import type { Course, CourseStatus, Module, ThemeOverride } from "../types.js";
 import { createModule, deleteCourse, getCourse, listModulesByCourse, patchCourse } from "../api.js";
 import { ThemeOverrideFields } from "../components/ThemeOverrideFields.js";
-
-const REVIEW_BADGE_LABEL: Record<ReviewStatus, string> = {
-  changesRequested: "Changes requested",
-  changed: "Ready to resubmit",
-  needsReview: "Awaiting review",
-};
-
-// The one status worth surfacing at a glance for a module that has several
-// active flags (its own, plus any of its lessons') - whatever needs the
-// admin's attention soonest. changesRequested and changed both mean the
-// ball is in the admin's court; needsReview means it's already been sent
-// back and there's nothing to do but wait, so it only shows if nothing
-// more urgent is also true.
-function moduleReviewBadge(module: Module): ReviewStatus | null {
-  const statuses = [module.reviewStatus, ...module.lessons.map((l) => l.reviewStatus)];
-  if (statuses.includes("changesRequested")) return "changesRequested";
-  if (statuses.includes("changed")) return "changed";
-  if (statuses.includes("needsReview")) return "needsReview";
-  return null;
-}
 
 export function AdminCourseDetail() {
   const { courseId } = useParams<{ courseId: string }>();
