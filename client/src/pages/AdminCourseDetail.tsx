@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { buildEmbedLink } from "../embedLink.js";
 import { suggestTheme } from "../themeSuggestion.js";
 import type { Course, CourseStatus, Module, ReviewStatus, ThemeOverride, User } from "../types.js";
 import {
@@ -47,6 +48,7 @@ export function AdminCourseDetail() {
   const [moduleObjective, setModuleObjective] = useState("");
   const [moduleError, setModuleError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [copiedModuleId, setCopiedModuleId] = useState<string | null>(null);
   const [users, setUsers] = useState<User[]>([]);
   const [submitReviewStatus, setSubmitReviewStatus] = useState<"idle" | "submitting" | "error">("idle");
   const [submitReviewError, setSubmitReviewError] = useState<string | null>(null);
@@ -101,6 +103,13 @@ export function AdminCourseDetail() {
     } catch (err) {
       setModuleError((err as Error).message);
     }
+  }
+
+  async function handleCopyEmbedLink(moduleId: string) {
+    const link = buildEmbedLink(window.location.origin, courseId!, moduleId);
+    await navigator.clipboard.writeText(link);
+    setCopiedModuleId(moduleId);
+    setTimeout(() => setCopiedModuleId((current) => (current === moduleId ? null : current)), 2000);
   }
 
   async function handleDeleteCourse() {
@@ -184,18 +193,25 @@ export function AdminCourseDetail() {
       <section>
         <h2>Modules</h2>
         <ul className="module-list">
-          {modules.map((m) => {
-            const badge = moduleReviewBadge(m);
-            return (
-              <li key={m.moduleId}>
-                <Link to={`/admin/modules/${m.moduleId}`}>{m.seed.title}</Link>
-                <span className="module-status"> ({m.status})</span>
-                {badge && (
-                  <span className={`review-panel-status review-panel-status-${badge}`}>{REVIEW_BADGE_LABEL[badge]}</span>
-                )}
-              </li>
-            );
-          })}
+          {modules.map((m) => (
+            <li key={m.moduleId}>
+              <Link to={`/admin/modules/${m.moduleId}`}>{m.seed.title}</Link>
+              <span className="module-status"> ({m.status})</span>
+              <button
+                type="button"
+                className="copy-embed-link-btn"
+                onClick={() => handleCopyEmbedLink(m.moduleId)}
+                disabled={m.status !== "published"}
+                title={
+                  m.status !== "published"
+                    ? "Publish this module first - an embed link only works once it's published"
+                    : "Copy a Thinkific embed link for this module"
+                }
+              >
+                {copiedModuleId === m.moduleId ? "Copied!" : "Copy Thinkific embed link"}
+              </button>
+            </li>
+          ))}
         </ul>
 
         <form className="course-form" onSubmit={handleCreateModule}>

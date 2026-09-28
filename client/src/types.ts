@@ -264,6 +264,11 @@ export interface LearningPath {
 
 export type UserRole = "student" | "reviewer" | "admin" | "super_admin";
 
+// "embed" is an account auto-provisioned from an embed link (see api.ts's
+// embedLogin) - it has no usable password and only ever exists to hold
+// course assignments/progress for a visitor coming from an embedded iframe.
+export type AuthOrigin = "password" | "embed";
+
 export interface User {
   userId: string;
   email: string;
@@ -271,6 +276,7 @@ export interface User {
   role: UserRole;
   assignedLearningPathIds: string[];
   assignedCourseIds: string[];
+  authOrigin: AuthOrigin;
   // Absent for a user with no originating voucher (pre-voucher accounts,
   // seeded demo accounts) - such a user never expires.
   memberSince?: number;
