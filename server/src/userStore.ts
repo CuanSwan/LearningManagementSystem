@@ -15,6 +15,8 @@ interface StoredUser extends Record<string, unknown> {
   // accounts, which skip vouchers entirely) - see UserSchema's
   // memberSince/membershipExpiresAt for what this drives.
   voucherId?: string;
+  // Only meaningful for role "reviewer" - see UserSchema.
+  reviewerCategory?: string;
 }
 
 let users: DocumentStore<StoredUser>;
@@ -43,6 +45,7 @@ async function toPublicUser(stored: StoredUser): Promise<User> {
     assignedCourseIds: stored.assignedCourseIds ?? [],
     memberSince: voucher?.issuedAt,
     membershipExpiresAt: voucher?.expiresAt,
+    reviewerCategory: stored.reviewerCategory,
   });
 }
 
@@ -52,6 +55,7 @@ export async function createUser(input: {
   password: string;
   role: UserRole;
   voucherId?: string;
+  reviewerCategory?: string;
 }): Promise<User> {
   const email = input.email.toLowerCase();
   const existing = await users.list({ email });
@@ -67,6 +71,7 @@ export async function createUser(input: {
     assignedLearningPathIds: [],
     assignedCourseIds: [],
     voucherId: input.voucherId,
+    reviewerCategory: input.reviewerCategory,
   };
   try {
     await users.set(stored.userId, stored);
@@ -131,4 +136,13 @@ export async function updatePassword(userId: string, newPassword: string): Promi
 export async function userExistsByEmail(email: string): Promise<boolean> {
   const matches = await users.list({ email: email.toLowerCase() });
   return matches.length > 0;
+}
+
+// Filtered in JS after the role-only store filter, rather than passing
+// reviewerCategory into the store's own filter, since not every reviewer
+// necessarily has one set yet and a store's Partial<T> match isn't
+// guaranteed to mean "field equals this" the same way across backends.
+export async function listReviewersByCategory(category: string): Promise<User[]> {
+  const matches = await users.list({ role: "reviewer" });
+  return Promise.all(matches.filter((u) => u.reviewerCategory === category).map(toPublicUser));
 }

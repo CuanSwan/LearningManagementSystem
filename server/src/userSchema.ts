@@ -36,5 +36,9 @@ export const UserSchema = z.object({
   // working unless an admin issues a new voucher.
   memberSince: z.number().optional(),
   membershipExpiresAt: z.number().optional(),
+  // Only meaningful for role "reviewer" - the one course category this
+  // reviewer handles, matched against a course's own category when a
+  // course is submitted for review (see store.ts's assignRandomReviewer).
+  reviewerCategory: z.string().optional(),
 });
 export type User = z.infer<typeof UserSchema>;

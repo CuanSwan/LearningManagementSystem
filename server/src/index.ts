@@ -36,6 +36,7 @@ import {
   listCommentsForModule,
 } from "./reviewCommentStore.js";
 import {
+  assignRandomReviewer,
   clearLessonReview,
   clearModuleReview,
   createCourse,
@@ -50,6 +51,7 @@ import {
   getModule,
   initStore,
   listAllModules,
+  listCourseCategories,
   listCourses,
   listLearningPaths,
   listModulesByCourse,
@@ -210,7 +212,14 @@ app.post("/api/auth/register", async (req, res) => {
   }
 
   try {
-    const user = await createUser({ email, name: voucher.name, password, role: voucher.role, voucherId: voucher.voucherId });
+    const user = await createUser({
+      email,
+      name: voucher.name,
+      password,
+      role: voucher.role,
+      voucherId: voucher.voucherId,
+      reviewerCategory: voucher.reviewerCategory,
+    });
     await markVoucherRegistered(voucher.voucherId, user.userId);
     setSessionCookie(res, user.userId);
     res.status(201).json(user);
@@ -334,6 +343,7 @@ const CreateVoucherInputSchema = z.object({
   email: z.string().email(),
   name: z.string().min(1),
   role: UserRoleSchema,
+  reviewerCategory: z.string().optional(),
 });
 
 // Only super_admin can issue an admin/super_admin voucher - mirrors the
@@ -371,6 +381,10 @@ app.post("/api/vouchers", requireRole("admin", "super_admin"), async (req, res) 
   }
   if (!canIssueRole(req.user!.role, parsed.data.role)) {
     res.status(403).json({ error: "Only a super admin can invite an admin or super admin." });
+    return;
+  }
+  if (parsed.data.role === "reviewer" && !parsed.data.reviewerCategory) {
+    res.status(400).json({ error: "A reviewer needs a category assigned." });
     return;
   }
   const voucher = await createVoucher(parsed.data);
@@ -432,6 +446,13 @@ const CreateModuleInputSchema = z.object({
 
 app.get("/api/courses", requireAuth, async (_req, res) => {
   res.json(await listCourses());
+});
+
+// Every category any course actually uses - what the admin UI's category
+// dropdowns (course creation, standalone modules, a reviewer's assigned
+// category) offer as existing choices, alongside their own "add new one".
+app.get("/api/categories", requireAuth, async (_req, res) => {
+  res.json(await listCourseCategories());
 });
 
 app.post("/api/courses", requireRole("admin", "super_admin"), async (req, res) => {
@@ -521,6 +542,21 @@ app.patch("/api/courses/:courseId", requireRole("admin", "super_admin"), async (
     return;
   }
   res.json(updated);
+});
+
+// Randomly assigns this course to a reviewer whose own category matches
+// the course's (see store.ts's assignRandomReviewer) - informational, not
+// an access restriction, so this is safe to re-trigger (e.g. to reroll).
+app.patch("/api/courses/:courseId/submit-for-review", requireRole("admin", "super_admin"), async (req, res) => {
+  if (!(await getCourse(req.params.courseId))) {
+    res.status(404).json({ error: "Course not found" });
+    return;
+  }
+  try {
+    res.json(await assignRandomReviewer(req.params.courseId));
+  } catch (err) {
+    res.status(400).json({ error: (err as Error).message });
+  }
 });
 
 app.delete("/api/courses/:courseId", requireRole("admin", "super_admin"), async (req, res) => {

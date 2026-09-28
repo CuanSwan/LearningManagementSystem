@@ -1,8 +1,17 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { suggestTheme } from "../themeSuggestion.js";
-import type { Course, CourseStatus, Module, ReviewStatus, ThemeOverride } from "../types.js";
-import { createModule, deleteCourse, getCourse, listModulesByCourse, patchCourse } from "../api.js";
+import type { Course, CourseStatus, Module, ReviewStatus, ThemeOverride, User } from "../types.js";
+import {
+  createModule,
+  deleteCourse,
+  getCourse,
+  listModulesByCourse,
+  listUsers,
+  patchCourse,
+  submitCourseForReview,
+} from "../api.js";
+import { CategorySelect } from "../components/CategorySelect.js";
 import { ThemeOverrideFields } from "../components/ThemeOverrideFields.js";
 
 const REVIEW_BADGE_LABEL: Record<ReviewStatus, string> = {
@@ -38,6 +47,9 @@ export function AdminCourseDetail() {
   const [moduleObjective, setModuleObjective] = useState("");
   const [moduleError, setModuleError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [users, setUsers] = useState<User[]>([]);
+  const [submitReviewStatus, setSubmitReviewStatus] = useState<"idle" | "submitting" | "error">("idle");
+  const [submitReviewError, setSubmitReviewError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!courseId) return;
@@ -48,7 +60,24 @@ export function AdminCourseDetail() {
       setStatus(c.status);
     });
     listModulesByCourse(courseId).then(setModules);
+    listUsers().then(setUsers);
   }, [courseId]);
+
+  const assignedReviewer = users.find((u) => u.userId === course?.assignedReviewerId);
+
+  async function handleSubmitForReview() {
+    if (!courseId) return;
+    setSubmitReviewStatus("submitting");
+    setSubmitReviewError(null);
+    try {
+      const updated = await submitCourseForReview(courseId);
+      setCourse(updated);
+      setSubmitReviewStatus("idle");
+    } catch (err) {
+      setSubmitReviewError((err as Error).message);
+      setSubmitReviewStatus("error");
+    }
+  }
 
   async function handleSaveTheme() {
     if (!courseId) return;
@@ -116,7 +145,7 @@ export function AdminCourseDetail() {
         </p>
         <label className="field">
           Category
-          <input value={category} onChange={(e) => setCategory(e.target.value)} placeholder="e.g. Core, IT, Business" />
+          <CategorySelect value={category} onChange={setCategory} />
         </label>
         <button
           type="button"
@@ -132,6 +161,23 @@ export function AdminCourseDetail() {
           </button>
           {saveStatus === "saved" && <span className="save-status save-status-ok">Saved</span>}
           {saveStatus === "error" && <span className="save-status save-status-error">Save failed</span>}
+        </div>
+      </section>
+
+      <section>
+        <h2>Review</h2>
+        <p className="field-hint">
+          Submitting for review randomly assigns this course to a reviewer whose own category matches the course&apos;s
+          above - it&apos;s informational only, so every reviewer can still see and comment on it either way.
+        </p>
+        <div className="save-controls">
+          <button type="button" onClick={handleSubmitForReview} disabled={submitReviewStatus === "submitting"}>
+            {submitReviewStatus === "submitting" ? "Submitting..." : "Submit course for review"}
+          </button>
+          {assignedReviewer && <span className="save-status save-status-ok">Assigned to: {assignedReviewer.name}</span>}
+          {submitReviewStatus === "error" && submitReviewError && (
+            <span className="save-status save-status-error">{submitReviewError}</span>
+          )}
         </div>
       </section>
 

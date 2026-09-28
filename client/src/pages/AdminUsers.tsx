@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import type { User, UserRole, Voucher } from "../types.js";
 import { createVoucher, listUsers, listVouchers, resetUserPassword, revokeVoucher, setUserRole } from "../api.js";
 import { useAuth } from "../auth.js";
+import { CategorySelect } from "../components/CategorySelect.js";
 import { PASSWORD_HINT, passwordMeetsRequirements } from "../passwordRules.js";
 
 function formatDate(ms: number | undefined): string {
@@ -30,6 +31,7 @@ export function AdminUsers() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<UserRole>("student");
+  const [reviewerCategory, setReviewerCategory] = useState("");
   const [issueStatus, setIssueStatus] = useState<"idle" | "issuing" | "issued" | "error">("idle");
   const [issueError, setIssueError] = useState<string | null>(null);
   const [issuedLink, setIssuedLink] = useState<string | null>(null);
@@ -85,7 +87,12 @@ export function AdminUsers() {
     setIssueError(null);
     setIssuedLink(null);
     try {
-      const { voucher, emailSent } = await createVoucher({ name, email, role });
+      const { voucher, emailSent } = await createVoucher({
+        name,
+        email,
+        role,
+        reviewerCategory: role === "reviewer" ? reviewerCategory || undefined : undefined,
+      });
       setVouchers((prev) => [voucher, ...prev]);
       setIssuedLink(voucherSignUpLink(voucher.voucherId));
       setIssuedEmailSent(emailSent);
@@ -93,6 +100,7 @@ export function AdminUsers() {
       setName("");
       setEmail("");
       setRole("student");
+      setReviewerCategory("");
     } catch (err) {
       setIssueError(err instanceof Error ? err.message : "Could not issue voucher.");
       setIssueStatus("error");
@@ -134,6 +142,9 @@ export function AdminUsers() {
                   {" "}
                   &middot; member since {formatDate(u.memberSince!)}, expires {formatDate(u.membershipExpiresAt)}
                 </span>
+              )}
+              {u.role === "reviewer" && (
+                <span className="module-status"> &middot; category: {u.reviewerCategory ?? "none set"}</span>
               )}
             </div>
             <div className="user-list-item-actions">
@@ -198,6 +209,12 @@ export function AdminUsers() {
             {canIssuePrivileged && <option value="super_admin">Super admin</option>}
           </select>
         </label>
+        {role === "reviewer" && (
+          <label className="field">
+            Reviewer category
+            <CategorySelect value={reviewerCategory} onChange={setReviewerCategory} />
+          </label>
+        )}
         {issueError && <p className="import-error">{issueError}</p>}
         <button type="submit" disabled={issueStatus === "issuing"}>
           {issueStatus === "issuing" ? "Issuing..." : "Issue invitation"}
