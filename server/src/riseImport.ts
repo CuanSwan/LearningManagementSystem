@@ -118,9 +118,12 @@ function asParagraphHtml(raw: string | undefined): string {
   return /^<p[\s>]/i.test(trimmed) ? trimmed : `<p>${escapeHtml(trimmed)}</p>`;
 }
 
-// A list item's `paragraph` is typically `<p>text</p>` - unwrap it for use
-// inside an <li>, which is already block-level and doesn't need a nested <p>.
-function innerListItemHtml(raw: string | undefined): string {
+// A `<p>text</p>`-wrapped field's inner markup, for use inside a tag that's
+// already block-level and doesn't need a nested <p> (an <li>, or a heading).
+// Rise wraps rich-text fields in `<p>` inconsistently (see asParagraphHtml) -
+// a field with no wrapping is assumed to be plain text and escaped, same as
+// asParagraphHtml does for a bare paragraph.
+function unwrapBlockHtml(raw: string | undefined): string {
   if (!raw) return "";
   const trimmed = raw.trim();
   const match = /^<p[^>]*>([\s\S]*)<\/p>$/i.exec(trimmed);
@@ -134,8 +137,14 @@ function innerListItemHtml(raw: string | undefined): string {
 // every heading after the first to <h3>, so a merged run of several
 // Rise blocks reads as one heading with subheadings rather than a wall of
 // same-level headings.
+//
+// Like `paragraph`, Rise's `heading` field is sometimes plain text and
+// sometimes already `<p>...</p>`-wrapped HTML - escaping it unconditionally
+// turned a real `<p>` around an HTML-flavored heading into literal visible
+// "<p>...</p>" text once rendered, instead of the escape only being applied
+// to genuine plain text (see unwrapBlockHtml).
 function headingHtml(text: string): string {
-  return `<h2>${escapeHtml(text)}</h2>`;
+  return `<h2>${unwrapBlockHtml(text)}</h2>`;
 }
 
 function demoteExtraHeadings(html: string): string {
@@ -187,7 +196,7 @@ function convertBlock(block: RiseBlock, base: LessonBase, skipped: SkippedBlock[
 
   if (block.type === "list") {
     const items = (block.items ?? []) as RiseListItem[];
-    const listItems = items.map((sub) => innerListItemHtml(sub.paragraph)).filter(Boolean);
+    const listItems = items.map((sub) => unwrapBlockHtml(sub.paragraph)).filter(Boolean);
     if (listItems.length === 0) return null;
     const tag = block.variant === "bulleted" ? "ul" : "ol";
     const body = `<${tag}>${listItems.map((li) => `<li>${li}</li>`).join("")}</${tag}>`;

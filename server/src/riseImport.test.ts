@@ -155,6 +155,32 @@ describe("convertRiseCourse", () => {
     expect(body).toContain("<p>Plain &lt;not-a-tag&gt; text</p>");
   });
 
+  it("unwraps an already-HTML `<p>...</p>`-wrapped heading instead of escaping it as literal text", () => {
+    // Rise's `heading` field has the same plain-text-vs-HTML inconsistency
+    // as `paragraph` (see asParagraphHtml) - escaping it unconditionally
+    // turned a real heading like this into visible "<p>...</p>" text once
+    // rendered instead of a proper <h2>.
+    const result = convertRiseCourse(
+      riseCourse([
+        {
+          id: "l1",
+          title: "M",
+          items: [
+            {
+              id: "b1",
+              type: "text",
+              family: "text",
+              items: [{ heading: "<p>Autonomy, Mastery, and Purpose</p>", paragraph: "<p>Body.</p>" }],
+            },
+          ],
+        },
+      ])
+    );
+    const body = (result.modules[0].lessons[0].content as { body: string }).body;
+    expect(body).toContain("<h2>Autonomy, Mastery, and Purpose</h2>");
+    expect(body).not.toContain("&lt;p&gt;");
+  });
+
   it("converts a bulleted list into a <ul>", () => {
     const result = convertRiseCourse(
       riseCourse([
