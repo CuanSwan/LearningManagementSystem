@@ -91,16 +91,24 @@ export interface ConvertedCourse {
 
 export class RiseImportError extends Error {}
 
+// Flattens Rise HTML down to plain text (for fields that render as plain
+// strings, not markup - flashcard faces, accordion/timeline section bodies,
+// course/module descriptions). Parsed the same way as riseWrapperElements
+// rather than a tag-stripping regex, for the same two reasons: a regex like
+// /<[^>]+>/g strips literal text that merely looks like a tag along with
+// real tags, and it only knows the handful of entities (&nbsp;, &amp;, ...)
+// someone thought to list, silently leaving any other real entity Rise
+// emits (&rsquo;, &hellip;, &mdash;, ...) sitting in the output unescaped -
+// `textContent` decodes all of them correctly. Each top-level node's text is
+// joined with a paragraph break so multiple blocks don't run together with
+// no separator.
 function stripHtml(html: string | undefined): string {
   if (!html) return "";
-  return html
-    .replace(/<\/p>\s*<p>/g, "\n\n")
-    .replace(/<[^>]+>/g, "")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&#39;/g, "'")
-    .replace(/&quot;/g, '"')
-    .trim();
+  const fragment = JSDOM.fragment(html);
+  const blocks = Array.from(fragment.childNodes)
+    .map((node) => (node.textContent ?? "").trim())
+    .filter(Boolean);
+  return blocks.join("\n\n");
 }
 
 function escapeHtml(text: string): string {

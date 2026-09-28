@@ -371,6 +371,33 @@ describe("convertRiseCourse", () => {
     expect(result.modules[0].lessons[0]).toMatchObject({ type: "flashcard", content: { cards: [{ front: "Q", back: "A" }] } });
   });
 
+  it("decodes HTML entities beyond the handful a regex would think to list", () => {
+    // stripHtml used to hand-list &nbsp;/&amp;/&#39;/&quot; and leave any
+    // other real entity (curly quotes, an em dash, an ellipsis - all common
+    // in Rise's rich text) sitting in the output unescaped.
+    const result = convertRiseCourse(
+      riseCourse([
+        {
+          id: "l1",
+          title: "M",
+          items: [
+            {
+              id: "b1",
+              type: "interactive",
+              family: "flashcard",
+              variant: "flashcard",
+              items: [{ front: { description: "<p>It&rsquo;s &mdash; &hellip;</p>" }, back: { description: "<p>Back</p>" } }],
+            },
+          ],
+        },
+      ])
+    );
+    expect(result.modules[0].lessons[0]).toMatchObject({
+      type: "flashcard",
+      content: { cards: [{ front: "It’s — …", back: "Back" }] },
+    });
+  });
+
   it("converts accordion, tabs, and process blocks into accordion lessons", () => {
     const sectionItem = (id: string, variant: string) => ({
       id,
