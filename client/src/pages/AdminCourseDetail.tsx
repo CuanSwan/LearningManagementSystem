@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { copyToClipboard } from "../clipboard.js";
 import { buildEmbedLink } from "../embedLink.js";
 import { suggestTheme } from "../themeSuggestion.js";
 import type { Course, CourseStatus, Module, ThemeOverride } from "../types.js";
@@ -58,9 +59,16 @@ export function AdminCourseDetail() {
 
   async function handleCopyEmbedLink(moduleId: string) {
     const link = buildEmbedLink(window.location.origin, courseId!, moduleId);
-    await navigator.clipboard.writeText(link);
-    setCopiedModuleId(moduleId);
-    setTimeout(() => setCopiedModuleId((current) => (current === moduleId ? null : current)), 2000);
+    try {
+      await copyToClipboard(link);
+      setCopiedModuleId(moduleId);
+      setTimeout(() => setCopiedModuleId((current) => (current === moduleId ? null : current)), 2000);
+    } catch {
+      // Both the Clipboard API and the execCommand fallback failed (e.g. a
+      // non-secure context, or the browser blocking clipboard access
+      // outright) - surface the link itself rather than doing nothing.
+      window.prompt("Couldn't copy automatically - copy this link manually:", link);
+    }
   }
 
   async function handleDeleteCourse() {
