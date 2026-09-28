@@ -1,6 +1,7 @@
 import type { Database, DocumentStore } from "./db/index.js";
 import { parseCourse, parseLearningPath, parseModule, type Course, type LearningPath, type Module } from "./schemas.js";
 import type { User } from "./userSchema.js";
+import { listReviewersByCategory } from "./userStore.js";
 
 let courses: DocumentStore<Course>;
 let modules: DocumentStore<Module>;
@@ -20,6 +21,37 @@ export function listCourses(): Promise<Course[]> {
 
 export async function getCourse(courseId: string): Promise<Course | undefined> {
   return (await courses.get(courseId)) ?? undefined;
+}
+
+// Every category any course actually uses, sorted - what the admin UI's
+// category dropdowns (course creation, standalone modules, a reviewer's
+// assigned category) offer as existing choices, alongside their own
+// "add a new one" escape hatch.
+export async function listCourseCategories(): Promise<string[]> {
+  const all = await courses.list();
+  const categories = new Set(all.map((c) => c.category).filter((c): c is string => !!c));
+  return [...categories].sort();
+}
+
+// Picks uniformly at random among every reviewer whose own category
+// matches this course's - "available" just means "exists with a matching
+// category", no workload balancing. Purely informational once set (see
+// CourseSchema's assignedReviewerId) - it doesn't restrict who can
+// actually comment on the course.
+export async function assignRandomReviewer(courseId: string): Promise<Course> {
+  const course = await courses.get(courseId);
+  if (!course) throw new Error("Course not found");
+  if (!course.category) {
+    throw new Error("This course has no category set - choose one before submitting it for review.");
+  }
+  const candidates = await listReviewersByCategory(course.category);
+  if (candidates.length === 0) {
+    throw new Error(`No reviewers are available for the "${course.category}" category yet.`);
+  }
+  const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+  const updated = parseCourse({ ...course, assignedReviewerId: chosen.userId });
+  await courses.set(courseId, updated);
+  return updated;
 }
 
 // Every course, however it's created (the admin "Create a course" form or a

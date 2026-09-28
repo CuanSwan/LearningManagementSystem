@@ -250,6 +250,9 @@ export interface Course {
   category?: string;
   theme: ThemeOverride;
   status: CourseStatus;
+  // The reviewer randomly assigned when this course was last submitted for
+  // review - informational only, not an access restriction.
+  assignedReviewerId?: string;
 }
 
 export interface LearningPath {
@@ -272,6 +275,9 @@ export interface User {
   // seeded demo accounts) - such a user never expires.
   memberSince?: number;
   membershipExpiresAt?: number;
+  // Only meaningful for role "reviewer" - the one course category this
+  // reviewer handles.
+  reviewerCategory?: string;
 }
 
 export type VoucherStatus = "pending" | "registered" | "revoked";
@@ -287,6 +293,9 @@ export interface Voucher {
   status: VoucherStatus;
   registeredUserId?: string;
   registeredAt?: number;
+  // Only meaningful when role is "reviewer" - carried through registration
+  // onto the resulting user's own reviewerCategory.
+  reviewerCategory?: string;
 }
 
 // What GET /api/vouchers/:voucherId (public, unauthenticated - used by the

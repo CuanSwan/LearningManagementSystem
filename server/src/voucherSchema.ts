@@ -25,6 +25,10 @@ export const VoucherSchema = z.object({
   // Held on the voucher, not decided at registration - stops a client from
   // self-elevating by passing its own `role` in the register request.
   role: UserRoleSchema,
+  // Only meaningful when role is "reviewer" - carried through registration
+  // onto the resulting user's own reviewerCategory (see index.ts's register
+  // route and UserSchema).
+  reviewerCategory: z.string().optional(),
   issuedAt: z.number(),
   // Absent for an admin/super_admin voucher - those never expire, and
   // neither does the account it becomes (see createVoucher and

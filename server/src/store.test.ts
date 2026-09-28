@@ -5,8 +5,10 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createFileStore } from "./db/fileStore.js";
 import type { Database } from "./db/index.js";
 import { parseCourse, parseLearningPath, parseModule } from "./schemas.js";
+import { createUser, initUserStore } from "./userStore.js";
 import type { User } from "./userSchema.js";
 import {
+  assignRandomReviewer,
   clearLessonReview,
   clearModuleReview,
   createCourse,
@@ -18,6 +20,7 @@ import {
   getLearningPath,
   getModule,
   initStore,
+  listCourseCategories,
   listModulesByCourse,
   patchCourse,
   patchLearningPath,
@@ -63,6 +66,7 @@ beforeEach(async () => {
     close: async () => {},
   };
   await initStore(db);
+  await initUserStore(db);
 });
 
 afterEach(async () => {
@@ -320,5 +324,56 @@ describe("module review workflow", () => {
     expect(await flagModuleChangesRequested("missing")).toBeUndefined();
     expect(await submitModuleForReview("missing")).toBeUndefined();
     expect(await clearModuleReview("missing")).toBeUndefined();
+  });
+});
+
+describe("listCourseCategories", () => {
+  it("returns every distinct category in use, sorted", async () => {
+    await createCourse({ courseId: "c1", title: "A", category: "IT" });
+    await createCourse({ courseId: "c2", title: "B", category: "Business" });
+    await createCourse({ courseId: "c3", title: "C", category: "IT" });
+    expect(await listCourseCategories()).toEqual(["Business", "IT"]);
+  });
+
+  it("skips courses with no category set", async () => {
+    await createCourse({ courseId: "c1", title: "A" });
+    expect(await listCourseCategories()).toEqual([]);
+  });
+});
+
+describe("assignRandomReviewer", () => {
+  async function reviewer(email: string, reviewerCategory: string) {
+    return createUser({ email, name: "R", password: "Password1!", role: "reviewer", reviewerCategory });
+  }
+
+  it("assigns the course to a reviewer whose category matches", async () => {
+    const rita = await reviewer("rita@example.com", "IT");
+    await createCourse({ courseId: "c1", title: "A", category: "IT" });
+
+    const updated = await assignRandomReviewer("c1");
+    expect(updated.assignedReviewerId).toBe(rita.userId);
+  });
+
+  it("never picks a reviewer of the wrong category", async () => {
+    await reviewer("business-rita@example.com", "Business");
+    const itRita = await reviewer("it-rita@example.com", "IT");
+    await createCourse({ courseId: "c1", title: "A", category: "IT" });
+
+    const updated = await assignRandomReviewer("c1");
+    expect(updated.assignedReviewerId).toBe(itRita.userId);
+  });
+
+  it("throws if the course has no category set", async () => {
+    await createCourse({ courseId: "c1", title: "A" });
+    await expect(assignRandomReviewer("c1")).rejects.toThrow(/no category set/);
+  });
+
+  it("throws if no reviewer exists for that category", async () => {
+    await createCourse({ courseId: "c1", title: "A", category: "IT" });
+    await expect(assignRandomReviewer("c1")).rejects.toThrow(/No reviewers are available/);
+  });
+
+  it("throws for a course that doesn't exist", async () => {
+    await expect(assignRandomReviewer("missing")).rejects.toThrow("Course not found");
   });
 });
