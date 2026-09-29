@@ -2347,6 +2347,7 @@ a.path-snake-link:hover .path-snake-bubble {
 
 .hotspots-lesson-tile-wrap {
   position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2354,6 +2355,10 @@ a.path-snake-link:hover .path-snake-bubble {
   flex: 0 1 calc((100% - 4 * 0.6rem) / 5);
   min-width: 100px;
   max-width: calc((100% - 4 * 0.6rem) / 5);
+}
+
+.hotspots-lesson-tile-wrap:has(.hotspots-lesson-popover) {
+  z-index: 50;
 }
 
 .hotspots-lesson-tile {
@@ -2408,7 +2413,7 @@ a.path-snake-link:hover .path-snake-bubble {
   flex-direction: column;
   gap: 0.5rem;
   box-shadow: 0 12px 28px var(--shadow-color-strong);
-  z-index: 5;
+  z-index: 50;
 }
 
 .hotspots-lesson-popover-label {
