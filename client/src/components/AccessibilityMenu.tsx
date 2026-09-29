@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { useDisplayPreference } from "../displayPreference.js";
 import type { ColorScheme, LessonDisplayMode } from "../types.js";
 
@@ -11,6 +12,7 @@ export function AccessibilityMenu() {
   const { mode, choose, colorScheme, setColorScheme } = useDisplayPreference();
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const location = useLocation();
 
   useEffect(() => {
     if (!open) return;
@@ -64,6 +66,17 @@ export function AccessibilityMenu() {
               <option value="carousel">Carousel</option>
               <option value="accessible">Accessible</option>
             </select>
+          </div>
+          <div className="accessibility-menu-section accessibility-menu-section-column">
+            <span className="accessibility-menu-section-label">Help</span>
+            <div className="accessibility-menu-links">
+              <Link to="/support" state={{ fromPath: location.pathname }} onClick={() => setOpen(false)}>
+                Contact support
+              </Link>
+              <Link to="/report-bug" state={{ fromPath: location.pathname }} onClick={() => setOpen(false)}>
+                Report a bug
+              </Link>
+            </div>
           </div>
         </div>
       )}

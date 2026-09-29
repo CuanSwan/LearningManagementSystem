@@ -21,9 +21,11 @@ import { LearningPathDetail } from "./pages/LearningPathDetail.js";
 import { LearningPaths } from "./pages/LearningPaths.js";
 import { Login } from "./pages/Login.js";
 import { Register } from "./pages/Register.js";
+import { ReportBug } from "./pages/ReportBug.js";
 import { StudentCatalog } from "./pages/StudentCatalog.js";
 import { StudentCourse } from "./pages/StudentCourse.js";
 import { StudentModule } from "./pages/StudentModule.js";
+import { Support } from "./pages/Support.js";
 
 function LayoutInner() {
   const { mode, loading, choose } = useDisplayPreference();
@@ -66,6 +68,8 @@ export function App() {
           >
             <Route path="/" element={<Home />} />
             <Route path="/account" element={<Account />} />
+            <Route path="/support" element={<Support />} />
+            <Route path="/report-bug" element={<ReportBug />} />
             <Route path="/learning-paths" element={<LearningPaths />} />
             <Route path="/learning-paths/:pathId" element={<LearningPathDetail />} />
             <Route path="/courses" element={<StudentCatalog />} />

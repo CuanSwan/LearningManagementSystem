@@ -86,6 +86,22 @@ export async function changeMyPassword(currentPassword: string, newPassword: str
   }
 }
 
+// `sent: false` means the message itself is lost (no support inbox
+// configured, or the send failed) - unlike a voucher, there's no separate
+// record to fall back to, so the caller should tell the user it didn't go
+// through rather than treating this as fire-and-forget.
+export function submitSupportMessage(message: string): Promise<{ sent: boolean }> {
+  return request("/api/support", { method: "POST", body: JSON.stringify({ message }) });
+}
+
+export function submitBugReport(params: {
+  description: string;
+  stepsToReproduce?: string;
+  pageUrl?: string;
+}): Promise<{ sent: boolean }> {
+  return request("/api/support/bug-report", { method: "POST", body: JSON.stringify(params) });
+}
+
 // super_admin resetting another user's password - no current-password check.
 export async function resetUserPassword(userId: string, newPassword: string): Promise<void> {
   const res = await fetch(`${API_BASE_URL}/api/users/${userId}/password`, {

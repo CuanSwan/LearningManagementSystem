@@ -1,5 +1,5 @@
 import { ColorSchemeSchema, LessonDisplayModeSchema } from "./displayPreference.js";
-import { sendVoucherEmail } from "./mailer.js";
+import { sendBugReport, sendSupportMessage, sendVoucherEmail } from "./mailer.js";
 import { CourseStatusSchema, LessonSchema, ModuleSchema } from "./schemas.js";
 import { ThemeOverrideSchema } from "./theme.js";
 import { PasswordSchema, UserRoleSchema, type UserRole } from "./userSchema.js";
@@ -803,6 +803,42 @@ app.put("/api/preferences/color-scheme", requireAuth, async (req, res) => {
   }
   await setColorScheme(req.user!.userId, parsed.data.colorScheme);
   res.json({ colorScheme: parsed.data.colorScheme });
+});
+
+// --- Support ---
+
+const SupportMessageSchema = z.object({ message: z.string().trim().min(1).max(5000) });
+
+app.post("/api/support", requireAuth, async (req, res) => {
+  const parsed = SupportMessageSchema.safeParse(req.body);
+  if (!parsed.success) {
+    sendValidationError(res, parsed.error);
+    return;
+  }
+  const sent = await sendSupportMessage({ fromName: req.user!.name, fromEmail: req.user!.email, message: parsed.data.message });
+  res.json({ sent });
+});
+
+const BugReportSchema = z.object({
+  description: z.string().trim().min(1).max(5000),
+  stepsToReproduce: z.string().trim().max(5000).optional(),
+  pageUrl: z.string().trim().max(2000).optional(),
+});
+
+app.post("/api/support/bug-report", requireAuth, async (req, res) => {
+  const parsed = BugReportSchema.safeParse(req.body);
+  if (!parsed.success) {
+    sendValidationError(res, parsed.error);
+    return;
+  }
+  const sent = await sendBugReport({
+    fromName: req.user!.name,
+    fromEmail: req.user!.email,
+    description: parsed.data.description,
+    stepsToReproduce: parsed.data.stepsToReproduce || undefined,
+    pageUrl: parsed.data.pageUrl || undefined,
+  });
+  res.json({ sent });
 });
 
 // Catches anything a route handler didn't already turn into its own
