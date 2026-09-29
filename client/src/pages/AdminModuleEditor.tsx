@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import type { Lesson, LessonType, Module, ModuleStatus } from "../types.js";
+import type { Module, ModuleStatus } from "../types.js";
 import { getModule, saveModule, unassignModule } from "../api.js";
 import { AdminToolsPanel } from "../components/AdminToolsPanel.js";
-import { DraggableLessonBlock } from "../components/DraggableLessonBlock.js";
-import { LIBRARY_LESSON_MIME, NEW_LESSON_MIME, SAVED_LESSON_MIME } from "../dnd.js";
+import { LessonList } from "../components/LessonList.js";
 import { useLessonListEditor } from "../useLessonListEditor.js";
 
 export function AdminModuleEditor() {
@@ -107,38 +106,11 @@ export function AdminModuleEditor() {
       </div>
 
       <div className="workspace">
-        <div className="lesson-list">
-          {editor.lessons.map((lesson) => (
-            <DraggableLessonBlock
-              key={lesson.lessonId}
-              lesson={lesson}
-              isEditing={editingId === lesson.lessonId}
-              onReorder={editor.reorder}
-              onSwapBlank={editor.swapBlank}
-              onSwapSaved={editor.swapSaved}
-              onSwapLibrary={editor.swapLibrary}
-              onRemove={editor.remove}
-              onToggleEdit={(id) => setEditingId((current) => (current === id ? null : id))}
-              onContentChange={editor.updateContent}
-              onWordingStyleChange={editor.updateWordingStyle}
-            />
-          ))}
-
-          <div
-            className="drop-zone"
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={(e) => {
-              const newType = e.dataTransfer.getData(NEW_LESSON_MIME) as LessonType | "";
-              const savedId = e.dataTransfer.getData(SAVED_LESSON_MIME);
-              const libraryJson = e.dataTransfer.getData(LIBRARY_LESSON_MIME);
-              if (newType) editor.appendBlank(newType);
-              else if (savedId) editor.appendSaved(savedId);
-              else if (libraryJson) editor.appendLibrary(JSON.parse(libraryJson) as Lesson);
-            }}
-          >
-            Drop a library block here to add it to the end
-          </div>
-        </div>
+        <LessonList
+          editor={editor}
+          editingId={editingId}
+          onToggleEdit={(id) => setEditingId((current) => (current === id ? null : id))}
+        />
       </div>
 
       <AdminToolsPanel savedLessons={editor.savedLessons} onDropRemove={editor.remove} onImportLesson={editor.importLesson} />

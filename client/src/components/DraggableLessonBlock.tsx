@@ -7,7 +7,6 @@ import { LessonRenderer } from "./LessonRenderer.js";
 export function DraggableLessonBlock({
   lesson,
   isEditing,
-  onReorder,
   onSwapBlank,
   onSwapSaved,
   onSwapLibrary,
@@ -18,7 +17,6 @@ export function DraggableLessonBlock({
 }: {
   lesson: Lesson;
   isEditing: boolean;
-  onReorder: (draggedId: string, targetId: string) => void;
   onSwapBlank: (targetId: string, newType: LessonType) => void;
   onSwapSaved: (targetId: string, savedLessonId: string) => void;
   onSwapLibrary: (targetId: string, lesson: Lesson) => void;
@@ -36,14 +34,19 @@ export function DraggableLessonBlock({
       onDrop={(e) => {
         e.preventDefault();
         e.stopPropagation();
+        // Repositioning an existing lesson (a drag from elsewhere in this
+        // list) is handled by the LessonGap targets between/around blocks,
+        // not by dropping directly on a block - "insert before whichever
+        // block you happened to drop on" is exactly the ambiguous, direction-
+        // dependent gesture that made moving a lesson down feel broken (see
+        // lessonListOrdering.ts). Dropping a NEW/saved/library block
+        // directly on a block still swaps it, same as always.
         const newType = e.dataTransfer.getData(NEW_LESSON_MIME) as LessonType | "";
         const savedId = e.dataTransfer.getData(SAVED_LESSON_MIME);
         const libraryJson = e.dataTransfer.getData(LIBRARY_LESSON_MIME);
-        const draggedId = e.dataTransfer.getData(EXISTING_LESSON_MIME);
         if (newType) onSwapBlank(lesson.lessonId, newType);
         else if (savedId) onSwapSaved(lesson.lessonId, savedId);
         else if (libraryJson) onSwapLibrary(lesson.lessonId, JSON.parse(libraryJson) as Lesson);
-        else if (draggedId && draggedId !== lesson.lessonId) onReorder(draggedId, lesson.lessonId);
       }}
     >
       <div className="admin-lesson-toolbar">

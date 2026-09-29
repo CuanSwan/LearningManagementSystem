@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { Lesson, LessonType, WordingStyle } from "./types.js";
 import { generateId } from "./id.js";
+import { insertLesson, moveLesson } from "./lessonListOrdering.js";
 import { createBlankLesson } from "./lessonTemplates.js";
 
 // Shared drag/reorder/swap/remove logic for a module's lesson list, used by
@@ -16,15 +17,13 @@ export function useLessonListEditor(initial: Lesson[] = []) {
     setSavedLessons([]);
   }
 
-  function reorder(draggedId: string, targetId: string) {
-    setLessons((prev) => {
-      const dragged = prev.find((l) => l.lessonId === draggedId);
-      if (!dragged) return prev;
-      const without = prev.filter((l) => l.lessonId !== draggedId);
-      const targetIndex = without.findIndex((l) => l.lessonId === targetId);
-      without.splice(targetIndex, 0, dragged);
-      return without.map((l, i) => ({ ...l, order: i + 1 }));
-    });
+  // Repositions an existing lesson to sit immediately before `beforeId`, or
+  // at the very end if `beforeId` is null - see lessonListOrdering.ts for
+  // why the caller needs both a per-lesson target AND a distinct
+  // end-of-list one, rather than only ever being able to target an
+  // existing lesson's own id.
+  function move(draggedId: string, beforeId: string | null) {
+    setLessons((prev) => moveLesson(prev, draggedId, beforeId));
   }
 
   function swapBlank(targetId: string, newType: LessonType) {
@@ -63,14 +62,17 @@ export function useLessonListEditor(initial: Lesson[] = []) {
     setSavedLessons((prev) => [...prev, removed]);
   }
 
-  function appendBlank(type: LessonType) {
-    setLessons((prev) => [...prev, createBlankLesson(type, prev.length + 1)]);
+  // Adds a brand-new blank lesson positioned immediately before `beforeId`
+  // (or at the end, if null) - unlike swapBlank above, this never displaces
+  // an existing lesson.
+  function insertBlank(type: LessonType, beforeId: string | null) {
+    setLessons((prev) => insertLesson(prev, createBlankLesson(type, prev.length + 1), beforeId));
   }
 
-  function appendSaved(savedLessonId: string) {
+  function insertSaved(savedLessonId: string, beforeId: string | null) {
     const saved = savedLessons.find((l) => l.lessonId === savedLessonId);
     if (!saved) return;
-    setLessons((prev) => [...prev, { ...saved, order: prev.length + 1 }]);
+    setLessons((prev) => insertLesson(prev, saved, beforeId));
     setSavedLessons((prev) => prev.filter((l) => l.lessonId !== savedLessonId));
   }
 
@@ -78,9 +80,9 @@ export function useLessonListEditor(initial: Lesson[] = []) {
   // excluded here too, for the same reason it's excluded from the component
   // palette: it's a fixture of the module it was created in, not something
   // to duplicate into others.
-  function appendLibrary(libraryLesson: Lesson) {
+  function insertLibrary(libraryLesson: Lesson, beforeId: string | null) {
     if (libraryLesson.type === "examBreakdown") return;
-    setLessons((prev) => [...prev, { ...libraryLesson, lessonId: generateId(), order: prev.length + 1 }]);
+    setLessons((prev) => insertLesson(prev, { ...libraryLesson, lessonId: generateId() } as Lesson, beforeId));
   }
 
   function importLesson(lesson: Lesson) {
@@ -103,14 +105,14 @@ export function useLessonListEditor(initial: Lesson[] = []) {
     lessons,
     savedLessons,
     reset,
-    reorder,
+    move,
     swapBlank,
     swapSaved,
     swapLibrary,
     remove,
-    appendBlank,
-    appendSaved,
-    appendLibrary,
+    insertBlank,
+    insertSaved,
+    insertLibrary,
     importLesson,
     updateContent,
     updateWordingStyle,
