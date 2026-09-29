@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import type { User, UserRole, Voucher } from "../types.js";
 import { createVoucher, listUsers, listVouchers, resetUserPassword, revokeVoucher, setUserRole } from "../api.js";
 import { useAuth } from "../auth.js";
+import { copyToClipboard } from "../clipboard.js";
 import { PASSWORD_HINT, passwordMeetsRequirements } from "../passwordRules.js";
 
 function formatDate(ms: number | undefined): string {
@@ -100,9 +101,17 @@ export function AdminUsers() {
   }
 
   async function handleCopyLink(voucherId: string) {
-    await navigator.clipboard.writeText(voucherSignUpLink(voucherId));
-    setCopiedVoucherId(voucherId);
-    setTimeout(() => setCopiedVoucherId((current) => (current === voucherId ? null : current)), 2000);
+    const link = voucherSignUpLink(voucherId);
+    try {
+      await copyToClipboard(link);
+      setCopiedVoucherId(voucherId);
+      setTimeout(() => setCopiedVoucherId((current) => (current === voucherId ? null : current)), 2000);
+    } catch {
+      // Both the Clipboard API and the execCommand fallback failed (e.g. a
+      // non-secure context, or the browser blocking clipboard access
+      // outright) - surface the link itself rather than doing nothing.
+      window.prompt("Couldn't copy automatically - copy this link manually:", link);
+    }
   }
 
   async function handleRevoke(voucherId: string) {

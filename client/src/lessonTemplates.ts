@@ -106,6 +106,148 @@ export function moduleLessonLabel(module: Module, lesson: Lesson): string {
   return `${module.seed.title} — Lesson ${lesson.order}`;
 }
 
+// A generic placeholder graphic for the diagram preview below - a data URI
+// so the hover preview never makes a network request for a real image.
+const PLACEHOLDER_DIAGRAM_SVG =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='240' viewBox='0 0 400 240'%3E%3Crect width='400' height='240' fill='%23e8e6de'/%3E%3Ccircle cx='120' cy='80' r='30' fill='%23c9c6ba'/%3E%3Cpath d='M0 200 L120 100 L200 180 L280 120 L400 200 L400 240 L0 240 Z' fill='%23d5d2c6'/%3E%3C/svg%3E";
+
+// Illustrative, non-empty content for each lesson type, for the "hover to
+// preview" popup in the component library - createBlankLesson's empty
+// content renders as a wall of empty states, not a useful preview of what
+// the block actually looks like. Never persisted, never shown to a student.
+export function createPreviewLesson(type: LessonType): Lesson {
+  const base = {
+    lessonId: `preview-${type}`,
+    schemaVersion: 1,
+    source: "human" as const,
+    wordingStyle: "shortened" as const,
+    order: 1,
+  };
+  switch (type) {
+    case "text":
+      return { ...base, type, content: { body: "<h3>Key idea</h3><p>A short paragraph explaining the concept in plain language.</p>" } };
+    case "video":
+      // Left empty deliberately - VideoLesson's own empty state ("No video
+      // has been added yet") is a real, representative render of the block
+      // with zero network calls, rather than pointing it at a fake URL.
+      return { ...base, type, content: { videoUrl: "" } };
+    case "quiz":
+      return {
+        ...base,
+        type,
+        content: { questions: [{ prompt: "Which of these is a primary color?", options: ["Green", "Red", "Purple"], correctIndex: 1 }] },
+      };
+    case "practical":
+      return {
+        ...base,
+        type,
+        content: {
+          instructions: "Complete the steps below and submit your work.",
+          steps: ["Read the brief", "Draft your solution", "Submit for review"],
+          submissionType: "text",
+        },
+      };
+    case "diagram":
+      return { ...base, type, content: { imageUrl: PLACEHOLDER_DIAGRAM_SVG } };
+    case "flashcard":
+      return { ...base, type, content: { cards: [{ front: "What does HTML stand for?", back: "HyperText Markup Language" }] } };
+    case "accordion":
+      return {
+        ...base,
+        type,
+        content: {
+          sections: [
+            { title: "Section one", body: "Expandable details go here." },
+            { title: "Section two", body: "More detail, collapsed by default." },
+          ],
+        },
+      };
+    case "matching":
+      return {
+        ...base,
+        type,
+        content: { pairs: [{ prompt: "Sun", match: "Star" }, { prompt: "Earth", match: "Planet" }] },
+      };
+    case "dial":
+      return {
+        ...base,
+        type,
+        content: {
+          stages: [
+            { title: "Plan", body: "Define the goal." },
+            { title: "Build", body: "Create the thing." },
+            { title: "Review", body: "Check the result." },
+          ],
+        },
+      };
+    case "pipeline":
+      return {
+        ...base,
+        type,
+        content: {
+          steps: [
+            { title: "Input", body: "Raw data arrives." },
+            { title: "Process", body: "Transform it." },
+            { title: "Output", body: "Deliver results." },
+          ],
+        },
+      };
+    case "presentationDial":
+      return {
+        ...base,
+        type,
+        content: {
+          stages: [
+            { title: "Plan", body: "Define the goal." },
+            { title: "Build", body: "Create the thing." },
+            { title: "Review", body: "Check the result." },
+          ],
+        },
+      };
+    case "cardGrid":
+      return {
+        ...base,
+        type,
+        content: {
+          cards: [
+            { title: "Option A", useWhen: "When X applies", looksLike: "Looks like Y", noteLabel: "Note", noteBody: "Extra detail." },
+            { title: "Option B", useWhen: "When Z applies", looksLike: "Looks like W", noteLabel: "Note", noteBody: "Extra detail." },
+          ],
+        },
+      };
+    case "hotspots":
+      return {
+        ...base,
+        type,
+        content: {
+          tiles: [
+            { title: "Step 1", body: "Short body text.", example: "e.g. an example" },
+            { title: "Step 2", body: "Short body text.", example: "e.g. another example" },
+          ],
+        },
+      };
+    case "treeScrub":
+      return {
+        ...base,
+        type,
+        content: {
+          nodes: [
+            { title: "Root", body: "", parentIndex: 0 },
+            { title: "Branch", body: "", parentIndex: 0 },
+          ],
+        },
+      };
+    case "html":
+      return { ...base, type, content: { html: "<p><strong>Custom</strong> HTML block.</p>" } };
+    case "embed":
+      // "about:blank" - never a real request, but still exercises the
+      // actual iframe layout/chrome instead of skipping the embed entirely.
+      return { ...base, type, content: { url: "about:blank" } };
+    case "examBreakdown":
+      return { ...base, type, content: { passMarkPercent: 70, timeLimitMinutes: 45, questionCount: 25, openBook: false } };
+  }
+}
+
 export function createBlankLesson(type: LessonType, order: number): Lesson {
   const base = {
     lessonId: generateId(),

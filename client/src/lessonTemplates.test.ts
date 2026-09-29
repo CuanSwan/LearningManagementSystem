@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest";
-import { createBlankLesson, describeLesson } from "./lessonTemplates.js";
+import { createBlankLesson, createPreviewLesson, describeLesson, LESSON_TYPES } from "./lessonTemplates.js";
 import type { Lesson } from "./types.js";
 
 const base = { lessonId: "l1", schemaVersion: 1, source: "human" as const, wordingStyle: "official" as const, order: 1 };
@@ -111,5 +111,22 @@ describe("createBlankLesson", () => {
       questionCount: 20,
       openBook: false,
     });
+  });
+});
+
+describe("createPreviewLesson", () => {
+  it("returns a lesson of the requested type for every draggable component-library type", () => {
+    for (const type of LESSON_TYPES) {
+      expect(createPreviewLesson(type).type).toBe(type);
+    }
+  });
+
+  it("gives every type real, non-blank content - a hover preview of an empty state isn't a useful preview", () => {
+    // video is the one deliberate exception - see createPreviewLesson.
+    for (const type of LESSON_TYPES.filter((t) => t !== "video")) {
+      const preview = createPreviewLesson(type);
+      const blank = createBlankLesson(type, 1);
+      expect(preview.content).not.toEqual(blank.content);
+    }
   });
 });

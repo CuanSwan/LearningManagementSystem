@@ -178,6 +178,24 @@ export async function importRiseCourse(
   return res.json();
 }
 
+// Uploads an image (e.g. for the diagram lesson type) and returns the path
+// it's served at - store that path in the lesson content as-is, and use
+// resolveAssetUrl (assetUrl.ts) whenever actually rendering it.
+export async function uploadImage(file: File): Promise<{ url: string }> {
+  const formData = new FormData();
+  formData.append("file", file);
+  const res = await fetch(`${API_BASE_URL}/api/uploads/image`, {
+    method: "POST",
+    credentials: "include",
+    body: formData,
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(typeof body?.error === "string" ? body.error : `Request failed: ${res.status}`);
+  }
+  return res.json();
+}
+
 export function listModulesByCourse(courseId: string): Promise<Module[]> {
   return request(`/api/courses/${courseId}/modules`);
 }

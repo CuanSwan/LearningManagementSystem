@@ -14,6 +14,7 @@ import express, { type NextFunction, type Request, type Response } from "express
 // post/etc. below.
 import "express-async-errors";
 import multer from "multer";
+import path from "node:path";
 import { z } from "zod";
 import { createSession, destroySession, getSessionUserId } from "./auth.js";
 import { connectDb } from "./db/index.js";
@@ -49,6 +50,7 @@ import {
   unassignModule,
   userHasCourseAccess,
 } from "./store.js";
+import { isAllowedImageType, saveUploadedImage } from "./uploads.js";
 import {
   createUser,
   findOrCreateEmbedUser,
@@ -77,6 +79,14 @@ import {
 const app = express();
 const port = process.env.PORT ?? 4000;
 const SESSION_COOKIE = "lms_session";
+// Uploaded lesson images, served back out under /api/uploads (see the
+// static mount below) - a plain local directory, same fallback-storage
+// philosophy as DATA_DIR (see db/index.ts). Note this doesn't persist
+// across deploys/restarts on a host with an ephemeral filesystem (e.g.
+// Render's default disk) - a real deployment wanting uploads to survive
+// that needs either a persistent disk mounted at this path or swapping
+// saveUploadedImage for an object-storage backend.
+const UPLOADS_DIR = process.env.UPLOADS_DIR ?? path.join(process.cwd(), ".uploads");
 // In production the client and server are on different domains (e.g. a
 // Netlify frontend and a Render backend), so the cookie needs SameSite=None
 // (which browsers only honor over HTTPS, hence secure too) and CORS needs
@@ -561,6 +571,33 @@ app.post(
     res.status(201).json({ course, moduleCount: allModules.length, skipped: converted.skipped });
   }
 );
+
+const imageUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 8 * 1024 * 1024 },
+});
+
+// For the diagram lesson type's image field - admin-only, same as the Rise
+// import above. Returns a path relative to this API (not the client), which
+// the client resolves against its own configured API base URL at render
+// time (see resolveAssetUrl in client/src/api.ts) since client and API can
+// be on different origins in production.
+app.post("/api/uploads/image", requireRole("admin", "super_admin"), imageUpload.single("file"), async (req, res) => {
+  if (!req.file) {
+    res.status(400).json({ error: "No file uploaded - expected an image under field 'file'" });
+    return;
+  }
+  if (!isAllowedImageType(req.file.mimetype)) {
+    res.status(400).json({ error: `Unsupported image type: ${req.file.mimetype}. Allowed: PNG, JPEG, GIF, WEBP.` });
+    return;
+  }
+  const url = await saveUploadedImage(UPLOADS_DIR, req.file.buffer, req.file.mimetype);
+  res.status(201).json({ url });
+});
+
+// Publicly readable, same trust model as any external image URL an admin
+// could otherwise paste into the same field - not behind requireAuth.
+app.use("/api/uploads", express.static(UPLOADS_DIR));
 
 app.get("/api/courses/:courseId", requireAuth, async (req, res) => {
   const course = await getCourse(req.params.courseId);

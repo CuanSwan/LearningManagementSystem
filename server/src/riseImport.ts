@@ -1,3 +1,4 @@
+import { JSDOM } from "jsdom";
 import type { Lesson, LessonSource, WordingStyle } from "./schemas.js";
 
 // Loose types for the parts of Rise 360's undocumented internal export
@@ -90,41 +91,76 @@ export interface ConvertedCourse {
 
 export class RiseImportError extends Error {}
 
+// Flattens Rise HTML down to plain text (for fields that render as plain
+// strings, not markup - flashcard faces, accordion/timeline section bodies,
+// course/module descriptions). Parsed the same way as riseWrapperElements
+// rather than a tag-stripping regex, for the same two reasons: a regex like
+// /<[^>]+>/g strips literal text that merely looks like a tag along with
+// real tags, and it only knows the handful of entities (&nbsp;, &amp;, ...)
+// someone thought to list, silently leaving any other real entity Rise
+// emits (&rsquo;, &hellip;, &mdash;, ...) sitting in the output unescaped -
+// `textContent` decodes all of them correctly. Each top-level node's text is
+// joined with a paragraph break so multiple blocks don't run together with
+// no separator.
 function stripHtml(html: string | undefined): string {
   if (!html) return "";
-  return html
-    .replace(/<\/p>\s*<p>/g, "\n\n")
-    .replace(/<[^>]+>/g, "")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&#39;/g, "'")
-    .replace(/&quot;/g, '"')
-    .trim();
+  const fragment = JSDOM.fragment(html);
+  const blocks = Array.from(fragment.childNodes)
+    .map((node) => (node.textContent ?? "").trim())
+    .filter(Boolean);
+  return blocks.join("\n\n");
 }
 
 function escapeHtml(text: string): string {
   return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-// Rise's `paragraph` fields are sometimes already `<p>...</p>`-wrapped HTML
-// and sometimes plain text, inconsistently, even within the same course -
-// pass the former through untouched (it'll still go through sanitizeHtml
-// downstream) and escape+wrap the latter so it renders as its own block
-// instead of a stray line with no paragraph boundary.
+// Rise's rich-text fields (`paragraph`, `heading`, list items) come through
+// wrapped in `<p>...</p>` or `<div>...</div>` about as often as they're
+// plain text, inconsistently, even within the same course. Parsed with a
+// real DOM (jsdom) rather than a regex, so this can't be fooled by:
+//  - a field that happens to contain literal "<" text that merely looks
+//    like a tag (e.g. Rise's own `<not-a-tag>` in one of our tests) - a
+//    regex like /^<p[^>]*>.../ can't tell that apart from a real element,
+//    but a real HTML parser only produces an Element for real markup.
+//  - sibling wrapper tags, e.g. "<div>A</div><div>B</div>" - a regex
+//    anchored on the first open tag and last close tag greedily captures
+//    "A</div><div>B" as if it were one wrapper's contents; parsing finds
+//    two distinct top-level elements instead.
+// Returns each top-level element only when every non-blank top-level node
+// is a <p> or <div> (Rise's only observed wrapper tags) - anything else
+// (plain text, or a mix of text and tags) is treated as plain text.
+function riseWrapperElements(html: string): Element[] | null {
+  const fragment = JSDOM.fragment(html);
+  const nodes = Array.from(fragment.childNodes).filter(
+    (node) => node.nodeType !== node.TEXT_NODE || (node.textContent ?? "").trim() !== ""
+  );
+  if (nodes.length === 0) return null;
+  const isWrapper = (node: ChildNode): node is Element =>
+    node.nodeType === node.ELEMENT_NODE && ((node as Element).tagName === "P" || (node as Element).tagName === "DIV");
+  return nodes.every(isWrapper) ? (nodes as Element[]) : null;
+}
+
+// Pass an already-wrapped paragraph through untouched (it'll still go
+// through sanitizeHtml downstream) and escape+wrap plain text so it renders
+// as its own block instead of a stray line with no paragraph boundary.
 function asParagraphHtml(raw: string | undefined): string {
   if (!raw) return "";
   const trimmed = raw.trim();
   if (!trimmed) return "";
-  return /^<p[\s>]/i.test(trimmed) ? trimmed : `<p>${escapeHtml(trimmed)}</p>`;
+  return riseWrapperElements(trimmed) ? trimmed : `<p>${escapeHtml(trimmed)}</p>`;
 }
 
-// A list item's `paragraph` is typically `<p>text</p>` - unwrap it for use
-// inside an <li>, which is already block-level and doesn't need a nested <p>.
-function innerListItemHtml(raw: string | undefined): string {
+// A wrapped field's inner markup, for use inside a tag that's already
+// block-level and doesn't need a nested <p>/<div> (an <li>, or a heading).
+// A field with no wrapping is assumed to be plain text and escaped, same as
+// asParagraphHtml does for a bare paragraph.
+function unwrapBlockHtml(raw: string | undefined): string {
   if (!raw) return "";
   const trimmed = raw.trim();
-  const match = /^<p[^>]*>([\s\S]*)<\/p>$/i.exec(trimmed);
-  if (match) return match[1];
+  if (!trimmed) return "";
+  const wrappers = riseWrapperElements(trimmed);
+  if (wrappers) return wrappers.map((el) => el.innerHTML).join("");
   return escapeHtml(trimmed);
 }
 
@@ -134,8 +170,14 @@ function innerListItemHtml(raw: string | undefined): string {
 // every heading after the first to <h3>, so a merged run of several
 // Rise blocks reads as one heading with subheadings rather than a wall of
 // same-level headings.
+//
+// Like `paragraph`, Rise's `heading` field is sometimes plain text and
+// sometimes already `<p>...</p>`-wrapped HTML - escaping it unconditionally
+// turned a real `<p>` around an HTML-flavored heading into literal visible
+// "<p>...</p>" text once rendered, instead of the escape only being applied
+// to genuine plain text (see unwrapBlockHtml).
 function headingHtml(text: string): string {
-  return `<h2>${escapeHtml(text)}</h2>`;
+  return `<h2>${unwrapBlockHtml(text)}</h2>`;
 }
 
 function demoteExtraHeadings(html: string): string {
@@ -187,7 +229,7 @@ function convertBlock(block: RiseBlock, base: LessonBase, skipped: SkippedBlock[
 
   if (block.type === "list") {
     const items = (block.items ?? []) as RiseListItem[];
-    const listItems = items.map((sub) => innerListItemHtml(sub.paragraph)).filter(Boolean);
+    const listItems = items.map((sub) => unwrapBlockHtml(sub.paragraph)).filter(Boolean);
     if (listItems.length === 0) return null;
     const tag = block.variant === "bulleted" ? "ul" : "ol";
     const body = `<${tag}>${listItems.map((li) => `<li>${li}</li>`).join("")}</${tag}>`;

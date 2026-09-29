@@ -155,6 +155,93 @@ describe("convertRiseCourse", () => {
     expect(body).toContain("<p>Plain &lt;not-a-tag&gt; text</p>");
   });
 
+  it("unwraps an already-HTML `<p>...</p>`-wrapped heading instead of escaping it as literal text", () => {
+    // Rise's `heading` field has the same plain-text-vs-HTML inconsistency
+    // as `paragraph` (see asParagraphHtml) - escaping it unconditionally
+    // turned a real heading like this into visible "<p>...</p>" text once
+    // rendered instead of a proper <h2>.
+    const result = convertRiseCourse(
+      riseCourse([
+        {
+          id: "l1",
+          title: "M",
+          items: [
+            {
+              id: "b1",
+              type: "text",
+              family: "text",
+              items: [{ heading: "<p>Autonomy, Mastery, and Purpose</p>", paragraph: "<p>Body.</p>" }],
+            },
+          ],
+        },
+      ])
+    );
+    const body = (result.modules[0].lessons[0].content as { body: string }).body;
+    expect(body).toContain("<h2>Autonomy, Mastery, and Purpose</h2>");
+    expect(body).not.toContain("&lt;p&gt;");
+  });
+
+  it("unwraps a `<div>...</div>`-wrapped heading, paragraph, and list item the same way as `<p>`", () => {
+    // Rise also wraps some rich-text fields in a <div> instead of a <p> -
+    // just as inconsistently as the <p> case above.
+    const result = convertRiseCourse(
+      riseCourse([
+        {
+          id: "l1",
+          title: "M",
+          items: [
+            {
+              id: "b1",
+              type: "text",
+              family: "text",
+              items: [{ heading: "<div>Three Pillars</div>", paragraph: "<div>Body text.</div>" }],
+            },
+            {
+              id: "b2",
+              type: "list",
+              family: "list",
+              items: [{ paragraph: "<div>List item.</div>" }],
+            },
+          ],
+        },
+      ])
+    );
+    // The list block is a directly-adjacent text-type lesson, so it merges
+    // into the same lesson as the heading+paragraph block above.
+    expect(result.modules[0].lessons).toHaveLength(1);
+    const body = (result.modules[0].lessons[0].content as { body: string }).body;
+    expect(body).toContain("<h2>Three Pillars</h2>");
+    expect(body).toContain("<div>Body text.</div>");
+    expect(body).toContain("<ol><li>List item.</li></ol>");
+    expect(body).not.toContain("&lt;div&gt;");
+  });
+
+  it("treats sibling wrapper tags as separate elements instead of mismatching them as one", () => {
+    // A regex anchored on the first "<div>" and the last "</div>" would
+    // greedily capture "A</div><div>B" as if it were the contents of one
+    // wrapper - parsing a real DOM finds two separate top-level elements
+    // instead, so both survive as real markup rather than one mismatched
+    // fragment (or, in a plain-text fallback, visibly escaped tags).
+    const result = convertRiseCourse(
+      riseCourse([
+        {
+          id: "l1",
+          title: "M",
+          items: [
+            {
+              id: "b1",
+              type: "text",
+              family: "text",
+              items: [{ paragraph: "<div>A</div><div>B</div>" }],
+            },
+          ],
+        },
+      ])
+    );
+    const body = (result.modules[0].lessons[0].content as { body: string }).body;
+    expect(body).toBe("<div>A</div><div>B</div>");
+  });
+
   it("converts a bulleted list into a <ul>", () => {
     const result = convertRiseCourse(
       riseCourse([
@@ -282,6 +369,33 @@ describe("convertRiseCourse", () => {
       ])
     );
     expect(result.modules[0].lessons[0]).toMatchObject({ type: "flashcard", content: { cards: [{ front: "Q", back: "A" }] } });
+  });
+
+  it("decodes HTML entities beyond the handful a regex would think to list", () => {
+    // stripHtml used to hand-list &nbsp;/&amp;/&#39;/&quot; and leave any
+    // other real entity (curly quotes, an em dash, an ellipsis - all common
+    // in Rise's rich text) sitting in the output unescaped.
+    const result = convertRiseCourse(
+      riseCourse([
+        {
+          id: "l1",
+          title: "M",
+          items: [
+            {
+              id: "b1",
+              type: "interactive",
+              family: "flashcard",
+              variant: "flashcard",
+              items: [{ front: { description: "<p>It&rsquo;s &mdash; &hellip;</p>" }, back: { description: "<p>Back</p>" } }],
+            },
+          ],
+        },
+      ])
+    );
+    expect(result.modules[0].lessons[0]).toMatchObject({
+      type: "flashcard",
+      content: { cards: [{ front: "It’s — …", back: "Back" }] },
+    });
   });
 
   it("converts accordion, tabs, and process blocks into accordion lessons", () => {

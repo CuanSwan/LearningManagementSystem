@@ -1,6 +1,8 @@
-import type { Lesson } from "../types.js";
+import { useState } from "react";
+import type { Lesson, LessonType } from "../types.js";
 import { EXISTING_LESSON_MIME, NEW_LESSON_MIME, SAVED_LESSON_MIME } from "../dnd.js";
-import { describeLesson, LESSON_TYPES, lessonTypeLabel } from "../lessonTemplates.js";
+import { createPreviewLesson, describeLesson, LESSON_TYPES, lessonTypeLabel } from "../lessonTemplates.js";
+import { ComponentPreviewPopover } from "./ComponentPreviewPopover.js";
 
 export function ComponentLibrary({
   savedLessons,
@@ -9,6 +11,8 @@ export function ComponentLibrary({
   savedLessons: Lesson[];
   onDropRemove: (lessonId: string) => void;
 }) {
+  const [hovered, setHovered] = useState<{ type: LessonType; rect: DOMRect } | null>(null);
+
   return (
     <aside
       className="component-library"
@@ -26,10 +30,15 @@ export function ComponentLibrary({
           className="library-item"
           draggable
           onDragStart={(e) => e.dataTransfer.setData(NEW_LESSON_MIME, type)}
+          onMouseEnter={(e) => setHovered({ type, rect: e.currentTarget.getBoundingClientRect() })}
+          onMouseLeave={() => setHovered(null)}
         >
           {lessonTypeLabel(type)}
         </div>
       ))}
+      {hovered && (
+        <ComponentPreviewPopover type={hovered.type} lesson={createPreviewLesson(hovered.type)} anchorRect={hovered.rect} />
+      )}
 
       {savedLessons.length > 0 && (
         <div className="library-section">
