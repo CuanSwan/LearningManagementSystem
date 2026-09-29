@@ -151,6 +151,25 @@ main {
   color: var(--text-secondary);
 }
 
+.admin-lesson-toolbar-info {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.admin-lesson-type-badge {
+  flex-shrink: 0;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: var(--surface-strong, var(--border-strong));
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
 .drop-zone {
   border: 1px dashed var(--border-strong);
   border-radius: 6px;

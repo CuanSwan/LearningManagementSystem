@@ -126,6 +126,10 @@ export function TreeScrubLesson({ content, isComplete = false, onComplete = () =
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [currentFraction, setCurrentFraction] = useState(0);
   const targetRef = useRef(0);
+  // Mirrors currentFraction for the scroll handler below to read, since
+  // that closure is set up once (empty deps) and would otherwise only ever
+  // see the fraction as it was at mount.
+  const currentFractionRef = useRef(0);
   const completedRef = useRef(false);
   const onCompleteRef = useRef(onComplete);
   const isCompleteRef = useRef(isComplete);
@@ -147,6 +151,7 @@ export function TreeScrubLesson({ content, isComplete = false, onComplete = () =
       setCurrentFraction((prev) => {
         const next = prev + (target - prev) * 0.15;
         const done = Math.abs(target - next) < 0.0005;
+        currentFractionRef.current = done ? target : next;
         rafId = done ? null : requestAnimationFrame(tick);
         return done ? target : next;
       });
@@ -161,8 +166,22 @@ export function TreeScrubLesson({ content, isComplete = false, onComplete = () =
       if (!el) return;
       const rect = el.getBoundingClientRect();
       const scrollRoom = rect.height - window.innerHeight;
-      targetRef.current = scrollRoom > 0 ? clamp01(-rect.top / scrollRoom) : 1;
+      const rawTarget = scrollRoom > 0 ? clamp01(-rect.top / scrollRoom) : 1;
+      targetRef.current = rawTarget;
       ensureLoop();
+
+      // Fallback for whatever scrolls past the section without going
+      // through the wheel/touch/keydown guards below (a scrollbar drag,
+      // the browser's own "find in page", a programmatic scroll elsewhere
+      // on the page) - snaps back to the exact point the reveal finishes
+      // at if something still slipped past early. The guards below are the
+      // primary defense; this just catches what they can't see coming.
+      if (scrollRoom > 0 && rawTarget >= 1 && currentFractionRef.current < 0.995) {
+        const boundaryY = window.scrollY + rect.top + scrollRoom;
+        if (Math.abs(window.scrollY - boundaryY) > 1) {
+          window.scrollTo({ top: boundaryY });
+        }
+      }
     }
 
     function onScroll() {
@@ -174,12 +193,85 @@ export function TreeScrubLesson({ content, isComplete = false, onComplete = () =
       });
     }
 
+    // A single fast scroll gesture (a trackpad flick, Page Down, a
+    // scrollbar drag) can otherwise carry the viewport straight past this
+    // section before the reveal animation has actually caught up to meet
+    // it - the sticky box scrolls out of view with some branches still
+    // unrevealed, so the tree never gets fully seen. This paces how fast
+    // the page is allowed to scroll through the section by elapsed time
+    // since it was first reached (comfortably longer than the reveal's own
+    // animation needs to visually finish, so that's never the bottleneck),
+    // rather than by how far the reveal has visually caught up - the
+    // latter sounds more precise but creates a feedback loop: once the
+    // allowance still owed shrinks below a single visible pixel, the
+    // resulting scroll rounds to no actual movement, no scroll event fires
+    // to report new progress, and the reveal never gets the nudge it
+    // needed to finish. Wall-clock time has no such dependency on a
+    // previous scroll having "landed". Scrolling back up is never blocked.
+    const pinEnteredAtRef = { current: null as number | null };
+    const MIN_REVEAL_MS = 900;
+
+    function capScroll(deltaY: number, e: { preventDefault(): void }) {
+      if (deltaY <= 0) return; // never guard scrolling back up
+      const el = wrapperRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const scrollRoom = rect.height - window.innerHeight;
+      if (scrollRoom <= 0) return;
+      const prospectiveTop = rect.top - deltaY;
+      if (rect.top > 0 && prospectiveTop > 0) return; // this scroll doesn't even reach the section yet
+      if (pinEnteredAtRef.current == null) pinEnteredAtRef.current = performance.now();
+      const elapsed = performance.now() - pinEnteredAtRef.current;
+      // Both the pacing window and the reveal's own visual state have to
+      // agree it's done before releasing - elapsed time alone would race
+      // against the still-separately-animating lerp on a slow frame rate,
+      // letting go a beat before the last node or two had actually drawn.
+      if (elapsed >= MIN_REVEAL_MS && currentFractionRef.current >= 0.98) return;
+      const minTop = -(elapsed / MIN_REVEAL_MS) * scrollRoom;
+      const cap = rect.top - minTop;
+      if (deltaY <= cap) return;
+      e.preventDefault();
+      if (cap > 0) window.scrollBy(0, cap);
+    }
+
+    function onWheel(e: WheelEvent) {
+      capScroll(e.deltaY, e);
+    }
+
+    let lastTouchY = 0;
+    function onTouchStart(e: TouchEvent) {
+      lastTouchY = e.touches[0]?.clientY ?? 0;
+    }
+    function onTouchMove(e: TouchEvent) {
+      const y = e.touches[0]?.clientY ?? lastTouchY;
+      const deltaY = lastTouchY - y; // finger moving up the screen = scrolling down
+      lastTouchY = y;
+      capScroll(deltaY, e);
+    }
+
+    const SCROLL_FORWARD_KEYS = new Set(["PageDown", " ", "Spacebar", "ArrowDown", "End"]);
+    function onKeyDown(e: KeyboardEvent) {
+      if (!SCROLL_FORWARD_KEYS.has(e.key)) return;
+      // Not pixel-exact for a key press, just enough to gate it consistently
+      // with wheel/touch input.
+      const estimate = e.key === "End" ? Number.MAX_SAFE_INTEGER : window.innerHeight * 0.8;
+      capScroll(estimate, e);
+    }
+
     updateTarget();
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", updateTarget);
+    window.addEventListener("wheel", onWheel, { passive: false });
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchmove", onTouchMove, { passive: false });
+    window.addEventListener("keydown", onKeyDown);
     return () => {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", updateTarget);
+      window.removeEventListener("wheel", onWheel);
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchmove", onTouchMove);
+      window.removeEventListener("keydown", onKeyDown);
       if (rafId != null) cancelAnimationFrame(rafId);
     };
   }, []);
