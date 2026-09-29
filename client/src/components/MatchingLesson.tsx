@@ -26,7 +26,13 @@ export function MatchingLesson({
 
   function attemptMatch(matchPairIndex: number) {
     if (selectedPrompt === null) return;
-    if (selectedPrompt === matchPairIndex) {
+    // Compares the answer TEXT, not the pair index - two prompts that
+    // legitimately share the same correct answer (e.g. prompts "a" and "d"
+    // both correctly matching "Planet") would otherwise only accept the
+    // one match option that happens to share their own original pair
+    // index, even though every option showing that same text is an
+    // equally correct choice.
+    if (content.pairs[selectedPrompt].match === content.pairs[matchPairIndex].match) {
       const next = { ...matched, [selectedPrompt]: true };
       setMatched(next);
       setFeedback("correct");
