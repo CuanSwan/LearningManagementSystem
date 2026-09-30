@@ -260,19 +260,22 @@ export function AdminBoard() {
                   <strong>{pendingCourse.title}</strong> needs someone responsible before it can move to{" "}
                   {pendingColumn.title}.
                 </p>
-                <label className="field">
-                  Assign to
-                  <select value={pendingAssignee} onChange={(e) => setPendingAssignee(e.target.value)} required>
-                    <option value="" disabled>
-                      Choose an admin or super admin
-                    </option>
-                    {users.map((u) => (
-                      <option key={u.userId} value={u.userId}>
-                        {u.name} ({u.role})
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                <div className="assignee-list" role="listbox" aria-label="Choose who to assign">
+                  {users.map((u) => (
+                    <button
+                      key={u.userId}
+                      type="button"
+                      role="option"
+                      aria-selected={pendingAssignee === u.userId}
+                      className={`assignee-list-item${pendingAssignee === u.userId ? " is-selected" : ""}`}
+                      onClick={() => setPendingAssignee(u.userId)}
+                    >
+                      <span className="assignee-list-item-name">{u.name}</span>
+                      <span className="assignee-list-item-role">{u.role}</span>
+                    </button>
+                  ))}
+                  {users.length === 0 && <p className="board-column-empty">No admins or super admins available to assign.</p>}
+                </div>
                 {pendingError && <p className="import-error">{pendingError}</p>}
                 <div className="modal-actions">
                   <button type="button" className="modal-secondary" onClick={() => setPendingDrop(null)}>

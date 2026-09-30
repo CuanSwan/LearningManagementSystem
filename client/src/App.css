@@ -883,6 +883,48 @@ a.course-side-menu-lesson:hover {
   margin-top: 0;
 }
 
+/* A list of people to pick from (rather than a native <select>) in the
+   assign-on-drop popup - each one a clickable row so the current pick is
+   visibly highlighted instead of hidden inside a closed dropdown. */
+.assignee-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-height: 220px;
+  overflow-y: auto;
+  margin: 0.75rem 0;
+}
+
+.assignee-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+  background: var(--surface-card);
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+}
+
+.assignee-list-item:hover {
+  border-color: var(--theme-primary, #3e6259);
+}
+
+.assignee-list-item.is-selected {
+  border-color: var(--theme-primary, #3e6259);
+  background: var(--surface-sunken);
+}
+
+.assignee-list-item-role {
+  font-size: 0.72rem;
+  color: var(--text-tertiary);
+  text-transform: capitalize;
+}
+
 .course-form {
   border: 1px solid var(--border-default);
   border-radius: 6px;
