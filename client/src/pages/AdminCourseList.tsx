@@ -75,6 +75,7 @@ export function AdminCourseList() {
               <span className="course-swatch" style={{ background: resolved.primaryColor }} aria-hidden="true" />
               <Link to={`/admin/courses/${course.courseId}`}>{course.title}</Link>
               <span className="module-status"> ({course.status})</span>
+              {course.importedFrom === "rise360" && <span className="import-source-badge">Rise 360 import</span>}
             </li>
           );
         })}

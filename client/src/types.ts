@@ -230,6 +230,9 @@ export interface Course {
   category?: string;
   theme: ThemeOverride;
   status: CourseStatus;
+  // Where this course's content came from, if anywhere - admin-only info
+  // (see AdminCourseList/Detail), never shown to students.
+  importedFrom?: "rise360";
 }
 
 export interface LearningPath {

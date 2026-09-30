@@ -557,6 +557,7 @@ app.post(
       description: converted.description || undefined,
       category,
       theme: {},
+      importedFrom: "rise360",
     });
 
     await Promise.all(

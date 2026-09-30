@@ -808,6 +808,16 @@ a.course-side-menu-lesson:hover {
   flex: 1;
 }
 
+.import-source-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: var(--surface-sunken);
+  color: var(--text-tertiary);
+  border: 1px solid var(--border-default);
+}
+
 .copy-embed-link-btn {
   font-size: 0.78rem;
   background: none;

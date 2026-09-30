@@ -358,6 +358,13 @@ export const CourseSchema = z.object({
   // every course-creation call site to say so explicitly, the same way
   // `theme` above defaults to no overrides.
   status: CourseStatusSchema.default("draft"),
+  // Where this course's content originally came from, if anywhere - purely
+  // informational, shown only on admin pages (see AdminCourseList/Detail).
+  // Not surfaced to students: a module's own description text used to leak
+  // "Imported from Rise 360." into student-facing pages as a fallback (see
+  // riseImport.ts) before this field replaced it as the intended, properly
+  // admin-only way to record that.
+  importedFrom: nullableOptional(z.enum(["rise360"])),
 });
 
 export type Course = z.infer<typeof CourseSchema>;

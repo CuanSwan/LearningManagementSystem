@@ -33,4 +33,18 @@ describe("CourseSchema", () => {
   it("rejects an unknown status", () => {
     expect(() => parseCourse({ courseId: "c1", title: "X", status: "archived" })).toThrow();
   });
+
+  it("defaults importedFrom to unset for a normal course", () => {
+    const course = parseCourse({ courseId: "c1", title: "Sales Fundamentals" });
+    expect(course.importedFrom).toBeUndefined();
+  });
+
+  it("accepts importedFrom: rise360", () => {
+    const course = parseCourse({ courseId: "c1", title: "Sales Fundamentals", importedFrom: "rise360" });
+    expect(course.importedFrom).toBe("rise360");
+  });
+
+  it("rejects an unknown importedFrom value", () => {
+    expect(() => parseCourse({ courseId: "c1", title: "X", importedFrom: "google-classroom" })).toThrow();
+  });
 });

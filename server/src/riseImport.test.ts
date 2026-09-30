@@ -67,6 +67,16 @@ describe("convertRiseCourse", () => {
     ]);
   });
 
+  it("leaves objective empty rather than naming Rise when the source module has no description", () => {
+    // Where a course came from is admin-only info (Course.importedFrom) -
+    // this field is shown to students (StudentCourse/StudentModule), so it
+    // must never fall back to text that leaks "Rise 360" into their view.
+    const result = convertRiseCourse(
+      riseCourse([{ id: "l1", title: "M", items: [{ id: "b1", type: "text", family: "text", items: [{ paragraph: "<p>Body.</p>" }] }] }])
+    );
+    expect(result.modules[0].objective).toBe("");
+  });
+
   it("converts a numbered list into a text lesson", () => {
     const result = convertRiseCourse(
       riseCourse([

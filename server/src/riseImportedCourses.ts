@@ -11,7 +11,8 @@ export const aiEngineeringCourse = parseCourse({
   "title": "AI Engineering Foundations: Building Real-World Intelligent Systems",
   "description": "Ready to step into one of the fastest-growing fields in tech? This course demystifies AI engineering and shows you how intelligent systems are designed, built, and deployed in the real world. Guided by practical examples—like Netflix recommendations and Google Maps rerouting—you’ll discover the essential skills and roles that power modern AI applications. Whether you’re new to programming or looking to upskill for a career in AI, you’ll gain the confidence and know-how to start building impactful AI solutions.",
   "theme": {},
-  "status": "published"
+  "status": "published",
+  "importedFrom": "rise360"
 });
 
 export const aiEngineeringModules: Module[] = [
@@ -21,7 +22,7 @@ export const aiEngineeringModules: Module[] = [
     "status": "published",
     "seed": {
       "title": "Welcome to the AI Engineering Programme",
-      "objective": "Imported from Rise 360."
+      "objective": ""
     },
     "lessons": [
       {
@@ -265,7 +266,7 @@ export const aiEngineeringModules: Module[] = [
     "status": "published",
     "seed": {
       "title": "AI Fundamentals: What AI Is and How It Works",
-      "objective": "Imported from Rise 360."
+      "objective": ""
     },
     "lessons": [
       {
@@ -576,7 +577,7 @@ export const aiEngineeringModules: Module[] = [
     "status": "published",
     "seed": {
       "title": "What Is AI Engineering?",
-      "objective": "Imported from Rise 360."
+      "objective": ""
     },
     "lessons": [
       {
@@ -788,7 +789,7 @@ export const aiEngineeringModules: Module[] = [
     "status": "published",
     "seed": {
       "title": "Fields of Work in AI Engineering",
-      "objective": "Imported from Rise 360."
+      "objective": ""
     },
     "lessons": [
       {
@@ -1064,7 +1065,7 @@ export const aiEngineeringModules: Module[] = [
     "status": "published",
     "seed": {
       "title": "AI Engineering Techniques: Prompt Engineering, Fine-Tuning, and RAG",
-      "objective": "Imported from Rise 360."
+      "objective": ""
     },
     "lessons": [
       {
@@ -1637,7 +1638,7 @@ export const aiEngineeringModules: Module[] = [
     "status": "published",
     "seed": {
       "title": "Understanding Foundation Models and Training Data",
-      "objective": "Imported from Rise 360."
+      "objective": ""
     },
     "lessons": [
       {

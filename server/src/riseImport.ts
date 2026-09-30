@@ -357,7 +357,11 @@ function convertLesson(riseLesson: RiseLesson, skipped: SkippedBlock[]): Convert
 
   return {
     title: riseLesson.title ?? "Untitled module",
-    objective: stripHtml(riseLesson.description) || "Imported from Rise 360.",
+    // No fallback text naming Rise here - this is a student-visible field
+    // (see StudentCourse/StudentModule/EmbedModule), and where a course came
+    // from is admin-only information (Course.importedFrom, shown only on
+    // admin pages), not something to leak into the module description.
+    objective: stripHtml(riseLesson.description) || "",
     lessons: lessons.map((lesson, i) => {
       const positioned = { ...lesson, order: i + 1 };
       // Only demote after all merging is done - a merge run's later blocks'

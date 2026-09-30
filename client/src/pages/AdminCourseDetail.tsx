@@ -96,6 +96,7 @@ export function AdminCourseDetail() {
         <Link to="/admin">&larr; All courses</Link>
       </p>
       <h1>{course.title}</h1>
+      {course.importedFrom === "rise360" && <span className="import-source-badge">Rise 360 import</span>}
       {course.description && <p>{course.description}</p>}
 
       <section>
