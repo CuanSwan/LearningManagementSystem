@@ -1,7 +1,12 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import type { LearningPath } from "../types.js";
 import { createLearningPath, listLearningPaths } from "../api.js";
+
+// TipTap/ProseMirror are the single largest dependency in this app's bundle
+// - lazy-loaded so students never pay for it, only admins the moment they
+// actually open a form that uses it.
+const RichTextEditor = lazy(() => import("../components/RichTextEditor.js").then((m) => ({ default: m.RichTextEditor })));
 
 export function AdminLearningPathList() {
   const [paths, setPaths] = useState<LearningPath[]>([]);
@@ -51,10 +56,12 @@ export function AdminLearningPathList() {
           Title
           <input value={title} onChange={(e) => setTitle(e.target.value)} required />
         </label>
-        <label className="field">
+        <div className="field">
           Description
-          <textarea rows={2} value={description} onChange={(e) => setDescription(e.target.value)} />
-        </label>
+          <Suspense fallback={<p className="field-hint">Loading editor...</p>}>
+            <RichTextEditor value={description} onChange={setDescription} />
+          </Suspense>
+        </div>
         <button type="submit">Create learning path</button>
       </form>
     </main>

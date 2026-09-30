@@ -1,7 +1,13 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import type { Course, LearningPath } from "../types.js";
 import { getLearningPath, listCourses, patchLearningPath } from "../api.js";
+import { RichTextView } from "../components/RichTextView.js";
+
+// TipTap/ProseMirror are the single largest dependency in this app's bundle
+// - lazy-loaded so students never pay for it, only admins the moment they
+// actually open a form that uses it.
+const RichTextEditor = lazy(() => import("../components/RichTextEditor.js").then((m) => ({ default: m.RichTextEditor })));
 
 export function AdminLearningPathDetail() {
   const { pathId } = useParams<{ pathId: string }>();
@@ -73,7 +79,7 @@ export function AdminLearningPathDetail() {
         <Link to="/admin/learning-paths">&larr; All learning paths</Link>
       </p>
       <h1>{path.title}</h1>
-      {path.description && <p>{path.description}</p>}
+      {path.description && <RichTextView html={path.description} />}
 
       <section>
         <h2>Path details</h2>
@@ -82,10 +88,12 @@ export function AdminLearningPathDetail() {
             Title
             <input value={title} onChange={(e) => setTitle(e.target.value)} required />
           </label>
-          <label className="field">
+          <div className="field">
             Description
-            <textarea rows={2} value={description} onChange={(e) => setDescription(e.target.value)} />
-          </label>
+            <Suspense fallback={<p className="field-hint">Loading editor...</p>}>
+              <RichTextEditor value={description} onChange={setDescription} />
+            </Suspense>
+          </div>
           <div className="save-controls">
             <button type="submit" disabled={saveStatus === "saving"}>
               {saveStatus === "saving" ? "Saving..." : "Save details"}

@@ -1,10 +1,15 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Theme } from "../theme.js";
 import { suggestTheme } from "../themeSuggestion.js";
 import type { Course, ThemeOverride } from "../types.js";
 import { createCourse, importRiseCourse, listCourses } from "../api.js";
 import { ThemeOverrideFields } from "../components/ThemeOverrideFields.js";
+
+// TipTap/ProseMirror are the single largest dependency in this app's bundle
+// - lazy-loaded so students never pay for it, only admins the moment they
+// actually open a form that uses it.
+const RichTextEditor = lazy(() => import("../components/RichTextEditor.js").then((m) => ({ default: m.RichTextEditor })));
 
 export function AdminCourseList() {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -92,10 +97,12 @@ export function AdminCourseList() {
           Title
           <input value={title} onChange={(e) => setTitle(e.target.value)} required />
         </label>
-        <label className="field">
+        <div className="field">
           Description
-          <textarea rows={2} value={description} onChange={(e) => setDescription(e.target.value)} />
-        </label>
+          <Suspense fallback={<p className="field-hint">Loading editor...</p>}>
+            <RichTextEditor value={description} onChange={setDescription} />
+          </Suspense>
+        </div>
         <label className="field">
           Category
           <input value={category} onChange={(e) => setCategory(e.target.value)} placeholder="e.g. Core, IT, Business" />

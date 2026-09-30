@@ -5,6 +5,7 @@ import { listCourses, listLearningPaths } from "../api.js";
 import { isCourseAccessible } from "../access.js";
 import { useAuth } from "../auth.js";
 import { Breadcrumb } from "../components/Breadcrumb.js";
+import { RichTextView } from "../components/RichTextView.js";
 import { Theme, themeStyle } from "../theme.js";
 
 export function StudentCatalog() {
@@ -39,7 +40,7 @@ export function StudentCatalog() {
                   {!accessible && <span className="tree-node-locked-badge">Not assigned</span>}
                 </div>
                 <h2>{course.title}</h2>
-                {course.description && <p>{course.description}</p>}
+                {course.description && <RichTextView html={course.description} />}
               </>
             );
 

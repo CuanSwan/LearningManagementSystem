@@ -6,6 +6,7 @@ import { getCourse, getLearningPath, getProgress, listLearningPaths, listModules
 import { isCourseAccessible } from "../access.js";
 import { useAuth } from "../auth.js";
 import { Breadcrumb } from "../components/Breadcrumb.js";
+import { RichTextView } from "../components/RichTextView.js";
 
 const IN_PROGRESS_COLOR = "#e8862f";
 const LOCKED_COLOR = "#9ca3af";
@@ -113,7 +114,7 @@ export function LearningPathDetail() {
     <main className="student-view course-page">
       <Breadcrumb items={[{ label: "Learning Paths", to: "/learning-paths" }, { label: path.title }]} />
       <h1>{path.title}</h1>
-      {path.description && <p className="course-description">{path.description}</p>}
+      {path.description && <RichTextView className="course-description" html={path.description} />}
 
       {totalLessons > 0 && (
         <div className="progress-summary">
@@ -170,7 +171,7 @@ export function LearningPathDetail() {
                       {complete && <span className="tree-node-complete-badge">Complete</span>}
                       {locked && <span className="tree-node-locked-badge">Locked</span>}
                     </span>
-                    {course.description && <p>{course.description}</p>}
+                    {course.description && <RichTextView html={course.description} />}
                     {courseTotal > 0 && (
                       <span className="path-snake-progress">
                         {courseCompleted} of {courseTotal} lessons complete

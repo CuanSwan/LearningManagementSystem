@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { VideoLesson as VideoLessonType } from "../types.js";
 import { toEmbedUrl } from "../videoEmbed.js";
+import { RichTextView } from "./RichTextView.js";
 
 export function VideoLesson({
   content,
@@ -44,7 +45,7 @@ export function VideoLesson({
         {content.transcript && (
           <details className="video-lesson-transcript">
             <summary>Show transcript</summary>
-            <p>{content.transcript}</p>
+            <RichTextView className="video-lesson-transcript-body" html={content.transcript} />
           </details>
         )}
       </div>
@@ -83,7 +84,7 @@ export function VideoLesson({
       {content.transcript && (
         <details className="video-lesson-transcript">
           <summary>Show transcript</summary>
-          <p>{content.transcript}</p>
+          <RichTextView className="video-lesson-transcript-body" html={content.transcript} />
         </details>
       )}
     </div>

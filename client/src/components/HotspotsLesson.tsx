@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { HotspotsLesson as HotspotsLessonType } from "../types.js";
+import { RichTextView } from "./RichTextView.js";
 
 function pad(n: number): string {
   return String(n).padStart(2, "0");
@@ -26,8 +27,8 @@ function HotspotPopover({ index, body, example, anchorRect }: { index: number; b
   return createPortal(
     <div className="hotspots-lesson-popover" style={{ left, bottom, width: POPOVER_WIDTH }}>
       <span className="hotspots-lesson-popover-label">Point {pad(index + 1)}</span>
-      <p className="hotspots-lesson-popover-body">{body}</p>
-      <p className="hotspots-lesson-popover-example">{example}</p>
+      <RichTextView className="hotspots-lesson-popover-body" html={body} />
+      <RichTextView className="hotspots-lesson-popover-example" html={example} />
     </div>,
     document.body
   );

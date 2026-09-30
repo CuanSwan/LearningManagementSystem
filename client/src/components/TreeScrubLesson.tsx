@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { TreeScrubLesson as TreeScrubLessonType } from "../types.js";
+import { RichTextView } from "./RichTextView.js";
 
 // All layout math happens in a fixed coordinate space; the SVG's viewBox
 // is what actually pans/zooms as the tree grows, and an HTML bubble layer
@@ -391,7 +392,7 @@ export function TreeScrubLesson({ content, isComplete = false, onComplete = () =
                     }}
                   >
                     <div className="treescrub-lesson-bubble-title">{node.title}</div>
-                    <div className="treescrub-lesson-bubble-body">{node.body}</div>
+                    <RichTextView className="treescrub-lesson-bubble-body" html={node.body} />
                   </div>
                 );
               })}

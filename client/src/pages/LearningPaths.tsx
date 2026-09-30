@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import type { LearningPath } from "../types.js";
 import { listLearningPaths } from "../api.js";
+import { RichTextView } from "../components/RichTextView.js";
 
 export function LearningPaths() {
   const [paths, setPaths] = useState<LearningPath[]>([]);
@@ -20,7 +21,7 @@ export function LearningPaths() {
               {path.courseIds.length} {path.courseIds.length === 1 ? "Course" : "Courses"}
             </span>
             <h2>{path.title}</h2>
-            {path.description && <p>{path.description}</p>}
+            {path.description && <RichTextView html={path.description} />}
           </Link>
         ))}
       </div>

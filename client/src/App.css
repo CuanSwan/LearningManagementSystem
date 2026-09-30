@@ -1685,8 +1685,8 @@ a.path-snake-link:hover .path-snake-bubble {
   cursor: pointer;
 }
 
-.video-lesson-transcript p {
-  margin: 0.75rem 0 0;
+.video-lesson-transcript-body {
+  margin-top: 0.75rem;
   color: var(--text-secondary);
 }
 

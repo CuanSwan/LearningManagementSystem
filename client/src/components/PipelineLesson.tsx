@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { PipelineLesson as PipelineLessonType } from "../types.js";
+import { RichTextView } from "./RichTextView.js";
 
 function pad(n: number): string {
   return String(n).padStart(2, "0");
@@ -38,18 +39,29 @@ export function PipelineLesson({ content, isComplete = false, onComplete = () =>
           style={{ gridTemplateColumns: `repeat(${total}, minmax(0, 1fr))` }}
         >
           {content.steps.map((step, i) => (
-            <button
+            // A div, not a <button> - the body below is rich markup and can
+            // contain block elements (paragraphs, lists), which aren't valid
+            // inside a button's content model. role="button" + a key handler
+            // keeps it keyboard-operable the same way a real button would be.
+            <div
               key={i}
-              type="button"
+              role="button"
+              tabIndex={0}
               className={`pipeline-lesson-station${i <= active ? " reached" : ""}${i === active ? " active" : ""}`}
               aria-selected={i === active}
               onClick={() => select(i)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  select(i);
+                }
+              }}
             >
               <span className="pipeline-lesson-dot" />
               <span className="pipeline-lesson-meta">Step {pad(i + 1)}</span>
               <span className="pipeline-lesson-title">{step.title}</span>
-              <span className="pipeline-lesson-body">{step.body}</span>
-            </button>
+              <RichTextView className="pipeline-lesson-body" html={step.body} />
+            </div>
           ))}
         </div>
       </div>

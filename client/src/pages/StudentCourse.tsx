@@ -7,6 +7,7 @@ import { useAuth } from "../auth.js";
 import { BackButton } from "../components/BackButton.js";
 import { Breadcrumb } from "../components/Breadcrumb.js";
 import { CourseSideMenu } from "../components/CourseSideMenu.js";
+import { RichTextView } from "../components/RichTextView.js";
 import { isModuleComplete, isModuleLocked } from "../courseProgress.js";
 import { daysRemainingLabel } from "../membership.js";
 import { Theme, themeStyle } from "../theme.js";
@@ -84,7 +85,7 @@ export function StudentCourse() {
         <Breadcrumb items={[{ label: "Courses", to: "/courses" }, { label: course.title }]} />
         <BackButton to="/courses" label="Back to courses" />
         <h1>{course.title}</h1>
-      {course.description && <p className="course-description">{course.description}</p>}
+      {course.description && <RichTextView className="course-description" html={course.description} />}
 
       {totalLessons > 0 && (
         <div className="course-progress-header">

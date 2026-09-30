@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { PresentationDialLesson as PresentationDialLessonType } from "../types.js";
+import { RichTextView } from "./RichTextView.js";
 
 // A fixed-size ring sits behind a concentric card, mirroring the source
 // mockup's dial-wrap + card-zone overlap. Kept to a single fixed size
@@ -123,7 +124,7 @@ export function PresentationDialLesson({ content, isComplete = false, onComplete
               {pad(current + 1)} / {pad(total)}
             </span>
             <h3 className="presentationdial-lesson-title">{stage.title}</h3>
-            <p className="presentationdial-lesson-body">{stage.body}</p>
+            <RichTextView className="presentationdial-lesson-body" html={stage.body} />
           </div>
         </div>
 

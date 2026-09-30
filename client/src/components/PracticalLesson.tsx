@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { PracticalLesson as PracticalLessonType } from "../types.js";
+import { RichTextView } from "./RichTextView.js";
 
 export function PracticalLesson({
   content,
@@ -21,7 +22,7 @@ export function PracticalLesson({
 
   return (
     <div className="practical-lesson">
-      <p className="practical-lesson-instructions">{content.instructions}</p>
+      <RichTextView className="practical-lesson-instructions" html={content.instructions} />
       <ol className="practical-lesson-steps">
         {content.steps.map((step, stepIndex) => (
           <li key={stepIndex}>

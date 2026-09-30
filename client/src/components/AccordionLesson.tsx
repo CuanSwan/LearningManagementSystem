@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { AccordionLesson as AccordionLessonType } from "../types.js";
+import { RichTextView } from "./RichTextView.js";
 
 export function AccordionLesson({
   content,
@@ -31,7 +32,7 @@ export function AccordionLesson({
           >
             {section.title}
           </button>
-          {opened[sectionIndex] && <p className="accordion-section-body">{section.body}</p>}
+          {opened[sectionIndex] && <RichTextView className="accordion-section-body" html={section.body} />}
         </div>
       ))}
     </div>

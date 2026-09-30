@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { copyToClipboard } from "../clipboard.js";
 import { buildEmbedLink } from "../embedLink.js";
@@ -6,6 +6,12 @@ import { suggestTheme } from "../themeSuggestion.js";
 import type { Course, CourseStatus, Module, ThemeOverride } from "../types.js";
 import { createModule, deleteCourse, getCourse, listModulesByCourse, patchCourse } from "../api.js";
 import { ThemeOverrideFields } from "../components/ThemeOverrideFields.js";
+import { RichTextView } from "../components/RichTextView.js";
+
+// TipTap/ProseMirror are the single largest dependency in this app's bundle
+// - lazy-loaded so students never pay for it, only admins the moment they
+// actually open a form that uses it.
+const RichTextEditor = lazy(() => import("../components/RichTextEditor.js").then((m) => ({ default: m.RichTextEditor })));
 
 export function AdminCourseDetail() {
   const { courseId } = useParams<{ courseId: string }>();
@@ -13,6 +19,7 @@ export function AdminCourseDetail() {
   const [course, setCourse] = useState<Course | null>(null);
   const [modules, setModules] = useState<Module[]>([]);
   const [theme, setTheme] = useState<ThemeOverride>({});
+  const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
   const [status, setStatus] = useState<CourseStatus>("draft");
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
@@ -27,6 +34,7 @@ export function AdminCourseDetail() {
     getCourse(courseId).then((c) => {
       setCourse(c);
       setTheme(c.theme);
+      setDescription(c.description ?? "");
       setCategory(c.category ?? "");
       setStatus(c.status);
     });
@@ -37,7 +45,7 @@ export function AdminCourseDetail() {
     if (!courseId) return;
     setSaveStatus("saving");
     try {
-      const updated = await patchCourse(courseId, { theme, category: category || undefined, status });
+      const updated = await patchCourse(courseId, { theme, description, category: category || undefined, status });
       setCourse(updated);
       setSaveStatus("saved");
     } catch {
@@ -97,7 +105,7 @@ export function AdminCourseDetail() {
       </p>
       <h1>{course.title}</h1>
       {course.importedFrom === "rise360" && <span className="import-source-badge">Rise 360 import</span>}
-      {course.description && <p>{course.description}</p>}
+      {course.description && <RichTextView html={course.description} />}
 
       <section>
         <h2>Course settings</h2>
@@ -112,6 +120,12 @@ export function AdminCourseDetail() {
           A draft course is invisible to students - even ones it's assigned to - until you publish it. Admins can
           always see and open it either way.
         </p>
+        <div className="field">
+          Description
+          <Suspense fallback={<p className="field-hint">Loading editor...</p>}>
+            <RichTextEditor value={description} onChange={setDescription} />
+          </Suspense>
+        </div>
         <label className="field">
           Category
           <input value={category} onChange={(e) => setCategory(e.target.value)} placeholder="e.g. Core, IT, Business" />

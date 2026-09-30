@@ -121,14 +121,12 @@ function PracticalEditor({
 
   return (
     <div className="field-group">
-      <label className="field">
+      <div className="field">
         Instructions
-        <textarea
-          rows={3}
-          value={content.instructions}
-          onChange={(e) => onChange({ ...content, instructions: e.target.value })}
-        />
-      </label>
+        <Suspense fallback={<p className="field-hint">Loading editor...</p>}>
+          <RichTextEditor value={content.instructions} onChange={(instructions) => onChange({ ...content, instructions })} />
+        </Suspense>
+      </div>
       {content.steps.map((step, i) => (
         <div key={i} className="editor-option-row">
           <input value={step} onChange={(e) => updateStep(i, e.target.value)} />
@@ -280,10 +278,12 @@ function AccordionEditor({
             Title
             <input value={section.title} onChange={(e) => updateSection(i, { title: e.target.value })} />
           </label>
-          <label className="field">
+          <div className="field">
             Body
-            <textarea rows={3} value={section.body} onChange={(e) => updateSection(i, { body: e.target.value })} />
-          </label>
+            <Suspense fallback={<p className="field-hint">Loading editor...</p>}>
+              <RichTextEditor value={section.body} onChange={(body) => updateSection(i, { body })} />
+            </Suspense>
+          </div>
           <div className="editor-row-actions">
             <button type="button" onClick={() => removeSection(i)} disabled={content.sections.length <= 1}>
               Remove section
@@ -372,10 +372,12 @@ function DialEditor({
             Title
             <input value={stage.title} onChange={(e) => updateStage(i, { title: e.target.value })} />
           </label>
-          <label className="field">
+          <div className="field">
             Text
-            <textarea rows={3} value={stage.body} onChange={(e) => updateStage(i, { body: e.target.value })} />
-          </label>
+            <Suspense fallback={<p className="field-hint">Loading editor...</p>}>
+              <RichTextEditor value={stage.body} onChange={(body) => updateStage(i, { body })} />
+            </Suspense>
+          </div>
           <div className="editor-row-actions">
             <button type="button" onClick={() => removeStage(i)} disabled={content.stages.length <= DIAL_MIN_STAGES}>
               Remove stage
@@ -426,10 +428,12 @@ function PipelineEditor({
             Title
             <input value={step.title} onChange={(e) => updateStep(i, { title: e.target.value })} />
           </label>
-          <label className="field">
+          <div className="field">
             Text
-            <textarea rows={3} value={step.body} onChange={(e) => updateStep(i, { body: e.target.value })} />
-          </label>
+            <Suspense fallback={<p className="field-hint">Loading editor...</p>}>
+              <RichTextEditor value={step.body} onChange={(body) => updateStep(i, { body })} />
+            </Suspense>
+          </div>
           <div className="editor-row-actions">
             <button type="button" onClick={() => removeStep(i)} disabled={content.steps.length <= PIPELINE_MIN_STEPS}>
               Remove step
@@ -481,10 +485,12 @@ function PresentationDialEditor({
             Title
             <input value={stage.title} onChange={(e) => updateStage(i, { title: e.target.value })} />
           </label>
-          <label className="field">
+          <div className="field">
             Text
-            <textarea rows={3} value={stage.body} onChange={(e) => updateStage(i, { body: e.target.value })} />
-          </label>
+            <Suspense fallback={<p className="field-hint">Loading editor...</p>}>
+              <RichTextEditor value={stage.body} onChange={(body) => updateStage(i, { body })} />
+            </Suspense>
+          </div>
           <div className="editor-row-actions">
             <button
               type="button"
@@ -537,26 +543,28 @@ function CardGridEditor({
             Title
             <input value={card.title} onChange={(e) => updateCard(i, { title: e.target.value })} />
           </label>
-          <label className="field">
+          <div className="field">
             Use when
-            <textarea rows={2} value={card.useWhen} onChange={(e) => updateCard(i, { useWhen: e.target.value })} />
-          </label>
-          <label className="field">
+            <Suspense fallback={<p className="field-hint">Loading editor...</p>}>
+              <RichTextEditor value={card.useWhen} onChange={(useWhen) => updateCard(i, { useWhen })} />
+            </Suspense>
+          </div>
+          <div className="field">
             Looks like
-            <textarea
-              rows={2}
-              value={card.looksLike}
-              onChange={(e) => updateCard(i, { looksLike: e.target.value })}
-            />
-          </label>
+            <Suspense fallback={<p className="field-hint">Loading editor...</p>}>
+              <RichTextEditor value={card.looksLike} onChange={(looksLike) => updateCard(i, { looksLike })} />
+            </Suspense>
+          </div>
           <label className="field">
             Note label
             <input value={card.noteLabel} onChange={(e) => updateCard(i, { noteLabel: e.target.value })} />
           </label>
-          <label className="field">
+          <div className="field">
             Note text
-            <textarea rows={2} value={card.noteBody} onChange={(e) => updateCard(i, { noteBody: e.target.value })} />
-          </label>
+            <Suspense fallback={<p className="field-hint">Loading editor...</p>}>
+              <RichTextEditor value={card.noteBody} onChange={(noteBody) => updateCard(i, { noteBody })} />
+            </Suspense>
+          </div>
           <div className="editor-row-actions">
             <button type="button" onClick={() => removeCard(i)} disabled={content.cards.length <= CARD_GRID_MIN_CARDS}>
               Remove card
@@ -605,14 +613,18 @@ function HotspotsEditor({
             Title
             <input value={tile.title} onChange={(e) => updateTile(i, { title: e.target.value })} />
           </label>
-          <label className="field">
+          <div className="field">
             Note
-            <textarea rows={2} value={tile.body} onChange={(e) => updateTile(i, { body: e.target.value })} />
-          </label>
-          <label className="field">
+            <Suspense fallback={<p className="field-hint">Loading editor...</p>}>
+              <RichTextEditor value={tile.body} onChange={(body) => updateTile(i, { body })} />
+            </Suspense>
+          </div>
+          <div className="field">
             Example
-            <textarea rows={2} value={tile.example} onChange={(e) => updateTile(i, { example: e.target.value })} />
-          </label>
+            <Suspense fallback={<p className="field-hint">Loading editor...</p>}>
+              <RichTextEditor value={tile.example} onChange={(example) => updateTile(i, { example })} />
+            </Suspense>
+          </div>
           <div className="editor-row-actions">
             <button type="button" onClick={() => removeTile(i)} disabled={content.tiles.length <= HOTSPOTS_MIN_TILES}>
               Remove tile
@@ -681,10 +693,12 @@ function TreeScrubEditor({
               Title
               <input value={node.title} onChange={(e) => updateNode(i, { title: e.target.value })} />
             </label>
-            <label className="field">
+            <div className="field">
               Text
-              <textarea rows={3} value={node.body} onChange={(e) => updateNode(i, { body: e.target.value })} />
-            </label>
+              <Suspense fallback={<p className="field-hint">Loading editor...</p>}>
+                <RichTextEditor value={node.body} onChange={(body) => updateNode(i, { body })} />
+              </Suspense>
+            </div>
             {i === 0 ? (
               <span className="field-hint">Root - every other entry traces back to this one.</span>
             ) : (
@@ -806,14 +820,15 @@ export function LessonEditorForm({
               onChange={(e) => onChange({ ...lesson.content, videoUrl: e.target.value })}
             />
           </label>
-          <label className="field">
+          <div className="field">
             Transcript
-            <textarea
-              rows={3}
-              value={lesson.content.transcript ?? ""}
-              onChange={(e) => onChange({ ...lesson.content, transcript: e.target.value })}
-            />
-          </label>
+            <Suspense fallback={<p className="field-hint">Loading editor...</p>}>
+              <RichTextEditor
+                value={lesson.content.transcript ?? ""}
+                onChange={(transcript) => onChange({ ...lesson.content, transcript })}
+              />
+            </Suspense>
+          </div>
         </div>
       );
     case "quiz":

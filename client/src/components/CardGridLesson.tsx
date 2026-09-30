@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { CardGridLesson as CardGridLessonType } from "../types.js";
+import { RichTextView } from "./RichTextView.js";
 
 export function CardGridLesson({ content, isComplete = false, onComplete = () => {} }: {
   content: CardGridLessonType["content"];
@@ -23,32 +24,43 @@ export function CardGridLesson({ content, isComplete = false, onComplete = () =>
       {content.cards.map((card, i) => {
         const isSelected = selected === i;
         return (
-          <button
+          // A div, not a <button> - the text fields below are rich markup and
+          // can contain block elements, which aren't valid inside a button's
+          // content model. role="button" + a key handler keeps it
+          // keyboard-operable the same way a real button would be.
+          <div
             key={i}
-            type="button"
+            role="button"
+            tabIndex={0}
             className={`cardgrid-lesson-card${isSelected ? " is-selected" : ""}`}
             aria-expanded={isSelected}
             onClick={() => select(i)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                select(i);
+              }
+            }}
           >
             <h3 className="cardgrid-lesson-title">{card.title}</h3>
             <div className="cardgrid-lesson-section">
               <span className="cardgrid-lesson-label">Use when</span>
-              <p className="cardgrid-lesson-text">{card.useWhen}</p>
+              <RichTextView className="cardgrid-lesson-text" html={card.useWhen} />
             </div>
             {isSelected && (
               <>
                 <div className="cardgrid-lesson-section">
                   <span className="cardgrid-lesson-label">Looks like</span>
-                  <p className="cardgrid-lesson-text">{card.looksLike}</p>
+                  <RichTextView className="cardgrid-lesson-text" html={card.looksLike} />
                 </div>
                 <div className="cardgrid-lesson-section cardgrid-lesson-note">
                   <span className="cardgrid-lesson-label">{card.noteLabel}</span>
-                  <p className="cardgrid-lesson-text">{card.noteBody}</p>
+                  <RichTextView className="cardgrid-lesson-text" html={card.noteBody} />
                 </div>
               </>
             )}
             {!isSelected && <span className="cardgrid-lesson-hint">Read more →</span>}
-          </button>
+          </div>
         );
       })}
     </div>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { DialLesson as DialLessonType } from "../types.js";
+import { RichTextView } from "./RichTextView.js";
 
 // Geometry for the ring of nodes - these pixel values match the fixed
 // .dial-lesson-dial/.dial-lesson-hub sizing in App.css, so keep them in
@@ -92,7 +93,7 @@ export function DialLesson({
           Stage {pad(selected + 1)} of {pad(total)}
         </span>
         <h3 className="dial-lesson-title">{stage.title}</h3>
-        <p className="dial-lesson-body">{stage.body}</p>
+        <RichTextView className="dial-lesson-body" html={stage.body} />
         <div className="dial-lesson-hint">Select a stage on the dial to read it.</div>
       </div>
     </div>

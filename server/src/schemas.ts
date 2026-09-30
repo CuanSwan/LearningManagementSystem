@@ -38,7 +38,11 @@ const TextContentSchema = z.object({
 
 const VideoContentSchema = z.object({
   videoUrl: z.string(),
-  transcript: nullableOptional(z.string()),
+  // Rich markup from the admin's text editor, same as TextContentSchema.body
+  // - sanitized on parse so every write path gets it for free. Applied
+  // inside the transform (not via .transform on the outer nullableOptional)
+  // so it only runs when a transcript is actually present.
+  transcript: nullableOptional(z.string().transform((html) => sanitizeHtml(html))),
   duration: nullableOptional(z.number().nonnegative()),
 });
 
@@ -55,7 +59,8 @@ const QuizContentSchema = z.object({
 });
 
 const PracticalContentSchema = z.object({
-  instructions: z.string(),
+  // Rich markup, same as TextContentSchema.body - sanitized on parse.
+  instructions: z.string().transform((html) => sanitizeHtml(html)),
   steps: z.array(z.string()),
   submissionType: z.enum(["text", "file", "checklist"]),
 });
@@ -69,7 +74,9 @@ const FlashcardContentSchema = z.object({
 });
 
 const AccordionContentSchema = z.object({
-  sections: z.array(z.object({ title: z.string(), body: z.string() })).min(1),
+  // Section body is rich markup, same as TextContentSchema.body - sanitized
+  // on parse. Title stays plain text (a short heading, not prose).
+  sections: z.array(z.object({ title: z.string(), body: z.string().transform((html) => sanitizeHtml(html)) })).min(1),
 });
 
 const MatchingContentSchema = z.object({
@@ -81,14 +88,16 @@ const MatchingContentSchema = z.object({
 // dial has something to step between; at most 20 so the ring stays legible
 // even as each node's size shrinks to fit them all.
 const DialContentSchema = z.object({
-  stages: z.array(z.object({ title: z.string(), body: z.string() })).min(2).max(20),
+  // Stage body is rich markup, sanitized on parse - see AccordionContentSchema.
+  stages: z.array(z.object({ title: z.string(), body: z.string().transform((html) => sanitizeHtml(html)) })).min(2).max(20),
 });
 
 // A horizontal progress track - the same one-title-one-body-per-step shape
 // as the dial, just capped much lower (7) since every step's label sits
 // inline in a single row rather than shrinking into a small ring.
 const PipelineContentSchema = z.object({
-  steps: z.array(z.object({ title: z.string(), body: z.string() })).min(2).max(7),
+  // Step body is rich markup, sanitized on parse - see AccordionContentSchema.
+  steps: z.array(z.object({ title: z.string(), body: z.string().transform((html) => sanitizeHtml(html)) })).min(2).max(7),
 });
 
 // A "presentation mode" dial - unlike the dial above, which rings every
@@ -98,7 +107,8 @@ const PipelineContentSchema = z.object({
 // shape and the same 2-20 bounds as the dial, since it's stepping
 // through the same kind of content, just windowed instead of full-ring.
 const PresentationDialContentSchema = z.object({
-  stages: z.array(z.object({ title: z.string(), body: z.string() })).min(2).max(20),
+  // Stage body is rich markup, sanitized on parse - see AccordionContentSchema.
+  stages: z.array(z.object({ title: z.string(), body: z.string().transform((html) => sanitizeHtml(html)) })).min(2).max(20),
 });
 
 // A grid of comparison cards, always laid out 3 per row and wrapping (and
@@ -110,10 +120,12 @@ const CardGridContentSchema = z.object({
     .array(
       z.object({
         title: z.string(),
-        useWhen: z.string(),
-        looksLike: z.string(),
+        // Rich markup, sanitized on parse - see AccordionContentSchema.
+        // title/noteLabel stay plain text (short headings/labels, not prose).
+        useWhen: z.string().transform((html) => sanitizeHtml(html)),
+        looksLike: z.string().transform((html) => sanitizeHtml(html)),
         noteLabel: z.string(),
-        noteBody: z.string(),
+        noteBody: z.string().transform((html) => sanitizeHtml(html)),
       })
     )
     .min(2),
@@ -124,7 +136,16 @@ const CardGridContentSchema = z.object({
 // click. At least 2 to be worth a grid; no upper cap since extra tiles
 // just add rows rather than crowding a fixed shape.
 const HotspotsContentSchema = z.object({
-  tiles: z.array(z.object({ title: z.string(), body: z.string(), example: z.string() })).min(2),
+  // Body/example are rich markup, sanitized on parse - see AccordionContentSchema.
+  tiles: z
+    .array(
+      z.object({
+        title: z.string(),
+        body: z.string().transform((html) => sanitizeHtml(html)),
+        example: z.string().transform((html) => sanitizeHtml(html)),
+      })
+    )
+    .min(2),
 });
 
 // A scroll-scrubbed tree: node 0 is always the root, and every other
@@ -137,8 +158,15 @@ const HotspotsContentSchema = z.object({
 // 20 since the client renders every node's own screen position, and a
 // tree that large needs the zoom-on-scroll behavior to stay legible.
 const TreeScrubContentSchema = z.object({
+  // Body is rich markup, sanitized on parse - see AccordionContentSchema.
   nodes: z
-    .array(z.object({ title: z.string(), body: z.string(), parentIndex: z.number().int().nonnegative() }))
+    .array(
+      z.object({
+        title: z.string(),
+        body: z.string().transform((html) => sanitizeHtml(html)),
+        parentIndex: z.number().int().nonnegative(),
+      })
+    )
     .min(2)
     .max(20)
     .superRefine((nodes, ctx) => {
@@ -354,7 +382,8 @@ export function parseModule(data: unknown): Module {
 export const CourseSchema = z.object({
   courseId: z.string(),
   title: z.string(),
-  description: nullableOptional(z.string()),
+  // Rich markup, sanitized on parse - see AccordionContentSchema.
+  description: nullableOptional(z.string().transform((html) => sanitizeHtml(html))),
   category: nullableOptional(z.string()),
   // Only the fields this course chooses to override - see Theme.withOverrides() on the client.
   theme: ThemeOverrideSchema.default({}),
@@ -382,7 +411,8 @@ export function parseCourse(data: unknown): Course {
 export const LearningPathSchema = z.object({
   pathId: z.string(),
   title: z.string(),
-  description: nullableOptional(z.string()),
+  // Rich markup, sanitized on parse - see AccordionContentSchema.
+  description: nullableOptional(z.string().transform((html) => sanitizeHtml(html))),
   // Ordered - a student moves through these courses one by one.
   courseIds: z.array(z.string()).default([]),
 });
