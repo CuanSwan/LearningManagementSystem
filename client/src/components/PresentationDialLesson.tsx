@@ -4,12 +4,12 @@ import { RichTextView } from "./RichTextView.js";
 
 // A fixed-size ring sits behind a concentric card, mirroring the source
 // mockup's dial-wrap + card-zone overlap. Kept to a single fixed size
-// (matching DialLesson's 260px ring) rather than a responsive multi-size
-// scheme.
+// (matching DialLesson's 494px ring, ~90% bigger than the original 260px)
+// rather than a responsive multi-size scheme.
 const WINDOW_SIZE = 4;
-const CENTER = 130;
-const NODE_RADIUS = 118;
-const NODE_SIZE = 30;
+const CENTER = 247;
+const NODE_RADIUS = 224;
+const NODE_SIZE = 57;
 // Spread the 4 dots evenly around the full circle - the same 360/n
 // spacing the source mockup uses for its own n nodes - rather than
 // clustering them into one quadrant.

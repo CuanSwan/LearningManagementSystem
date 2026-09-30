@@ -7,15 +7,17 @@ import { RichTextView } from "./RichTextView.js";
 // sync if either changes. Nodes are placed evenly around a circle of
 // radius DIAL_RADIUS centered on the dial, starting straight up and going
 // clockwise - however many stages there are.
-const DIAL_SIZE = 260;
+// ~90% bigger than the original 260px dial - keep in sync with
+// .dial-lesson-dial/.dial-lesson-ring/.dial-lesson-hub sizing in App.css.
+const DIAL_SIZE = 494;
 const DIAL_CENTER = DIAL_SIZE / 2;
-const DIAL_RADIUS = 99;
-const MAX_NODE_SIZE = 35;
-const MIN_NODE_SIZE = 10;
+const DIAL_RADIUS = 188;
+const MAX_NODE_SIZE = 67;
+const MIN_NODE_SIZE = 19;
 // Below this node size the "01" style number no longer fits legibly - the
 // node becomes a plain dot instead (still selectable, still has an
 // aria-label for screen readers).
-const NODE_LABEL_MIN_SIZE = 16;
+const NODE_LABEL_MIN_SIZE = 30;
 
 // The dial's radius is fixed regardless of stage count, so more stages
 // means less arc length per node - node size is capped at the distance
@@ -73,7 +75,7 @@ export function DialLesson({
               key={i}
               type="button"
               className="dial-lesson-node"
-              style={{ left: `${left}px`, top: `${top}px`, width: `${size}px`, height: `${size}px`, fontSize: `${Math.min(size * 0.32, 12)}px` }}
+              style={{ left: `${left}px`, top: `${top}px`, width: `${size}px`, height: `${size}px`, fontSize: `${Math.min(size * 0.32, 23)}px` }}
               aria-selected={selected === i}
               aria-label={`Stage ${i + 1} of ${total}`}
               onClick={() => select(i)}
