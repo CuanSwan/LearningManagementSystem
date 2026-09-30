@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { BOARD_COLUMNS, columnForCourse } from "../boardColumns.js";
 import { copyToClipboard } from "../clipboard.js";
 import { buildEmbedLink } from "../embedLink.js";
 import { suggestTheme } from "../themeSuggestion.js";
-import type { Course, CourseStatus, Module, ThemeOverride } from "../types.js";
+import type { Course, Module, ThemeOverride } from "../types.js";
 import { createModule, deleteCourse, getCourse, listModulesByCourse, patchCourse } from "../api.js";
 import { ThemeOverrideFields } from "../components/ThemeOverrideFields.js";
 
@@ -14,7 +15,6 @@ export function AdminCourseDetail() {
   const [modules, setModules] = useState<Module[]>([]);
   const [theme, setTheme] = useState<ThemeOverride>({});
   const [category, setCategory] = useState("");
-  const [status, setStatus] = useState<CourseStatus>("draft");
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [moduleTitle, setModuleTitle] = useState("");
   const [moduleObjective, setModuleObjective] = useState("");
@@ -28,7 +28,6 @@ export function AdminCourseDetail() {
       setCourse(c);
       setTheme(c.theme);
       setCategory(c.category ?? "");
-      setStatus(c.status);
     });
     listModulesByCourse(courseId).then(setModules);
   }, [courseId]);
@@ -37,7 +36,7 @@ export function AdminCourseDetail() {
     if (!courseId) return;
     setSaveStatus("saving");
     try {
-      const updated = await patchCourse(courseId, { theme, category: category || undefined, status });
+      const updated = await patchCourse(courseId, { theme, category: category || undefined });
       setCourse(updated);
       setSaveStatus("saved");
     } catch {
@@ -100,16 +99,13 @@ export function AdminCourseDetail() {
 
       <section>
         <h2>Course settings</h2>
-        <label className="status-select">
-          Status
-          <select value={status} onChange={(e) => setStatus(e.target.value as CourseStatus)}>
-            <option value="draft">Draft</option>
-            <option value="published">Published</option>
-          </select>
-        </label>
+        <p className="status-select">
+          Status <strong>{BOARD_COLUMNS.find((c) => c.id === columnForCourse(course))?.title}</strong>
+        </p>
         <p className="field-hint">
-          A draft course is invisible to students - even ones it's assigned to - until you publish it. Admins can
-          always see and open it either way.
+          A draft course is invisible to students - even ones it's assigned to - until it's published. Publishing
+          only happens by dragging a course into the Published column on the <Link to="/admin/board">board</Link> -
+          not from here.
         </p>
         <label className="field">
           Category
