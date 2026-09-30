@@ -194,6 +194,28 @@ export async function importRiseCourse(
   return res.json();
 }
 
+// Same Rise 360 conversion as importRiseCourse, but adds the resulting
+// module(s) to an existing course instead of creating a new one - a single
+// Rise export can contain multiple top-level lessons, each becoming its own
+// module.
+export async function importRiseModules(
+  courseId: string,
+  file: File
+): Promise<{ modules: Module[]; moduleCount: number; skipped: { type: string; family?: string; variant?: string }[] }> {
+  const formData = new FormData();
+  formData.append("file", file);
+  const res = await fetch(`${API_BASE_URL}/api/courses/${courseId}/import/rise`, {
+    method: "POST",
+    credentials: "include",
+    body: formData,
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(typeof body?.error === "string" ? body.error : `Request failed: ${res.status}`);
+  }
+  return res.json();
+}
+
 // Uploads an image (e.g. for the diagram lesson type) and returns the path
 // it's served at - store that path in the lesson content as-is, and use
 // resolveAssetUrl (assetUrl.ts) whenever actually rendering it.

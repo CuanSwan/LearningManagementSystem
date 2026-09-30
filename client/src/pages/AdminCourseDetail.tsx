@@ -4,7 +4,7 @@ import { copyToClipboard } from "../clipboard.js";
 import { buildEmbedLink } from "../embedLink.js";
 import { suggestTheme } from "../themeSuggestion.js";
 import type { Course, CourseStatus, Module, ThemeOverride } from "../types.js";
-import { createModule, deleteCourse, getCourse, listModulesByCourse, patchCourse } from "../api.js";
+import { createModule, deleteCourse, getCourse, importRiseModules, listModulesByCourse, patchCourse } from "../api.js";
 import { ThemeOverrideFields } from "../components/ThemeOverrideFields.js";
 import { RichTextView } from "../components/RichTextView.js";
 
@@ -19,6 +19,7 @@ export function AdminCourseDetail() {
   const [course, setCourse] = useState<Course | null>(null);
   const [modules, setModules] = useState<Module[]>([]);
   const [theme, setTheme] = useState<ThemeOverride>({});
+  const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
   const [status, setStatus] = useState<CourseStatus>("draft");
@@ -28,12 +29,20 @@ export function AdminCourseDetail() {
   const [moduleError, setModuleError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [copiedModuleId, setCopiedModuleId] = useState<string | null>(null);
+  const [riseModuleFile, setRiseModuleFile] = useState<File | null>(null);
+  const [riseModuleStatus, setRiseModuleStatus] = useState<"idle" | "importing" | "error">("idle");
+  const [riseModuleError, setRiseModuleError] = useState<string | null>(null);
+  const [riseModuleResult, setRiseModuleResult] = useState<{
+    moduleCount: number;
+    skipped: { type: string; family?: string; variant?: string }[];
+  } | null>(null);
 
   useEffect(() => {
     if (!courseId) return;
     getCourse(courseId).then((c) => {
       setCourse(c);
       setTheme(c.theme);
+      setTitle(c.title);
       setDescription(c.description ?? "");
       setCategory(c.category ?? "");
       setStatus(c.status);
@@ -45,7 +54,7 @@ export function AdminCourseDetail() {
     if (!courseId) return;
     setSaveStatus("saving");
     try {
-      const updated = await patchCourse(courseId, { theme, description, category: category || undefined, status });
+      const updated = await patchCourse(courseId, { title, theme, description, category: category || undefined, status });
       setCourse(updated);
       setSaveStatus("saved");
     } catch {
@@ -62,6 +71,23 @@ export function AdminCourseDetail() {
       navigate(`/admin/modules/${module.moduleId}`);
     } catch (err) {
       setModuleError((err as Error).message);
+    }
+  }
+
+  async function handleRiseModuleImport(e: React.FormEvent) {
+    e.preventDefault();
+    if (!courseId || !riseModuleFile) return;
+    setRiseModuleStatus("importing");
+    setRiseModuleError(null);
+    setRiseModuleResult(null);
+    try {
+      const result = await importRiseModules(courseId, riseModuleFile);
+      setRiseModuleResult({ moduleCount: result.moduleCount, skipped: result.skipped });
+      setRiseModuleStatus("idle");
+      setModules((prev) => [...prev, ...result.modules]);
+    } catch (err) {
+      setRiseModuleError((err as Error).message);
+      setRiseModuleStatus("error");
     }
   }
 
@@ -120,6 +146,10 @@ export function AdminCourseDetail() {
           A draft course is invisible to students - even ones it's assigned to - until you publish it. Admins can
           always see and open it either way.
         </p>
+        <label className="field">
+          Title
+          <input value={title} onChange={(e) => setTitle(e.target.value)} required />
+        </label>
         <div className="field">
           Description
           <Suspense fallback={<p className="field-hint">Loading editor...</p>}>
@@ -183,6 +213,41 @@ export function AdminCourseDetail() {
           </label>
           <button type="submit">Add module</button>
           {moduleError && <span className="save-status save-status-error">{moduleError}</span>}
+        </form>
+
+        <form className="course-form" onSubmit={handleRiseModuleImport}>
+          <h3>Import a module from Rise 360</h3>
+          <p className="library-section-hint">
+            Upload a Rise 360 .zip export - it's decompiled into one or more modules (one per top-level lesson in the
+            export) and added to this course, without creating a new course.
+          </p>
+          <label className="field">
+            Rise 360 export (.zip)
+            <input
+              type="file"
+              accept=".zip,application/zip"
+              onChange={(e) => setRiseModuleFile(e.target.files?.[0] ?? null)}
+              required
+            />
+          </label>
+          <button type="submit" disabled={!riseModuleFile || riseModuleStatus === "importing"}>
+            {riseModuleStatus === "importing" ? "Importing..." : "Import module(s)"}
+          </button>
+          {riseModuleStatus === "error" && riseModuleError && <p className="import-error">{riseModuleError}</p>}
+          {riseModuleResult && (
+            <div className="save-status save-status-ok">
+              <p>
+                Imported {riseModuleResult.moduleCount} module{riseModuleResult.moduleCount === 1 ? "" : "s"}.
+              </p>
+              {riseModuleResult.skipped.length > 0 && (
+                <p>
+                  {riseModuleResult.skipped.length} block{riseModuleResult.skipped.length === 1 ? "" : "s"} couldn&apos;t be
+                  converted and were skipped:{" "}
+                  {riseModuleResult.skipped.map((s) => [s.type, s.family, s.variant].filter(Boolean).join("/")).join(", ")}
+                </p>
+              )}
+            </div>
+          )}
         </form>
       </section>
 

@@ -573,6 +573,45 @@ app.post(
   }
 );
 
+// Same Rise 360 conversion as above, but attached to an existing course
+// instead of creating a new one - for adding a module (or several, since one
+// Rise export can contain multiple top-level lessons) to a course that
+// already exists, rather than always spinning up a whole new course per import.
+app.post(
+  "/api/courses/:courseId/import/rise",
+  requireRole("admin", "super_admin"),
+  riseUpload.single("file"),
+  async (req, res) => {
+    const course = await getCourse(req.params.courseId);
+    if (!course) {
+      res.status(404).json({ error: "Course not found" });
+      return;
+    }
+    if (!req.file) {
+      res.status(400).json({ error: "No file uploaded - expected a Rise 360 .zip export under field 'file'" });
+      return;
+    }
+
+    let converted;
+    try {
+      const raw = extractRiseRuntimeData(req.file.buffer);
+      converted = convertRiseCourse(raw);
+    } catch (err) {
+      if (err instanceof RiseZipError || err instanceof RiseImportError) {
+        res.status(400).json({ error: err.message });
+        return;
+      }
+      throw err;
+    }
+
+    const modules = await Promise.all(
+      converted.modules.map((m) => createModule({ courseId: course.courseId, title: m.title, objective: m.objective, lessons: m.lessons }))
+    );
+
+    res.status(201).json({ modules, moduleCount: modules.length, skipped: converted.skipped });
+  }
+);
+
 const imageUpload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 8 * 1024 * 1024 },
