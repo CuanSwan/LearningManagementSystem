@@ -9,16 +9,19 @@ export function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
+    setSubmitting(true);
     try {
       await login(email, password);
       const from = (location.state as { from?: { pathname: string; search: string } } | null)?.from;
       navigate(from ? `${from.pathname}${from.search}` : "/", { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not log in.");
+      setSubmitting(false);
     }
   }
 
@@ -35,7 +38,9 @@ export function Login() {
           <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
         </label>
         {error && <p className="import-error">{error}</p>}
-        <button type="submit">Log in</button>
+        <button type="submit" disabled={submitting}>
+          {submitting ? "Logging in..." : "Log in"}
+        </button>
       </form>
     </main>
   );

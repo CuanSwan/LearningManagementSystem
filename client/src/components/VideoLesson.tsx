@@ -76,7 +76,16 @@ export function VideoLesson({
             }
           }}
           onEnded={() => {
-            if (!isComplete) onComplete();
+            // Same firedRef guard as the embed/broken branch above - isComplete
+            // is server-derived and only flips true after onComplete's
+            // markComplete() round-trips to the API, so relying on it alone
+            // leaves a window (replaying, seeking back to the end, or just a
+            // slow network) where "ended" firing again sends a second
+            // duplicate PUT /api/progress/lessons/:lessonId.
+            if (!isComplete && !firedRef.current) {
+              firedRef.current = true;
+              onComplete();
+            }
           }}
           onError={() => setBroken(true)}
         />

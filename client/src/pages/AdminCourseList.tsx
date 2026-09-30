@@ -18,6 +18,8 @@ export function AdminCourseList() {
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
   const [theme, setTheme] = useState<ThemeOverride>({});
+  const [createStatus, setCreateStatus] = useState<"idle" | "creating">("idle");
+  const [createError, setCreateError] = useState<string | null>(null);
   const [riseFile, setRiseFile] = useState<File | null>(null);
   const [riseCategory, setRiseCategory] = useState("");
   const [riseStatus, setRiseStatus] = useState<"idle" | "importing" | "error">("idle");
@@ -37,8 +39,15 @@ export function AdminCourseList() {
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
-    const course = await createCourse({ title, description: description || undefined, category: category || undefined, theme });
-    navigate(`/admin/courses/${course.courseId}`);
+    setCreateStatus("creating");
+    setCreateError(null);
+    try {
+      const course = await createCourse({ title, description: description || undefined, category: category || undefined, theme });
+      navigate(`/admin/courses/${course.courseId}`);
+    } catch (err) {
+      setCreateError(err instanceof Error ? err.message : "Could not create course.");
+      setCreateStatus("idle");
+    }
   }
 
   async function handleRiseImport(e: React.FormEvent) {
@@ -116,7 +125,10 @@ export function AdminCourseList() {
           Suggest theme from title &amp; description
         </button>
         <ThemeOverrideFields value={theme} onChange={setTheme} />
-        <button type="submit">Create course</button>
+        <button type="submit" disabled={createStatus === "creating"}>
+          {createStatus === "creating" ? "Creating..." : "Create course"}
+        </button>
+        {createError && <span className="save-status save-status-error">{createError}</span>}
       </form>
 
       <form className="course-form" onSubmit={handleRiseImport}>

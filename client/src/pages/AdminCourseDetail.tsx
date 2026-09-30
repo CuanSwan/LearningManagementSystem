@@ -26,6 +26,7 @@ export function AdminCourseDetail() {
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [moduleTitle, setModuleTitle] = useState("");
   const [moduleObjective, setModuleObjective] = useState("");
+  const [moduleCreateStatus, setModuleCreateStatus] = useState<"idle" | "creating">("idle");
   const [moduleError, setModuleError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [copiedModuleId, setCopiedModuleId] = useState<string | null>(null);
@@ -65,12 +66,14 @@ export function AdminCourseDetail() {
   async function handleCreateModule(e: React.FormEvent) {
     e.preventDefault();
     if (!courseId) return;
+    setModuleCreateStatus("creating");
     setModuleError(null);
     try {
       const module = await createModule({ courseId, title: moduleTitle, objective: moduleObjective });
       navigate(`/admin/modules/${module.moduleId}`);
     } catch (err) {
       setModuleError((err as Error).message);
+      setModuleCreateStatus("idle");
     }
   }
 
@@ -211,7 +214,9 @@ export function AdminCourseDetail() {
             Objective
             <input value={moduleObjective} onChange={(e) => setModuleObjective(e.target.value)} required />
           </label>
-          <button type="submit">Add module</button>
+          <button type="submit" disabled={moduleCreateStatus === "creating"}>
+            {moduleCreateStatus === "creating" ? "Adding..." : "Add module"}
+          </button>
           {moduleError && <span className="save-status save-status-error">{moduleError}</span>}
         </form>
 

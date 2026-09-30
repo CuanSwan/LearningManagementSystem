@@ -40,6 +40,7 @@ export function AdminUsers() {
   const [resettingUserId, setResettingUserId] = useState<string | null>(null);
   const [resetPassword, setResetPassword] = useState("");
   const [resetConfirmPassword, setResetConfirmPassword] = useState("");
+  const [resetStatus, setResetStatus] = useState<"idle" | "resetting">("idle");
   const [resetError, setResetError] = useState<string | null>(null);
   const [resetDoneUserId, setResetDoneUserId] = useState<string | null>(null);
 
@@ -69,6 +70,7 @@ export function AdminUsers() {
       setResetError(PASSWORD_HINT);
       return;
     }
+    setResetStatus("resetting");
     try {
       await resetUserPassword(userId, resetPassword);
       setResettingUserId(null);
@@ -77,6 +79,8 @@ export function AdminUsers() {
       setResetDoneUserId(userId);
     } catch (err) {
       setResetError(err instanceof Error ? err.message : "Could not reset password.");
+    } finally {
+      setResetStatus("idle");
     }
   }
 
@@ -170,7 +174,9 @@ export function AdminUsers() {
                     minLength={8}
                     required
                   />
-                  <button type="submit">Set</button>
+                  <button type="submit" disabled={resetStatus === "resetting"}>
+                    {resetStatus === "resetting" ? "Setting..." : "Set"}
+                  </button>
                   <button type="button" onClick={() => setResettingUserId(null)}>
                     Cancel
                   </button>

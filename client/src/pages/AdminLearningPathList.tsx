@@ -13,6 +13,8 @@ export function AdminLearningPathList() {
   const [error, setError] = useState<string | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [createStatus, setCreateStatus] = useState<"idle" | "creating">("idle");
+  const [createError, setCreateError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -23,8 +25,15 @@ export function AdminLearningPathList() {
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
-    const path = await createLearningPath({ title, description: description || undefined });
-    navigate(`/admin/learning-paths/${path.pathId}`);
+    setCreateStatus("creating");
+    setCreateError(null);
+    try {
+      const path = await createLearningPath({ title, description: description || undefined });
+      navigate(`/admin/learning-paths/${path.pathId}`);
+    } catch (err) {
+      setCreateError(err instanceof Error ? err.message : "Could not create learning path.");
+      setCreateStatus("idle");
+    }
   }
 
   return (
@@ -62,7 +71,10 @@ export function AdminLearningPathList() {
             <RichTextEditor value={description} onChange={setDescription} />
           </Suspense>
         </div>
-        <button type="submit">Create learning path</button>
+        <button type="submit" disabled={createStatus === "creating"}>
+          {createStatus === "creating" ? "Creating..." : "Create learning path"}
+        </button>
+        {createError && <span className="save-status save-status-error">{createError}</span>}
       </form>
     </main>
   );
