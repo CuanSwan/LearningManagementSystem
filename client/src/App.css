@@ -2655,6 +2655,33 @@ a.path-snake-link:hover .path-snake-bubble {
   border-color: var(--theme-primary, #3e6259);
 }
 
+.rich-text-color-field {
+  display: inline-flex;
+  align-items: center;
+}
+
+.rich-text-color-field input[type="color"] {
+  width: 1.9rem;
+  height: 1.9rem;
+  padding: 2px;
+  border: 1px solid var(--border-strong);
+  border-radius: 3px;
+  background: var(--surface-card);
+  cursor: pointer;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .rich-text-content {
   padding: 0.75rem;
   min-height: 6rem;

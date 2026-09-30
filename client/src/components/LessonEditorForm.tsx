@@ -784,12 +784,17 @@ export function LessonEditorForm({
   switch (lesson.type) {
     case "text":
       return (
-        <label className="field">
+        // A plain div, not a <label> - the editor below has many of its own form
+        // controls (the toolbar's selects/buttons), and wrapping them all in one
+        // unassociated label makes the browser forward every click inside the
+        // editor to the first labelable descendant, stealing focus/selection
+        // away from the contenteditable itself.
+        <div className="field">
           Body
           <Suspense fallback={<p className="field-hint">Loading editor...</p>}>
             <RichTextEditor value={lesson.content.body} onChange={(body) => onChange({ body })} />
           </Suspense>
-        </label>
+        </div>
       );
     case "video":
       return (

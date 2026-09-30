@@ -1,10 +1,18 @@
+import Color from "@tiptap/extension-color";
 import Link from "@tiptap/extension-link";
+import { TextStyle } from "@tiptap/extension-text-style";
 import Underline from "@tiptap/extension-underline";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { useEffect, useState } from "react";
+import { FontSize, LineHeight, WordSpacing } from "../richTextExtensions.js";
 
 type HeadingLevel = 2 | 3 | 4;
+
+const FONT_SIZES = ["12px", "14px", "16px", "18px", "20px", "24px", "28px", "32px"];
+const LINE_HEIGHTS = ["1", "1.15", "1.5", "2"];
+const WORD_SPACINGS = ["2px", "4px", "8px"];
+const DEFAULT_FONT_COLOR = "#1a1a1a";
 
 // The markup editor behind the "text" lesson type - produces sanitized HTML
 // (headings, lists, emphasis, links) instead of the plain string the old
@@ -19,6 +27,11 @@ export function RichTextEditor({ value, onChange }: { value: string; onChange: (
       StarterKit.configure({ heading: { levels: [2, 3, 4] } }),
       Underline,
       Link.configure({ openOnClick: false, autolink: true }),
+      TextStyle,
+      Color,
+      FontSize,
+      WordSpacing,
+      LineHeight,
     ],
     content: value,
     onUpdate: ({ editor }) => onChange(editor.getHTML()),
@@ -56,7 +69,27 @@ export function RichTextEditor({ value, onChange }: { value: string; onChange: (
     else chain.setLink({ href: url }).run();
   }
 
+  function setFontSize(size: string) {
+    if (size === "") editor!.chain().focus().unsetFontSize().run();
+    else editor!.chain().focus().setFontSize(size).run();
+  }
+
+  function setLineHeight(height: string) {
+    if (height === "") editor!.chain().focus().unsetLineHeight().run();
+    else editor!.chain().focus().setLineHeight(height).run();
+  }
+
+  function setWordSpacing(spacing: string) {
+    if (spacing === "") editor!.chain().focus().unsetWordSpacing().run();
+    else editor!.chain().focus().setWordSpacing(spacing).run();
+  }
+
   const currentBlockStyle = ([2, 3, 4] as HeadingLevel[]).find((level) => editor.isActive("heading", { level }));
+  const currentFontSize = (editor.getAttributes("textStyle").fontSize as string | undefined) ?? "";
+  const currentLineHeight =
+    ((editor.getAttributes("paragraph").lineHeight ?? editor.getAttributes("heading").lineHeight) as string | undefined) ?? "";
+  const currentWordSpacing = (editor.getAttributes("textStyle").wordSpacing as string | undefined) ?? "";
+  const currentFontColor = (editor.getAttributes("textStyle").color as string | undefined) ?? DEFAULT_FONT_COLOR;
 
   return (
     <div className="rich-text-editor">
@@ -70,6 +103,47 @@ export function RichTextEditor({ value, onChange }: { value: string; onChange: (
           <option value="2">Heading</option>
           <option value="3">Subheading</option>
           <option value="4">Sub-subheading</option>
+        </select>
+        <select value={currentFontSize} onChange={(e) => setFontSize(e.target.value)} aria-label="Font size">
+          <option value="">Font size</option>
+          {FONT_SIZES.map((size) => (
+            <option key={size} value={size}>
+              {size}
+            </option>
+          ))}
+        </select>
+        <label className="rich-text-color-field">
+          <span className="sr-only">Font color</span>
+          <input
+            type="color"
+            value={currentFontColor}
+            onChange={(e) => editor!.chain().focus().setColor(e.target.value).run()}
+            aria-label="Font color"
+          />
+        </label>
+        <button
+          type="button"
+          onClick={() => editor!.chain().focus().unsetColor().run()}
+          aria-label="Reset font color"
+          title="Reset font color"
+        >
+          &#8635;
+        </button>
+        <select value={currentLineHeight} onChange={(e) => setLineHeight(e.target.value)} aria-label="Line spacing">
+          <option value="">Line spacing</option>
+          {LINE_HEIGHTS.map((height) => (
+            <option key={height} value={height}>
+              {height}
+            </option>
+          ))}
+        </select>
+        <select value={currentWordSpacing} onChange={(e) => setWordSpacing(e.target.value)} aria-label="Word spacing">
+          <option value="">Word spacing</option>
+          {WORD_SPACINGS.map((spacing) => (
+            <option key={spacing} value={spacing}>
+              {spacing}
+            </option>
+          ))}
         </select>
         <button
           type="button"
