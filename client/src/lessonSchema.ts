@@ -67,6 +67,7 @@ const LessonBaseSchema = z.object({
   source: LessonSourceSchema,
   wordingStyle: WordingStyleSchema,
   order: z.number().int().nonnegative(),
+  title: z.string().default("Untitled lesson"),
 });
 
 export const LessonSchema = z.discriminatedUnion("type", [

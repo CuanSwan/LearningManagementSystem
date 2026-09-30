@@ -190,6 +190,12 @@ const LessonBaseSchema = z.object({
   source: LessonSourceSchema,
   wordingStyle: WordingStyleSchema,
   order: z.number().int().nonnegative(),
+  // Every lesson has one regardless of type - what's shown for it on the
+  // module view (StudentLessonBlock, AdminModuleEditor's lesson list), in
+  // place of the old per-type content-derived preview text. Defaulted
+  // rather than required so lessons persisted before this field existed
+  // still parse.
+  title: z.string().default("Untitled lesson"),
 });
 
 export const TextLessonSchema = LessonBaseSchema.extend({

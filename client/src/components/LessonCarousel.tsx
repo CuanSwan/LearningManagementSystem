@@ -51,7 +51,7 @@ export function LessonCarousel({
             type="button"
             role="tab"
             aria-selected={i === index}
-            aria-label={`Lesson ${i + 1}${completedIds.has(l.lessonId) ? " (completed)" : ""}`}
+            aria-label={`Lesson ${i + 1}: ${l.title}${completedIds.has(l.lessonId) ? " (completed)" : ""}`}
             className={`carousel-dot${i === index ? " active" : ""}${
               completedIds.has(l.lessonId) ? " is-complete" : ""
             }`}

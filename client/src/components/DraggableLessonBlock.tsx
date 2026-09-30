@@ -14,6 +14,7 @@ export function DraggableLessonBlock({
   onToggleEdit,
   onContentChange,
   onWordingStyleChange,
+  onTitleChange,
 }: {
   lesson: Lesson;
   isEditing: boolean;
@@ -24,6 +25,7 @@ export function DraggableLessonBlock({
   onToggleEdit: (lessonId: string) => void;
   onContentChange: (lessonId: string, content: Lesson["content"]) => void;
   onWordingStyleChange: (lessonId: string, wordingStyle: WordingStyle) => void;
+  onTitleChange: (lessonId: string, title: string) => void;
 }) {
   return (
     <div
@@ -51,6 +53,7 @@ export function DraggableLessonBlock({
     >
       <div className="admin-lesson-toolbar">
         <span className="admin-lesson-toolbar-info">
+          <span className="admin-lesson-title">{lesson.title}</span>
           <span className="admin-lesson-type-badge">{lessonTypeLabel(lesson.type)}</span>
           <span aria-hidden="true">
             {lesson.type === "examBreakdown"
@@ -71,6 +74,10 @@ export function DraggableLessonBlock({
       </div>
       {isEditing ? (
         <div className="lesson-editor">
+          <label className="field">
+            Title
+            <input value={lesson.title} onChange={(e) => onTitleChange(lesson.lessonId, e.target.value)} required />
+          </label>
           {lesson.type === "text" && (
             <label className="field wording-style-field">
               Wording style

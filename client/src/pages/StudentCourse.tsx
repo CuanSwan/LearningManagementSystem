@@ -8,7 +8,6 @@ import { BackButton } from "../components/BackButton.js";
 import { Breadcrumb } from "../components/Breadcrumb.js";
 import { CourseSideMenu } from "../components/CourseSideMenu.js";
 import { isModuleComplete, isModuleLocked } from "../courseProgress.js";
-import { describeLesson } from "../lessonTemplates.js";
 import { daysRemainingLabel } from "../membership.js";
 import { Theme, themeStyle } from "../theme.js";
 
@@ -155,7 +154,7 @@ export function StudentCourse() {
                             <span className="timeline-step-bullet" aria-hidden="true">
                               {isComplete ? "✓" : "•"}
                             </span>
-                            <span className="timeline-step-preview">{truncate(describeLesson(lesson), 70)}</span>
+                            <span className="timeline-step-preview">{truncate(lesson.title, 70)}</span>
                             <span className="timeline-step-number">{lessonIndex + 1}</span>
                           </li>
                         );

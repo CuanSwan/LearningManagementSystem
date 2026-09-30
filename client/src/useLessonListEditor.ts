@@ -101,6 +101,10 @@ export function useLessonListEditor(initial: Lesson[] = []) {
     setLessons((prev) => prev.map((l) => (l.lessonId === lessonId ? { ...l, wordingStyle } : l)));
   }
 
+  function updateTitle(lessonId: string, title: string) {
+    setLessons((prev) => prev.map((l) => (l.lessonId === lessonId ? { ...l, title } : l)));
+  }
+
   return {
     lessons,
     savedLessons,
@@ -116,5 +120,6 @@ export function useLessonListEditor(initial: Lesson[] = []) {
     importLesson,
     updateContent,
     updateWordingStyle,
+    updateTitle,
   };
 }

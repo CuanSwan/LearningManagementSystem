@@ -13,6 +13,7 @@ function moduleWith(moduleId: string, lessonIds: string[]): Module {
       source: "human",
       wordingStyle: "official",
       order: i + 1,
+      title: "Lesson",
       type: "text",
       content: { body: "" },
     })),

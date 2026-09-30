@@ -35,20 +35,22 @@ const ORIENTATION_MODULE_TITLE = "Course Orientation";
 const ORIENTATION_MODULE_OBJECTIVE =
   "Review the exam breakdown, then watch the orientation video and the study plan and additional resources before starting the course.";
 
-function orientationLesson(order: number, type: "video", content: { videoUrl: string }): unknown;
-function orientationLesson(order: number, type: "text", content: { body: string }): unknown;
+function orientationLesson(order: number, title: string, type: "video", content: { videoUrl: string }): unknown;
+function orientationLesson(order: number, title: string, type: "text", content: { body: string }): unknown;
 function orientationLesson(
   order: number,
+  title: string,
   type: "examBreakdown",
   content: { passMarkPercent: number; timeLimitMinutes: number; questionCount: number; openBook: boolean }
 ): unknown;
-function orientationLesson(order: number, type: "video" | "text" | "examBreakdown", content: unknown): unknown {
+function orientationLesson(order: number, title: string, type: "video" | "text" | "examBreakdown", content: unknown): unknown {
   return {
     lessonId: crypto.randomUUID(),
     schemaVersion: 1,
     source: "human",
     wordingStyle: "shortened",
     order,
+    title,
     type,
     content,
   };
@@ -61,15 +63,15 @@ async function createOrientationModule(courseId: string): Promise<void> {
     status: "draft",
     seed: { title: ORIENTATION_MODULE_TITLE, objective: ORIENTATION_MODULE_OBJECTIVE },
     lessons: [
-      orientationLesson(1, "examBreakdown", {
+      orientationLesson(1, "Exam Breakdown", "examBreakdown", {
         passMarkPercent: 50,
         timeLimitMinutes: 60,
         questionCount: 20,
         openBook: false,
       }),
-      orientationLesson(2, "video", { videoUrl: "" }),
-      orientationLesson(3, "text", { body: "<h2>Study Plan</h2>" }),
-      orientationLesson(4, "text", { body: "<h2>Additional Resources</h2>" }),
+      orientationLesson(2, "Orientation Video", "video", { videoUrl: "" }),
+      orientationLesson(3, "Study Plan", "text", { body: "<h2>Study Plan</h2>" }),
+      orientationLesson(4, "Additional Resources", "text", { body: "<h2>Additional Resources</h2>" }),
     ],
   });
   await modules.set(module.moduleId, module);

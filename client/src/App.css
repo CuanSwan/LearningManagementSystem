@@ -204,6 +204,13 @@ main {
   letter-spacing: 0.03em;
 }
 
+.admin-lesson-title {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .component-library,
 .library-sidebar {
   box-sizing: border-box;
@@ -1555,10 +1562,9 @@ a.path-snake-link:hover .path-snake-bubble {
   gap: 1rem;
 }
 
-.student-lesson-badges {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
+.student-lesson-title {
+  margin: 0;
+  font-size: 1.15rem;
 }
 
 .student-lesson-complete-badge {

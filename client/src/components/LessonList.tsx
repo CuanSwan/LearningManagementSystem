@@ -41,6 +41,7 @@ export function LessonList({
             onToggleEdit={onToggleEdit}
             onContentChange={editor.updateContent}
             onWordingStyleChange={editor.updateWordingStyle}
+            onTitleChange={editor.updateTitle}
           />
           <LessonGap
             beforeId={lessons[i + 1]?.lessonId ?? null}

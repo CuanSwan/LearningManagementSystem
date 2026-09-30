@@ -1,6 +1,6 @@
 import DOMPurify from "dompurify";
 import { generateId } from "./id.js";
-import type { Lesson, LessonType, Module } from "./types.js";
+import type { Lesson, LessonType } from "./types.js";
 
 // Exam breakdown is deliberately excluded here - it's not a general-purpose
 // block an admin can drag into any module. It's a permanent fixture of the
@@ -98,14 +98,6 @@ export function describeLesson(lesson: Lesson): string {
   }
 }
 
-// A lesson has no name of its own in the schema - just content. This is a
-// display-only label (never persisted) for contexts where a lesson needs to
-// be identified on its own, detached from the module list it normally sits
-// in (e.g. the unassigned library tree).
-export function moduleLessonLabel(module: Module, lesson: Lesson): string {
-  return `${module.seed.title} — Lesson ${lesson.order}`;
-}
-
 // A generic placeholder graphic for the diagram preview below - a data URI
 // so the hover preview never makes a network request for a real image.
 const PLACEHOLDER_DIAGRAM_SVG =
@@ -122,6 +114,7 @@ export function createPreviewLesson(type: LessonType): Lesson {
     source: "human" as const,
     wordingStyle: "shortened" as const,
     order: 1,
+    title: lessonTypeLabel(type),
   };
   switch (type) {
     case "text":
@@ -255,6 +248,7 @@ export function createBlankLesson(type: LessonType, order: number): Lesson {
     source: "human" as const,
     wordingStyle: "shortened" as const,
     order,
+    title: lessonTypeLabel(type),
   };
   switch (type) {
     case "text":

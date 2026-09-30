@@ -1,9 +1,16 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest";
-import { createBlankLesson, createPreviewLesson, describeLesson, LESSON_TYPES } from "./lessonTemplates.js";
+import { createBlankLesson, createPreviewLesson, describeLesson, lessonTypeLabel, LESSON_TYPES } from "./lessonTemplates.js";
 import type { Lesson } from "./types.js";
 
-const base = { lessonId: "l1", schemaVersion: 1, source: "human" as const, wordingStyle: "official" as const, order: 1 };
+const base = {
+  lessonId: "l1",
+  schemaVersion: 1,
+  source: "human" as const,
+  wordingStyle: "official" as const,
+  order: 1,
+  title: "Lesson",
+};
 
 describe("describeLesson", () => {
   it("strips markup from a text lesson's body down to readable text", () => {
@@ -111,6 +118,12 @@ describe("createBlankLesson", () => {
       questionCount: 20,
       openBook: false,
     });
+  });
+
+  it("gives every type a real title regardless of type, so a fresh block isn't blank on the module view", () => {
+    for (const type of [...LESSON_TYPES, "examBreakdown"] as const) {
+      expect(createBlankLesson(type, 1).title).toBe(lessonTypeLabel(type));
+    }
   });
 });
 

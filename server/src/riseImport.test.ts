@@ -62,9 +62,27 @@ describe("convertRiseCourse", () => {
     expect(result.modules[0].lessons).toEqual([
       expect.objectContaining({
         type: "text",
+        title: "Hi",
         content: { body: "<h2>Hi</h2><p>Body text.</p>\n\n<p>Impact line.</p>" },
       }),
     ]);
+  });
+
+  it("derives a lesson's title from the block's own heading regardless of type, falling back to a generic label when there isn't one", () => {
+    const result = convertRiseCourse(
+      riseCourse([
+        {
+          id: "l1",
+          title: "M",
+          items: [
+            { id: "b1", type: "text", family: "text", items: [{ heading: "A Real Heading", paragraph: "<p>Body.</p>" }] },
+            { id: "b2", type: "divider" },
+            { id: "b3", type: "interactive", family: "flashcard", items: [{ front: { description: "Q" }, back: { description: "A" } }] },
+          ],
+        },
+      ])
+    );
+    expect(result.modules[0].lessons.map((l) => l.title)).toEqual(["A Real Heading", "Flashcards"]);
   });
 
   it("leaves objective empty rather than naming Rise when the source module has no description", () => {

@@ -111,6 +111,17 @@ function stripHtml(html: string | undefined): string {
   return blocks.join("\n\n");
 }
 
+// Every converted lesson needs a title regardless of type (see
+// LessonBaseSchema) - Rise doesn't give blocks one directly, so this derives
+// a short one from whatever text the block already has (a heading, a
+// question prompt, a section title, ...), falling back to a generic label
+// naming the kind of block when there's nothing suitable to pull from.
+function titleFromText(text: string | undefined, fallback: string, max = 60): string {
+  const plain = stripHtml(text).replace(/\s+/g, " ").trim();
+  if (!plain) return fallback;
+  return plain.length > max ? `${plain.slice(0, max).trimEnd()}...` : plain;
+}
+
 function escapeHtml(text: string): string {
   return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
@@ -203,6 +214,10 @@ const RISE_AUTHORSHIP: { source: LessonSource; wordingStyle: WordingStyle } = {
 
 type LessonBase = { lessonId: string; schemaVersion: number; source: LessonSource; wordingStyle: WordingStyle; order: number };
 
+// LessonBase above deliberately excludes title - see the per-block
+// derivations in convertBlock, each picking whatever field on that block
+// actually reads as a title, rather than a single generic rule.
+
 function convertBlock(block: RiseBlock, base: LessonBase, skipped: SkippedBlock[]): Lesson | null {
   // Pure "Continue" button chrome between screens - no content to carry over.
   if (block.type === "divider") return null;
@@ -214,7 +229,8 @@ function convertBlock(block: RiseBlock, base: LessonBase, skipped: SkippedBlock[
       .filter(Boolean)
       .join("\n\n");
     if (!body) return null;
-    return { ...base, type: "text", content: { body } };
+    const title = titleFromText(items[0]?.heading ?? items[0]?.paragraph, "Text");
+    return { ...base, title, type: "text", content: { body } };
   }
 
   if (block.type === "text" && block.family === "impact") {
@@ -224,7 +240,8 @@ function convertBlock(block: RiseBlock, base: LessonBase, skipped: SkippedBlock[
       .filter(Boolean)
       .join("\n\n");
     if (!body) return null;
-    return { ...base, type: "text", content: { body } };
+    const title = titleFromText(items[0]?.paragraph, "Text");
+    return { ...base, title, type: "text", content: { body } };
   }
 
   if (block.type === "list") {
@@ -233,7 +250,8 @@ function convertBlock(block: RiseBlock, base: LessonBase, skipped: SkippedBlock[
     if (listItems.length === 0) return null;
     const tag = block.variant === "bulleted" ? "ul" : "ol";
     const body = `<${tag}>${listItems.map((li) => `<li>${li}</li>`).join("")}</${tag}>`;
-    return { ...base, type: "text", content: { body } };
+    const title = titleFromText(items[0]?.paragraph, "List");
+    return { ...base, title, type: "text", content: { body } };
   }
 
   if (block.type === "interactive" && block.family === "flashcard") {
@@ -242,7 +260,7 @@ function convertBlock(block: RiseBlock, base: LessonBase, skipped: SkippedBlock[
       .map((card) => ({ front: stripHtml(card.front?.description), back: stripHtml(card.back?.description) }))
       .filter((c) => c.front || c.back);
     if (cards.length === 0) return null;
-    return { ...base, type: "flashcard", content: { cards } };
+    return { ...base, title: "Flashcards", type: "flashcard", content: { cards } };
   }
 
   // Accordion, tabs, timeline, and process are all, structurally, an ordered
@@ -259,7 +277,7 @@ function convertBlock(block: RiseBlock, base: LessonBase, skipped: SkippedBlock[
       .map((sub) => ({ title: sub.title ?? "", body: stripHtml(sub.description) }))
       .filter((s) => s.title || s.body);
     if (sections.length === 0) return null;
-    return { ...base, type: "accordion", content: { sections } };
+    return { ...base, title: titleFromText(sections[0]?.title, "Accordion"), type: "accordion", content: { sections } };
   }
 
   if (block.type === "interactive" && block.family === "interactive-fullscreen" && block.variant === "timeline") {
@@ -268,7 +286,7 @@ function convertBlock(block: RiseBlock, base: LessonBase, skipped: SkippedBlock[
       .map((sub) => ({ title: [sub.date, sub.title].filter(Boolean).join(": "), body: stripHtml(sub.description) }))
       .filter((s) => s.title || s.body);
     if (sections.length === 0) return null;
-    return { ...base, type: "accordion", content: { sections } };
+    return { ...base, title: titleFromText(sections[0]?.title, "Timeline"), type: "accordion", content: { sections } };
   }
 
   // A "sort these items into buckets" exercise - each item belongs to one
@@ -285,7 +303,7 @@ function convertBlock(block: RiseBlock, base: LessonBase, skipped: SkippedBlock[
       skipped.push({ type: block.type, family: block.family, variant: block.variant });
       return null;
     }
-    return { ...base, type: "matching", content: { pairs } };
+    return { ...base, title: "Matching", type: "matching", content: { pairs } };
   }
 
   if (block.type === "knowledgeCheck") {
@@ -300,7 +318,7 @@ function convertBlock(block: RiseBlock, base: LessonBase, skipped: SkippedBlock[
         );
         return { prompt: q.title ?? "", options: answers.map((a) => a.title ?? ""), correctIndex };
       });
-      return { ...base, type: "quiz", content: { questions } };
+      return { ...base, title: titleFromText(questions[0]?.prompt, "Quiz"), type: "quiz", content: { questions } };
     }
     // Our quiz schema only supports a single correct answer per question -
     // a multi-select knowledge check would be misrepresented as single-choice,
@@ -314,7 +332,7 @@ function convertBlock(block: RiseBlock, base: LessonBase, skipped: SkippedBlock[
       ]
         .filter(Boolean)
         .join("\n\n");
-      return { ...base, type: "text", content: { body } };
+      return { ...base, title: titleFromText(first.title, "Knowledge Check"), type: "text", content: { body } };
     }
   }
 

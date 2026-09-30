@@ -13,6 +13,7 @@ interface LessonBase {
   source: LessonSource;
   wordingStyle: WordingStyle;
   order: number;
+  title: string;
 }
 
 export interface TextLesson extends LessonBase {

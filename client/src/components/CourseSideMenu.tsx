@@ -4,7 +4,6 @@ import type { Module } from "../types.js";
 import { getProgress, listModulesByCourse } from "../api.js";
 import { useAuth } from "../auth.js";
 import { isModuleComplete, isModuleLocked } from "../courseProgress.js";
-import { describeLesson } from "../lessonTemplates.js";
 
 function truncate(text: string, maxLength: number): string {
   return text.length > maxLength ? `${text.slice(0, maxLength).trimEnd()}...` : text;
@@ -81,7 +80,7 @@ export function CourseSideMenu({
                   <ul className="course-side-menu-lessons">
                     {module.lessons.map((lesson) => (
                       <li key={lesson.lessonId} className="course-side-menu-lesson is-locked">
-                        {truncate(describeLesson(lesson), 40)}
+                        {truncate(lesson.title, 40)}
                       </li>
                     ))}
                   </ul>
@@ -98,7 +97,7 @@ export function CourseSideMenu({
                           {completedIds.has(lesson.lessonId) && (
                             <span className="course-side-menu-check" aria-label="Complete">&#10003;</span>
                           )}
-                          {truncate(describeLesson(lesson), 40)}
+                          {truncate(lesson.title, 40)}
                         </Link>
                       </li>
                     ))}

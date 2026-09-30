@@ -71,6 +71,7 @@ const sampleModules: Module[] = [
       {
         lessonId: "pm-lifecycle-intro",
         schemaVersion: 1,
+        title: "The Five Project Phases",
         source: "human",
         wordingStyle: "official",
         order: 1,
@@ -82,6 +83,7 @@ const sampleModules: Module[] = [
       {
         lessonId: "pm-lifecycle-video",
         schemaVersion: 1,
+        title: "Project Lifecycle Walkthrough",
         source: "human",
         wordingStyle: "official",
         order: 2,
@@ -95,6 +97,7 @@ const sampleModules: Module[] = [
       {
         lessonId: "pm-lifecycle-quiz",
         schemaVersion: 1,
+        title: "Check Your Understanding",
         source: "human",
         wordingStyle: "official",
         order: 3,
@@ -128,6 +131,7 @@ const sampleModules: Module[] = [
       {
         lessonId: "pm-scheduling-intro",
         schemaVersion: 1,
+        title: "Estimating and Sequencing Tasks",
         source: "human",
         wordingStyle: "official",
         order: 1,
@@ -139,6 +143,7 @@ const sampleModules: Module[] = [
       {
         lessonId: "pm-scheduling-diagram",
         schemaVersion: 1,
+        title: "A Sample Project Schedule",
         source: "human",
         wordingStyle: "official",
         order: 2,
@@ -150,6 +155,7 @@ const sampleModules: Module[] = [
       {
         lessonId: "pm-scheduling-practical",
         schemaVersion: 1,
+        title: "Build Your Own Schedule",
         source: "human",
         wordingStyle: "official",
         order: 3,
@@ -179,6 +185,7 @@ const sampleModules: Module[] = [
       {
         lessonId: "agile-fundamentals-intro",
         schemaVersion: 1,
+        title: "Scrum Roles, Events, and Artifacts",
         source: "human",
         wordingStyle: "official",
         order: 1,
@@ -190,6 +197,7 @@ const sampleModules: Module[] = [
       {
         lessonId: "agile-fundamentals-video",
         schemaVersion: 1,
+        title: "Scrum Overview",
         source: "human",
         wordingStyle: "official",
         order: 2,
@@ -203,6 +211,7 @@ const sampleModules: Module[] = [
       {
         lessonId: "agile-fundamentals-quiz",
         schemaVersion: 1,
+        title: "Check Your Understanding",
         source: "human",
         wordingStyle: "official",
         order: 3,
@@ -231,6 +240,7 @@ const sampleModules: Module[] = [
       {
         lessonId: "agile-sprint-intro",
         schemaVersion: 1,
+        title: "What Is a Sprint?",
         source: "human",
         wordingStyle: "official",
         order: 1,
@@ -242,6 +252,7 @@ const sampleModules: Module[] = [
       {
         lessonId: "agile-sprint-practical",
         schemaVersion: 1,
+        title: "Plan a One-Week Sprint",
         source: "human",
         wordingStyle: "official",
         order: 2,
@@ -271,6 +282,7 @@ const sampleModules: Module[] = [
       {
         lessonId: "python-getting-started-intro",
         schemaVersion: 1,
+        title: "How Python Code Runs",
         source: "human",
         wordingStyle: "official",
         order: 1,
@@ -282,6 +294,7 @@ const sampleModules: Module[] = [
       {
         lessonId: "python-getting-started-quiz",
         schemaVersion: 1,
+        title: "Check Your Understanding",
         source: "human",
         wordingStyle: "official",
         order: 2,
@@ -299,6 +312,7 @@ const sampleModules: Module[] = [
       {
         lessonId: "python-getting-started-practical",
         schemaVersion: 1,
+        title: "Write a Greeting Script",
         source: "human",
         wordingStyle: "official",
         order: 3,
@@ -327,6 +341,7 @@ const sampleModules: Module[] = [
       {
         lessonId: "networking-core-intro",
         schemaVersion: 1,
+        title: "IP Addresses and DNS",
         source: "human",
         wordingStyle: "official",
         order: 1,
@@ -338,6 +353,7 @@ const sampleModules: Module[] = [
       {
         lessonId: "networking-core-diagram",
         schemaVersion: 1,
+        title: "A Sample Network Topology",
         source: "human",
         wordingStyle: "official",
         order: 2,
@@ -360,6 +376,7 @@ const sampleModules: Module[] = [
       {
         lessonId: "cyber-threats-intro",
         schemaVersion: 1,
+        title: "Why Awareness Matters Most",
         source: "human",
         wordingStyle: "official",
         order: 1,
@@ -371,6 +388,7 @@ const sampleModules: Module[] = [
       {
         lessonId: "cyber-threats-quiz",
         schemaVersion: 1,
+        title: "Check Your Understanding",
         source: "human",
         wordingStyle: "official",
         order: 2,
@@ -403,6 +421,7 @@ const sampleModules: Module[] = [
       {
         lessonId: "ba-requirements-intro",
         schemaVersion: 1,
+        title: "From Vague Complaint to Testable Requirement",
         source: "human",
         wordingStyle: "official",
         order: 1,
@@ -414,6 +433,7 @@ const sampleModules: Module[] = [
       {
         lessonId: "ba-requirements-practical",
         schemaVersion: 1,
+        title: "Write a Testable Requirement",
         source: "human",
         wordingStyle: "official",
         order: 2,

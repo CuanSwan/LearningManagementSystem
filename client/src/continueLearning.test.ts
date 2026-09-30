@@ -30,6 +30,7 @@ function lesson(lessonId: string): Lesson {
     source: "human",
     wordingStyle: "official",
     order: 1,
+    title: "Lesson",
     type: "video",
     content: { videoUrl: "" },
   };

@@ -3,7 +3,16 @@ import { insertLesson, moveLesson } from "./lessonListOrdering.js";
 import type { Lesson } from "./types.js";
 
 function textLesson(lessonId: string, order: number): Lesson {
-  return { lessonId, schemaVersion: 1, source: "human", wordingStyle: "official", order, type: "text", content: { body: lessonId } };
+  return {
+    lessonId,
+    schemaVersion: 1,
+    source: "human",
+    wordingStyle: "official",
+    order,
+    title: lessonId,
+    type: "text",
+    content: { body: lessonId },
+  };
 }
 
 function ids(lessons: Lesson[]): string[] {

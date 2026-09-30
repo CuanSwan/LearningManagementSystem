@@ -11,7 +11,6 @@ import { StudentLessonBlock } from "../components/StudentLessonBlock.js";
 import { useAuth } from "../auth.js";
 import { isModuleLocked } from "../courseProgress.js";
 import { useDisplayPreference } from "../displayPreference.js";
-import { describeLesson } from "../lessonTemplates.js";
 import { Theme, themeStyle } from "../theme.js";
 
 function truncate(text: string, maxLength: number): string {
@@ -38,7 +37,7 @@ export function StudentModule() {
   const { mode } = useDisplayPreference();
 
   const handleCurrentLessonChange = useCallback((lesson: Lesson) => {
-    setCurrentLessonPreview(truncate(describeLesson(lesson), 40));
+    setCurrentLessonPreview(truncate(lesson.title, 40));
   }, []);
 
   useEffect(() => {

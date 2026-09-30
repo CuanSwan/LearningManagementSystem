@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import type { Course, Lesson, Module } from "../types.js";
 import { listAllModules, listCourses } from "../api.js";
 import { LIBRARY_LESSON_MIME } from "../dnd.js";
-import { describeLesson, lessonTypeLabel, moduleLessonLabel } from "../lessonTemplates.js";
+import { describeLesson, lessonTypeLabel } from "../lessonTemplates.js";
 
 const UNCATEGORIZED = "Uncategorized";
 
@@ -106,9 +106,7 @@ export function CourseLibraryTree() {
                   ) : (
                     [...module.lessons]
                       .sort((a, b) => a.order - b.order)
-                      .map((lesson) => (
-                        <LibraryLessonItem key={lesson.lessonId} lesson={lesson} name={moduleLessonLabel(module, lesson)} />
-                      ))
+                      .map((lesson) => <LibraryLessonItem key={lesson.lessonId} lesson={lesson} />)
                   )}
                 </details>
               ))}
@@ -120,14 +118,14 @@ export function CourseLibraryTree() {
   );
 }
 
-function LibraryLessonItem({ lesson, name }: { lesson: Lesson; name?: string }) {
+function LibraryLessonItem({ lesson }: { lesson: Lesson }) {
   return (
     <div
       className="library-item library-item-saved"
       draggable
       onDragStart={(e) => e.dataTransfer.setData(LIBRARY_LESSON_MIME, JSON.stringify(lesson))}
     >
-      {name && <span className="library-item-name">{name}</span>}
+      <span className="library-item-name">{lesson.title}</span>
       <span className="library-item-type">{lessonTypeLabel(lesson.type)}</span>
       <span className="library-item-preview">{describeLesson(lesson)}</span>
     </div>

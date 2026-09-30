@@ -1,10 +1,11 @@
 import type { Lesson, LessonType } from "../types.js";
 import { LessonRenderer } from "./LessonRenderer.js";
 
-// Each of these reads as a self-contained visual (its own counter/title/
-// stations sit inside the component itself) - the type label on top of
-// them is redundant chrome that breaks that illusion, unlike a plain text
-// or quiz block where the label is the only cue to what kind of lesson it is.
+// Each of these reads as a self-contained visual (its own per-item titles/
+// stations sit inside the component itself) - wrapping it in a bordered
+// card on top doubles up on framing, unlike a plain text or quiz block.
+// The lesson's own title still shows above either way (see
+// student-lesson-title below) - only the card chrome differs.
 const DYNAMIC_COMPONENT_TYPES: Set<LessonType> = new Set([
   "dial",
   "pipeline",
@@ -31,7 +32,7 @@ export function StudentLessonBlock({
       className={`student-lesson student-lesson-${lesson.type}${isComplete ? " is-complete" : ""}${isDynamicComponent ? " is-floating" : ""}`}
     >
       <div className="student-lesson-header">
-        <div className="student-lesson-badges" />
+        <h2 className="student-lesson-title">{lesson.title}</h2>
         {isComplete && <span className="student-lesson-complete-badge">✓ Completed</span>}
       </div>
       <LessonRenderer lesson={lesson} isComplete={isComplete} onComplete={onComplete} />

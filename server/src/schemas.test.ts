@@ -235,6 +235,22 @@ describe("ModuleSchema", () => {
     expect(() => parseModule(validModule)).not.toThrow();
   });
 
+  it("defaults a lesson's title when it wasn't stored with one, regardless of type", () => {
+    const parsed = parseModule(validModule);
+    for (const lesson of parsed.lessons) {
+      expect(lesson.title).toBe("Untitled lesson");
+    }
+  });
+
+  it("accepts an explicit lesson title", () => {
+    const withTitle = {
+      ...validModule,
+      lessons: [{ ...validModule.lessons[0], title: "How Negotiation Works" }],
+    };
+    const parsed = parseModule(withTitle);
+    expect(parsed.lessons[0].title).toBe("How Negotiation Works");
+  });
+
   it("rejects an exam breakdown lesson with a pass mark over 100", () => {
     const invalid = {
       ...validModule,
