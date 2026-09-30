@@ -7,16 +7,23 @@ import type { Course, CourseStage } from "./types.js";
 // stage it was last left in.
 export type BoardColumnId = CourseStage | "published";
 
-export const BOARD_COLUMNS: { id: BoardColumnId; title: string; hint: string }[] = [
+export const BOARD_COLUMNS: { id: BoardColumnId; title: string; hint: string; requiresAssignee?: boolean }[] = [
   { id: "planned", title: "Needs to be Made", hint: "Planned, not started yet" },
-  { id: "in_progress", title: "In Progress", hint: "Actively being built" },
-  { id: "in_review", title: "In Review", hint: "Submitted for review" },
+  // Starting work and sending something for review both need someone
+  // accountable for it - dropping a card into either without an assignee
+  // prompts for one instead of completing the move (see AdminBoard.tsx).
+  { id: "in_progress", title: "In Progress", hint: "Actively being built", requiresAssignee: true },
+  { id: "in_review", title: "In Review", hint: "Submitted for review", requiresAssignee: true },
   { id: "ready", title: "Ready to Publish", hint: "Reviewed and approved" },
   { id: "published", title: "Published", hint: "Live for assigned students" },
 ];
 
 export function columnForCourse(course: Course): BoardColumnId {
   return course.status === "published" ? "published" : course.stage;
+}
+
+export function columnRequiresAssignee(columnId: BoardColumnId): boolean {
+  return BOARD_COLUMNS.find((c) => c.id === columnId)?.requiresAssignee ?? false;
 }
 
 export function groupCoursesByColumn(courses: Course[]): Record<BoardColumnId, Course[]> {

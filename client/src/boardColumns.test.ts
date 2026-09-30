@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { columnForCourse, groupCoursesByColumn, patchForColumn } from "./boardColumns.js";
+import { columnForCourse, columnRequiresAssignee, groupCoursesByColumn, patchForColumn } from "./boardColumns.js";
 import type { Course } from "./types.js";
 
 function course(overrides: Partial<Course> = {}): Course {
@@ -38,6 +38,19 @@ describe("groupCoursesByColumn", () => {
     expect(grouped.published.map((c) => c.courseId)).toEqual(["c"]);
     expect(grouped.in_review).toEqual([]);
     expect(grouped.ready).toEqual([]);
+  });
+});
+
+describe("columnRequiresAssignee", () => {
+  it("requires an assignee to start work or send something for review", () => {
+    expect(columnRequiresAssignee("in_progress")).toBe(true);
+    expect(columnRequiresAssignee("in_review")).toBe(true);
+  });
+
+  it("doesn't require one for the other columns", () => {
+    expect(columnRequiresAssignee("planned")).toBe(false);
+    expect(columnRequiresAssignee("ready")).toBe(false);
+    expect(columnRequiresAssignee("published")).toBe(false);
   });
 });
 
