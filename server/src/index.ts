@@ -494,7 +494,8 @@ const CoursePatchSchema = z.object({
   assignedTo: z.string().nullable().optional(),
 });
 
-// Any admin can create/edit a course, but assigning it to someone else is a
+// Any admin can create/edit a course, and any admin can claim it for
+// themselves ("Assign to me"), but assigning it to someone else is a
 // super_admin-only action - undefined means the caller isn't touching
 // assignedTo at all, so it's left alone rather than rejected.
 async function checkAssigneeChange(
@@ -502,6 +503,7 @@ async function checkAssigneeChange(
   assignedTo: string | null | undefined
 ): Promise<{ status: number; error: string } | null> {
   if (assignedTo === undefined) return null;
+  if (assignedTo === req.user!.userId) return null;
   if (req.user!.role !== "super_admin") {
     return { status: 403, error: "Only super admins can assign a course to someone else" };
   }

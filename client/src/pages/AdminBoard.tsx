@@ -85,10 +85,10 @@ export function AdminBoard() {
     };
   }
 
-  async function confirmPendingDrop() {
-    if (!pendingDrop || !pendingAssignee) return;
+  async function confirmPendingDrop(assigneeId: string) {
+    if (!pendingDrop || !assigneeId) return;
     setPendingError(null);
-    const patch = { ...patchForColumn(pendingDrop.columnId), assignedTo: pendingAssignee };
+    const patch = { ...patchForColumn(pendingDrop.columnId), assignedTo: assigneeId };
     try {
       const updated = await patchCourse(pendingDrop.courseId, patch);
       setCourses((prev) => prev.map((c) => (c.courseId === updated.courseId ? updated : c)));
@@ -281,7 +281,17 @@ export function AdminBoard() {
                   <button type="button" className="modal-secondary" onClick={() => setPendingDrop(null)}>
                     Cancel
                   </button>
-                  <button type="button" className="modal-primary" disabled={!pendingAssignee} onClick={confirmPendingDrop}>
+                  {user && (
+                    <button type="button" className="modal-secondary" onClick={() => confirmPendingDrop(user.userId)}>
+                      Assign to me
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className="modal-primary"
+                    disabled={!pendingAssignee}
+                    onClick={() => confirmPendingDrop(pendingAssignee)}
+                  >
                     Assign &amp; move
                   </button>
                 </div>
@@ -290,12 +300,18 @@ export function AdminBoard() {
               <>
                 <p>
                   {pendingColumn.title} requires an assignee, and <strong>{pendingCourse.title}</strong> doesn&apos;t have
-                  one yet. Ask a super admin to assign it before moving it here.
+                  one yet. Claim it for yourself, or ask a super admin to assign someone else.
                 </p>
+                {pendingError && <p className="import-error">{pendingError}</p>}
                 <div className="modal-actions">
-                  <button type="button" className="modal-primary" onClick={() => setPendingDrop(null)}>
-                    Close
+                  <button type="button" className="modal-secondary" onClick={() => setPendingDrop(null)}>
+                    Cancel
                   </button>
+                  {user && (
+                    <button type="button" className="modal-primary" onClick={() => confirmPendingDrop(user.userId)}>
+                      Assign to me &amp; move
+                    </button>
+                  )}
                 </div>
               </>
             )}
