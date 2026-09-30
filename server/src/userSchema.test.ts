@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { PasswordSchema, UserSchema } from "./userSchema.js";
+import { PasswordSchema, UserSchema } from "./schemas.js";
 
 describe("UserSchema", () => {
   it("rejects an invalid email", () => {

@@ -1,6 +1,13 @@
 import type { Database, DocumentStore } from "./db/index.js";
-import { parseCourse, parseLearningPath, parseModule, type Course, type LearningPath, type Module } from "./schemas.js";
-import type { User } from "./userSchema.js";
+import {
+  parseCourse,
+  parseLearningPath,
+  parseModule,
+  type Course,
+  type LearningPath,
+  type Module,
+  type User,
+} from "./schemas.js";
 
 let courses: DocumentStore<Course>;
 let modules: DocumentStore<Module>;

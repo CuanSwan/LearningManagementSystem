@@ -4,8 +4,7 @@ import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createFileStore } from "./db/fileStore.js";
 import type { Database } from "./db/index.js";
-import { parseCourse, parseLearningPath, parseModule } from "./schemas.js";
-import type { User } from "./userSchema.js";
+import { parseCourse, parseLearningPath, parseModule, type User } from "./schemas.js";
 import {
   createCourse,
   createLearningPath,

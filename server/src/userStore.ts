@@ -1,6 +1,6 @@
 import { hashPassword, verifyPassword } from "./auth.js";
 import type { Database, DocumentStore } from "./db/index.js";
-import { UserSchema, type AuthOrigin, type User, type UserRole } from "./userSchema.js";
+import { UserSchema, type AuthOrigin, type User, type UserRole } from "./schemas.js";
 import { getVoucher } from "./voucherStore.js";
 
 interface StoredUser extends Record<string, unknown> {

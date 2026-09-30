@@ -1,8 +1,26 @@
-import { ColorSchemeSchema, LessonDisplayModeSchema } from "./displayPreference.js";
 import { sendBugReport, sendSupportMessage, sendVoucherEmail } from "./mailer.js";
-import { CourseStatusSchema, LessonSchema, ModuleSchema } from "./schemas.js";
-import { ThemeOverrideSchema } from "./theme.js";
-import { PasswordSchema, UserRoleSchema, type UserRole } from "./userSchema.js";
+import {
+  BugReportSchema,
+  ChangePasswordSchema,
+  CoursePatchSchema,
+  CreateCourseInputSchema,
+  CreateLearningPathInputSchema,
+  CreateModuleInputSchema,
+  CreateVoucherInputSchema,
+  EmbedQuerySchema,
+  LearningPathPatchSchema,
+  LoginSchema,
+  ModuleSchema,
+  RegisterSchema,
+  SetColorSchemeSchema,
+  SetDisplayPreferenceSchema,
+  SetLessonProgressSchema,
+  SetUserAssignmentsSchema,
+  SupportMessageSchema,
+  UpdateUserPasswordSchema,
+  UpdateUserRoleSchema,
+  type UserRole,
+} from "./schemas.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import express, { type NextFunction, type Request, type Response } from "express";
@@ -110,7 +128,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 // True once a voucher-registered user's one-year window (see
-// voucherSchema.ts's VOUCHER_VALIDITY_MS) has passed. Absent for a user
+// voucherStore.ts's VOUCHER_VALIDITY_MS) has passed. Absent for a user
 // with no originating voucher (pre-voucher accounts, seeded demo
 // accounts), who never expire.
 function isMembershipExpired(user: { membershipExpiresAt?: number }): boolean {
@@ -190,21 +208,6 @@ function requireRole(...roles: UserRole[]) {
 
 // --- Auth ---
 
-// name and role are deliberately not part of this - both live on the
-// voucher (see voucherSchema.ts) and are copied from there, not taken from
-// the request body, so a client can't self-elevate by passing its own
-// role, and can't get a name a course admin never actually invited.
-const RegisterSchema = z.object({
-  voucherId: z.string().min(1),
-  email: z.string().email(),
-  password: PasswordSchema,
-});
-
-const LoginSchema = z.object({
-  email: z.string().email(),
-  password: z.string(),
-});
-
 function setSessionCookie(res: Response, userId: string) {
   const sessionId = createSession(userId);
   res.cookie(SESSION_COOKIE, sessionId, cookieOptions);
@@ -272,11 +275,6 @@ app.get("/api/auth/me", (req, res) => {
   res.json(req.user);
 });
 
-const ChangePasswordSchema = z.object({
-  currentPassword: z.string(),
-  newPassword: PasswordSchema,
-});
-
 app.put("/api/auth/me/password", requireAuth, async (req, res) => {
   const parsed = ChangePasswordSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -293,12 +291,6 @@ app.put("/api/auth/me/password", requireAuth, async (req, res) => {
 });
 
 // --- Embed (passwordless entry from an external site, e.g. an iframe) ---
-
-const EmbedQuerySchema = z.object({
-  email: z.string().email(),
-  courseId: z.string().min(1),
-  moduleId: z.string().min(1),
-});
 
 // Hit directly by the visitor's browser (not the external site's backend) -
 // see the design discussion this implements: an embed link grants access to
@@ -338,12 +330,6 @@ app.get("/api/embed", async (req, res) => {
 
 // --- User management (super_admin only) ---
 
-const CreateUserInputSchema = z.object({
-  email: z.string().email(),
-  name: z.string().min(1),
-  password: z.string().min(8),
-  role: UserRoleSchema,
-});
 // --- User management ---
 
 // Listing users (name/email/role/assignments) is needed by the course/
@@ -354,7 +340,7 @@ app.get("/api/users", requireRole("admin", "super_admin"), async (_req, res) => 
 });
 
 app.patch("/api/users/:userId/role", requireRole("super_admin"), async (req, res) => {
-  const parsed = z.object({ role: UserRoleSchema }).safeParse(req.body);
+  const parsed = UpdateUserRoleSchema.safeParse(req.body);
   if (!parsed.success) {
     sendValidationError(res, parsed.error);
     return;
@@ -368,7 +354,7 @@ app.patch("/api/users/:userId/role", requireRole("super_admin"), async (req, res
 });
 
 app.patch("/api/users/:userId/password", requireRole("super_admin"), async (req, res) => {
-  const parsed = z.object({ newPassword: PasswordSchema }).safeParse(req.body);
+  const parsed = UpdateUserPasswordSchema.safeParse(req.body);
   if (!parsed.success) {
     sendValidationError(res, parsed.error);
     return;
@@ -379,11 +365,6 @@ app.patch("/api/users/:userId/password", requireRole("super_admin"), async (req,
     return;
   }
   res.status(204).end();
-});
-
-const SetUserAssignmentsSchema = z.object({
-  assignedLearningPathIds: z.array(z.string()),
-  assignedCourseIds: z.array(z.string()),
 });
 
 app.patch("/api/users/:userId/assignments", requireRole("admin", "super_admin"), async (req, res) => {
@@ -402,12 +383,6 @@ app.patch("/api/users/:userId/assignments", requireRole("admin", "super_admin"),
 
 // --- Vouchers ---
 
-const CreateVoucherInputSchema = z.object({
-  email: z.string().email(),
-  name: z.string().min(1),
-  role: UserRoleSchema,
-});
-
 // Only super_admin can issue an admin/super_admin voucher - mirrors the
 // existing rule that only super_admin can hand out privileged roles at
 // all (see the role-patch route above). A plain admin can still invite
@@ -425,7 +400,7 @@ app.get("/api/vouchers", requireRole("admin", "super_admin"), async (_req, res) 
 // voucher before showing the form, before the visitor has any session.
 // voucherId is an unguessable UUID (the link's whole security model), and
 // this only ever returns the public-safe projection (see
-// voucherSchema.ts's PublicVoucherSchema) - never registeredUserId.
+// schemas.ts's PublicVoucherSchema) - never registeredUserId.
 app.get("/api/vouchers/:voucherId", async (req, res) => {
   const voucher = await getVoucher(req.params.voucherId);
   if (!voucher) {
@@ -475,32 +450,6 @@ app.patch("/api/vouchers/:voucherId/revoke", requireRole("admin", "super_admin")
 });
 
 // --- Courses & modules ---
-
-const CreateCourseInputSchema = z.object({
-  title: z.string().min(1),
-  description: z.string().optional(),
-  category: z.string().optional(),
-  theme: ThemeOverrideSchema.optional(),
-});
-
-const CoursePatchSchema = z.object({
-  title: z.string().min(1).optional(),
-  description: z.string().optional(),
-  category: z.string().optional(),
-  theme: ThemeOverrideSchema.optional(),
-  status: CourseStatusSchema.optional(),
-});
-
-const CreateModuleInputSchema = z.object({
-  courseId: z.string().min(1).optional(),
-  category: z.string().min(1).optional(),
-  title: z.string().min(1),
-  objective: z.string().min(1),
-  // Only meaningful (and required, enforced below) when creating a
-  // standalone library module - an empty unassigned module is clutter, not
-  // a reusable component, so creation is refused rather than persisting one.
-  lessons: z.array(LessonSchema).optional(),
-});
 
 app.get("/api/courses", requireAuth, async (_req, res) => {
   res.json(await listCourses());
@@ -736,18 +685,6 @@ app.delete("/api/modules/:moduleId", requireRole("admin", "super_admin"), async 
 
 // --- Learning paths ---
 
-const CreateLearningPathInputSchema = z.object({
-  title: z.string().min(1),
-  description: z.string().optional(),
-  courseIds: z.array(z.string()).optional(),
-});
-
-const LearningPathPatchSchema = z.object({
-  title: z.string().min(1).optional(),
-  description: z.string().optional(),
-  courseIds: z.array(z.string()).optional(),
-});
-
 app.get("/api/learning-paths", requireAuth, async (_req, res) => {
   res.json(await listLearningPaths());
 });
@@ -806,9 +743,7 @@ app.get("/api/progress", requireAuth, async (req, res) => {
 // recently finished a lesson in, which "Continue where you left off"
 // deep-links straight back to instead of just the course.
 app.put("/api/progress/lessons/:lessonId", requireAuth, async (req, res) => {
-  const parsed = z
-    .object({ completed: z.boolean(), courseId: z.string().min(1).optional(), moduleId: z.string().min(1).optional() })
-    .safeParse(req.body);
+  const parsed = SetLessonProgressSchema.safeParse(req.body);
   if (!parsed.success) {
     sendValidationError(res, parsed.error);
     return;
@@ -831,7 +766,7 @@ app.get("/api/preferences", requireAuth, async (req, res) => {
 });
 
 app.put("/api/preferences", requireAuth, async (req, res) => {
-  const parsed = z.object({ lessonDisplayMode: LessonDisplayModeSchema }).safeParse(req.body);
+  const parsed = SetDisplayPreferenceSchema.safeParse(req.body);
   if (!parsed.success) {
     sendValidationError(res, parsed.error);
     return;
@@ -841,7 +776,7 @@ app.put("/api/preferences", requireAuth, async (req, res) => {
 });
 
 app.put("/api/preferences/color-scheme", requireAuth, async (req, res) => {
-  const parsed = z.object({ colorScheme: ColorSchemeSchema }).safeParse(req.body);
+  const parsed = SetColorSchemeSchema.safeParse(req.body);
   if (!parsed.success) {
     sendValidationError(res, parsed.error);
     return;
@@ -852,8 +787,6 @@ app.put("/api/preferences/color-scheme", requireAuth, async (req, res) => {
 
 // --- Support ---
 
-const SupportMessageSchema = z.object({ message: z.string().trim().min(1).max(5000) });
-
 app.post("/api/support", requireAuth, async (req, res) => {
   const parsed = SupportMessageSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -862,12 +795,6 @@ app.post("/api/support", requireAuth, async (req, res) => {
   }
   const sent = await sendSupportMessage({ fromName: req.user!.name, fromEmail: req.user!.email, message: parsed.data.message });
   res.json({ sent });
-});
-
-const BugReportSchema = z.object({
-  description: z.string().trim().min(1).max(5000),
-  stepsToReproduce: z.string().trim().max(5000).optional(),
-  pageUrl: z.string().trim().max(2000).optional(),
 });
 
 app.post("/api/support/bug-report", requireAuth, async (req, res) => {

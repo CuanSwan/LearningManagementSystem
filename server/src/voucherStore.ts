@@ -1,8 +1,13 @@
 import type { Database, DocumentStore } from "./db/index.js";
-import { VOUCHER_VALIDITY_MS, VoucherSchema, type PublicVoucher, type Voucher, type VoucherStatus } from "./voucherSchema.js";
-import type { UserRole } from "./userSchema.js";
+import { VoucherSchema, type PublicVoucher, type UserRole, type Voucher, type VoucherStatus } from "./schemas.js";
 
 let vouchers: DocumentStore<Voucher>;
+
+// The one year a student voucher (and, transitively, the account created
+// from it) stays valid for. Admin and super_admin vouchers don't use this
+// at all - see createVoucher - since an admin's access shouldn't lapse on
+// a clock the way a student's course access does.
+export const VOUCHER_VALIDITY_MS = 365 * 24 * 60 * 60 * 1000;
 
 export async function initVoucherStore(db: Database): Promise<void> {
   // Not unique - a revoked or expired voucher for an email can legitimately

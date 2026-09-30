@@ -4,6 +4,7 @@ import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createFileStore } from "./db/fileStore.js";
 import type { Database } from "./db/index.js";
+import type { Voucher } from "./schemas.js";
 import {
   checkVoucherForRegistration,
   createVoucher,
@@ -14,8 +15,8 @@ import {
   markVoucherRegistered,
   revokeVoucher,
   toPublicVoucher,
+  VOUCHER_VALIDITY_MS,
 } from "./voucherStore.js";
-import { VOUCHER_VALIDITY_MS, type Voucher } from "./voucherSchema.js";
 
 let dir: string;
 

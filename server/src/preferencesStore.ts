@@ -1,5 +1,5 @@
 import type { Database, DocumentStore } from "./db/index.js";
-import type { ColorScheme, LessonDisplayMode } from "./displayPreference.js";
+import type { ColorScheme, LessonDisplayMode } from "./schemas.js";
 
 interface PreferenceDoc extends Record<string, unknown> {
   userId: string;

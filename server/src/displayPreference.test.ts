@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ColorSchemeSchema, LessonDisplayModeSchema } from "./displayPreference.js";
+import { ColorSchemeSchema, LessonDisplayModeSchema } from "./schemas.js";
 
 describe("LessonDisplayModeSchema", () => {
   it("accepts the known display modes", () => {

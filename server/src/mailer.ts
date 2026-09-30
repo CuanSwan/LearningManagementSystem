@@ -1,5 +1,5 @@
 import { Resend } from "resend";
-import type { UserRole } from "./userSchema.js";
+import type { UserRole } from "./schemas.js";
 
 const resendApiKey = process.env.RESEND_API_KEY;
 // resend.dev's shared testing domain works with no domain verification of

@@ -1,6 +1,137 @@
 import { z } from "zod";
 import { sanitizeHtml } from "./sanitizeHtml.js";
-import { ThemeOverrideSchema } from "./theme.js";
+
+// Every Zod schema on the server lives in this one file, so a route
+// handler or store function never has to guess where a shape is defined -
+// domain schemas (lesson/module/course/user/voucher/...) and the
+// request-body schemas each route validates against both live here.
+
+// --- Theme ---
+
+export const ThemeValuesSchema = z.object({
+  primaryColor: z.string(),
+  backgroundColor: z.string(),
+  fontFamily: z.string(),
+});
+export type ThemeValues = z.infer<typeof ThemeValuesSchema>;
+
+export const ThemeOverrideSchema = ThemeValuesSchema.partial();
+export type ThemeOverride = z.infer<typeof ThemeOverrideSchema>;
+
+// --- Users & auth ---
+
+export const UserRoleSchema = z.enum(["student", "admin", "super_admin"]);
+export type UserRole = z.infer<typeof UserRoleSchema>;
+
+// "password" is every normal account (register, admin-created) - it has a
+// real password and can log in through the login form. "embed" is an
+// account auto-provisioned from an embed link (see server/src/index.ts's
+// /api/embed) - it has no usable password and only ever exists to hold
+// course assignments and progress for a visitor coming from an embedded
+// iframe. Defaults to "password" so every account created before this
+// field existed still parses as the (correct) normal case.
+export const AuthOriginSchema = z.enum(["password", "embed"]);
+export type AuthOrigin = z.infer<typeof AuthOriginSchema>;
+// Applied everywhere a password is being SET (register, self-service
+// change, admin reset) - never for login, which has to keep accepting
+// whatever password an existing account was created with, complexity
+// rules or not. Zod reports every failing rule at once (via
+// sendValidationError's issue-joining), not just the first, so a weak
+// password gets one message listing everything still missing.
+export const PasswordSchema = z
+  .string()
+  .min(8, "Password must be at least 8 characters")
+  .regex(/[a-z]/, "Password must contain a lowercase letter")
+  .regex(/[A-Z]/, "Password must contain an uppercase letter")
+  .regex(/[0-9]/, "Password must contain a number")
+  .regex(/[^A-Za-z0-9]/, "Password must contain a symbol");
+
+// Public-safe user shape - never carries a password or password hash.
+// assignedLearningPathIds/assignedCourseIds default to [] so existing
+// stored users (from before this field existed) still parse - an admin
+// hasn't assigned them anything yet, which is exactly what an empty array
+// means.
+export const UserSchema = z.object({
+  userId: z.string(),
+  email: z.string().email(),
+  name: z.string(),
+  role: UserRoleSchema,
+  assignedLearningPathIds: z.array(z.string()).default([]),
+  assignedCourseIds: z.array(z.string()).default([]),
+  authOrigin: AuthOriginSchema.default("password"),
+  // Absent for a user with no originating voucher (every account created
+  // before this feature existed, plus the seeded demo accounts) - such a
+  // user never expires. Present for a voucher-registered user: memberSince
+  // is the voucher's issuedAt, membershipExpiresAt is the point login stops
+  // working unless an admin issues a new voucher.
+  memberSince: z.number().optional(),
+  membershipExpiresAt: z.number().optional(),
+});
+export type User = z.infer<typeof UserSchema>;
+
+// --- Vouchers ---
+
+export const VoucherStatusSchema = z.enum(["pending", "registered", "revoked"]);
+export type VoucherStatus = z.infer<typeof VoucherStatusSchema>;
+
+// A voucher is not a user - it's an admin's intent to let exactly one email
+// address register as a specific name/role. voucherId doubles as the
+// unguessable secret embedded in the sign-up link (it's a
+// crypto.randomUUID(), same as every other id in this app), so there's no
+// separate "code" field to keep in sync with it.
+export const VoucherSchema = z.object({
+  voucherId: z.string(),
+  email: z.string().email(),
+  // The name the admin entered when issuing the voucher - becomes the
+  // registered user's name. Registration doesn't collect a name of its
+  // own; the voucher is the only place it's set.
+  name: z.string().min(1),
+  // Held on the voucher, not decided at registration - stops a client from
+  // self-elevating by passing its own `role` in the register request.
+  role: UserRoleSchema,
+  issuedAt: z.number(),
+  // Absent for an admin/super_admin voucher - those never expire, and
+  // neither does the account it becomes (see createVoucher and
+  // isVoucherExpired in voucherStore.ts). Present (issuedAt +
+  // VOUCHER_VALIDITY_MS) for a student voucher.
+  expiresAt: z.number().optional(),
+  status: VoucherStatusSchema,
+  // Set once the voucher is consumed - kept around (rather than deleting
+  // the voucher) both as an audit trail and because the resulting user
+  // record links back to this voucher for its own membership-expiry check.
+  registeredUserId: z.string().optional(),
+  registeredAt: z.number().optional(),
+});
+export type Voucher = z.infer<typeof VoucherSchema>;
+
+export function parseVoucher(data: unknown): Voucher {
+  return VoucherSchema.parse(data);
+}
+
+// What the public, unauthenticated GET /api/vouchers/:voucherId (used by
+// the register page to greet the invitee and catch an already-used/expired
+// voucher before they fill out the form) is allowed to return - notably
+// never registeredUserId, which would leak another user's id to anyone
+// holding the link after it's been used.
+export const PublicVoucherSchema = VoucherSchema.pick({
+  voucherId: true,
+  email: true,
+  name: true,
+  role: true,
+  expiresAt: true,
+  status: true,
+});
+export type PublicVoucher = z.infer<typeof PublicVoucherSchema>;
+
+// --- Display preference (per-user) ---
+
+export const LessonDisplayModeSchema = z.enum(["vertical", "carousel", "accessible"]);
+export type LessonDisplayMode = z.infer<typeof LessonDisplayModeSchema>;
+
+export const ColorSchemeSchema = z.enum(["light", "dark"]);
+export type ColorScheme = z.infer<typeof ColorSchemeSchema>;
+
+// --- Lessons, modules, courses, learning paths ---
 
 export const LessonSourceSchema = z.enum(["human", "ai_generated"]);
 export type LessonSource = z.infer<typeof LessonSourceSchema>;
@@ -422,3 +553,119 @@ export type LearningPath = z.infer<typeof LearningPathSchema>;
 export function parseLearningPath(data: unknown): LearningPath {
   return LearningPathSchema.parse(data);
 }
+
+// --- API request schemas (one per route that validates a body/query) ---
+// Grouped by the route section they belong to in index.ts, in the same
+// order those sections appear there.
+
+// name and role are deliberately not part of this - both live on the
+// voucher (see VoucherSchema above) and are copied from there, not taken
+// from the request body, so a client can't self-elevate by passing its own
+// role, and can't get a name a course admin never actually invited.
+export const RegisterSchema = z.object({
+  voucherId: z.string().min(1),
+  email: z.string().email(),
+  password: PasswordSchema,
+});
+
+export const LoginSchema = z.object({
+  email: z.string().email(),
+  password: z.string(),
+});
+
+export const ChangePasswordSchema = z.object({
+  currentPassword: z.string(),
+  newPassword: PasswordSchema,
+});
+
+export const EmbedQuerySchema = z.object({
+  email: z.string().email(),
+  courseId: z.string().min(1),
+  moduleId: z.string().min(1),
+});
+
+// Not currently wired to a route - kept for whenever a direct
+// super_admin-create-user endpoint (as opposed to voucher-based
+// invitation) is added.
+export const CreateUserInputSchema = z.object({
+  email: z.string().email(),
+  name: z.string().min(1),
+  password: z.string().min(8),
+  role: UserRoleSchema,
+});
+
+export const UpdateUserRoleSchema = z.object({ role: UserRoleSchema });
+
+export const UpdateUserPasswordSchema = z.object({ newPassword: PasswordSchema });
+
+export const SetUserAssignmentsSchema = z.object({
+  assignedLearningPathIds: z.array(z.string()),
+  assignedCourseIds: z.array(z.string()),
+});
+
+export const CreateVoucherInputSchema = z.object({
+  email: z.string().email(),
+  name: z.string().min(1),
+  role: UserRoleSchema,
+});
+
+export const CreateCourseInputSchema = z.object({
+  title: z.string().min(1),
+  description: z.string().optional(),
+  category: z.string().optional(),
+  theme: ThemeOverrideSchema.optional(),
+});
+
+export const CoursePatchSchema = z.object({
+  title: z.string().min(1).optional(),
+  description: z.string().optional(),
+  category: z.string().optional(),
+  theme: ThemeOverrideSchema.optional(),
+  status: CourseStatusSchema.optional(),
+});
+
+export const CreateModuleInputSchema = z.object({
+  courseId: z.string().min(1).optional(),
+  category: z.string().min(1).optional(),
+  title: z.string().min(1),
+  objective: z.string().min(1),
+  // Only meaningful (and required, enforced by the route that creates it -
+  // not by this schema) when creating a standalone library module - an
+  // empty unassigned module is clutter, not a reusable component, so
+  // creation is refused rather than persisting one.
+  lessons: z.array(LessonSchema).optional(),
+});
+
+export const CreateLearningPathInputSchema = z.object({
+  title: z.string().min(1),
+  description: z.string().optional(),
+  courseIds: z.array(z.string()).optional(),
+});
+
+export const LearningPathPatchSchema = z.object({
+  title: z.string().min(1).optional(),
+  description: z.string().optional(),
+  courseIds: z.array(z.string()).optional(),
+});
+
+// courseId/moduleId are optional so completion can still be recorded
+// without them, but the route also updates lastCompleted (the module a
+// student most recently finished a lesson in) when they're present and the
+// lesson is being marked complete, not uncompleted.
+export const SetLessonProgressSchema = z.object({
+  completed: z.boolean(),
+  courseId: z.string().min(1).optional(),
+  moduleId: z.string().min(1).optional(),
+});
+
+export const SetDisplayPreferenceSchema = z.object({ lessonDisplayMode: LessonDisplayModeSchema });
+
+export const SetColorSchemeSchema = z.object({ colorScheme: ColorSchemeSchema });
+
+export const SupportMessageSchema = z.object({ message: z.string().trim().min(1).max(5000) });
+
+export const BugReportSchema = z.object({
+  description: z.string().trim().min(1).max(5000),
+  stepsToReproduce: z.string().trim().max(5000).optional(),
+  pageUrl: z.string().trim().max(2000).optional(),
+});
