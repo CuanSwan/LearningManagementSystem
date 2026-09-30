@@ -368,6 +368,11 @@ export const CourseSchema = z.object({
   // `theme` above defaults to no overrides.
   status: CourseStatusSchema.default("draft"),
   stage: CourseStageSchema.default("planned"),
+  // The admin/super_admin responsible for moving this course through the
+  // board - a userId, not a name/email, so it stays valid if the assignee
+  // is later renamed. Only ever set by a super_admin (see index.ts) even
+  // though any admin can otherwise create/edit a course.
+  assignedTo: nullableOptional(z.string()),
 });
 
 export type Course = z.infer<typeof CourseSchema>;

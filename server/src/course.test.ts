@@ -47,4 +47,19 @@ describe("CourseSchema", () => {
   it("rejects an unknown stage", () => {
     expect(() => parseCourse({ courseId: "c1", title: "X", stage: "blocked" })).toThrow();
   });
+
+  it("defaults assignedTo to unset - nobody's responsible for it yet", () => {
+    const course = parseCourse({ courseId: "c1", title: "Sales Fundamentals" });
+    expect(course.assignedTo).toBeUndefined();
+  });
+
+  it("accepts an assignedTo userId", () => {
+    const course = parseCourse({ courseId: "c1", title: "Sales Fundamentals", assignedTo: "user-42" });
+    expect(course.assignedTo).toBe("user-42");
+  });
+
+  it("treats an explicit null assignedTo the same as unset (clearing an assignment)", () => {
+    const course = parseCourse({ courseId: "c1", title: "Sales Fundamentals", assignedTo: null });
+    expect(course.assignedTo).toBeUndefined();
+  });
 });

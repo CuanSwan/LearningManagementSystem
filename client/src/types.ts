@@ -232,6 +232,10 @@ export interface Course {
   theme: ThemeOverride;
   status: CourseStatus;
   stage: CourseStage;
+  // The admin/super_admin responsible for it - only ever set by a
+  // super_admin (see server/src/index.ts's checkAssigneeChange), even
+  // though any admin can otherwise create/edit a course.
+  assignedTo?: string;
 }
 
 export interface LearningPath {

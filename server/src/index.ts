@@ -481,6 +481,7 @@ const CreateCourseInputSchema = z.object({
   description: z.string().optional(),
   category: z.string().optional(),
   theme: ThemeOverrideSchema.optional(),
+  assignedTo: z.string().optional(),
 });
 
 const CoursePatchSchema = z.object({
@@ -490,7 +491,27 @@ const CoursePatchSchema = z.object({
   theme: ThemeOverrideSchema.optional(),
   status: CourseStatusSchema.optional(),
   stage: CourseStageSchema.optional(),
+  assignedTo: z.string().nullable().optional(),
 });
+
+// Any admin can create/edit a course, but assigning it to someone else is a
+// super_admin-only action - undefined means the caller isn't touching
+// assignedTo at all, so it's left alone rather than rejected.
+async function checkAssigneeChange(
+  req: Request,
+  assignedTo: string | null | undefined
+): Promise<{ status: number; error: string } | null> {
+  if (assignedTo === undefined) return null;
+  if (req.user!.role !== "super_admin") {
+    return { status: 403, error: "Only super admins can assign a course to someone else" };
+  }
+  if (assignedTo === null) return null;
+  const assignee = await getUserById(assignedTo);
+  if (!assignee || (assignee.role !== "admin" && assignee.role !== "super_admin")) {
+    return { status: 400, error: "assignedTo must be an existing admin or super admin" };
+  }
+  return null;
+}
 
 const CreateModuleInputSchema = z.object({
   courseId: z.string().min(1).optional(),
@@ -513,12 +534,18 @@ app.post("/api/courses", requireRole("admin", "super_admin"), async (req, res) =
     sendValidationError(res, parsed.error);
     return;
   }
+  const assigneeError = await checkAssigneeChange(req, parsed.data.assignedTo);
+  if (assigneeError) {
+    res.status(assigneeError.status).json({ error: assigneeError.error });
+    return;
+  }
   const course = await createCourse({
     courseId: crypto.randomUUID(),
     title: parsed.data.title,
     description: parsed.data.description,
     category: parsed.data.category,
     theme: parsed.data.theme ?? {},
+    assignedTo: parsed.data.assignedTo,
   });
   res.status(201).json(course);
 });
@@ -613,6 +640,11 @@ app.patch("/api/courses/:courseId", requireRole("admin", "super_admin"), async (
   const parsed = CoursePatchSchema.safeParse(req.body);
   if (!parsed.success) {
     sendValidationError(res, parsed.error);
+    return;
+  }
+  const assigneeError = await checkAssigneeChange(req, parsed.data.assignedTo);
+  if (assigneeError) {
+    res.status(assigneeError.status).json({ error: assigneeError.error });
     return;
   }
   const updated = await patchCourse(req.params.courseId, parsed.data);

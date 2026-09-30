@@ -836,13 +836,19 @@ a.course-side-menu-lesson:hover {
 
 .board-card {
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  flex-direction: column;
+  gap: 0.4rem;
   background: var(--surface-card);
   border: 1px solid var(--border-default);
   border-radius: 8px;
   padding: 0.6rem 0.75rem;
   cursor: grab;
+}
+
+.board-card-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .board-card-swatch {
@@ -858,6 +864,23 @@ a.course-side-menu-lesson:hover {
   font-size: 0.72rem;
   color: var(--text-tertiary);
   white-space: nowrap;
+}
+
+.board-card-assignee {
+  font-size: 0.72rem;
+  color: var(--text-tertiary);
+}
+
+.board-card-assignee-select {
+  font: inherit;
+  font-size: 0.75rem;
+  padding: 0.2rem 0.35rem;
+  align-self: flex-start;
+}
+
+.board-new-job-form h2 {
+  font-size: 1.1rem;
+  margin-top: 0;
 }
 
 .course-form {

@@ -148,6 +148,8 @@ export function createCourse(input: {
   description?: string;
   category?: string;
   theme?: Partial<Course["theme"]>;
+  // Only accepted by the server from a super_admin - see checkAssigneeChange.
+  assignedTo?: string;
 }): Promise<Course> {
   return request("/api/courses", { method: "POST", body: JSON.stringify(input) });
 }
@@ -161,6 +163,8 @@ export function patchCourse(
     theme?: Partial<Course["theme"]>;
     status?: Course["status"];
     stage?: Course["stage"];
+    // null clears the assignment; only a super_admin may change this at all.
+    assignedTo?: string | null;
   }
 ): Promise<Course> {
   return request(`/api/courses/${courseId}`, { method: "PATCH", body: JSON.stringify(patch) });
