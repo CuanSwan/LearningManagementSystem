@@ -414,3 +414,22 @@ export function convertRiseCourse(raw: unknown): ConvertedCourse {
     skipped,
   };
 }
+
+// Flattens every top-level Rise lesson's lessons into a single module -
+// used when importing into an existing course, where the whole Rise export
+// becomes one module rather than one module per Rise lesson (which is what
+// whole-course import still does, and what convertRiseCourse's own
+// `modules` array is shaped for). Keeps each individual Lesson exactly as
+// convertLesson produced it - same content, same lesson boundaries - just
+// concatenated into one list. Each ConvertedModule's lessons independently
+// number their own `order` starting at 1 (see convertLesson), so naively
+// concatenating them would produce duplicate/non-monotonic order values
+// once they're all lessons of the same module; this renumbers the merged
+// list into one contiguous 1..N sequence instead.
+export function mergeConvertedModules(converted: ConvertedCourse): ConvertedModule {
+  return {
+    title: converted.title,
+    objective: converted.description,
+    lessons: converted.modules.flatMap((m) => m.lessons).map((lesson, i) => ({ ...lesson, order: i + 1 })),
+  };
+}

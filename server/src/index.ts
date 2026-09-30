@@ -26,7 +26,7 @@ import {
   setLessonDisplayMode,
 } from "./preferencesStore.js";
 import { getCompletedLessons, getLastCompleted, initProgressStore, setLastCompleted, setLessonCompletion } from "./progressStore.js";
-import { convertRiseCourse, RiseImportError } from "./riseImport.js";
+import { convertRiseCourse, mergeConvertedModules, RiseImportError } from "./riseImport.js";
 import { extractRiseRuntimeData, RiseZipError } from "./riseZip.js";
 import { seedSampleData } from "./sampleData.js";
 import { seedUsers } from "./seedUsers.js";
@@ -574,9 +574,10 @@ app.post(
 );
 
 // Same Rise 360 conversion as above, but attached to an existing course
-// instead of creating a new one - for adding a module (or several, since one
-// Rise export can contain multiple top-level lessons) to a course that
-// already exists, rather than always spinning up a whole new course per import.
+// instead of creating a new one, and collapsed into a single module rather
+// than one module per top-level Rise lesson - the whole export becomes one
+// module on the target course, with its lessons kept in the same order (see
+// mergeConvertedModules).
 app.post(
   "/api/courses/:courseId/import/rise",
   requireRole("admin", "super_admin"),
@@ -604,11 +605,15 @@ app.post(
       throw err;
     }
 
-    const modules = await Promise.all(
-      converted.modules.map((m) => createModule({ courseId: course.courseId, title: m.title, objective: m.objective, lessons: m.lessons }))
-    );
+    const merged = mergeConvertedModules(converted);
+    const module = await createModule({
+      courseId: course.courseId,
+      title: merged.title,
+      objective: merged.objective,
+      lessons: merged.lessons,
+    });
 
-    res.status(201).json({ modules, moduleCount: modules.length, skipped: converted.skipped });
+    res.status(201).json({ module, skipped: converted.skipped });
   }
 );
 

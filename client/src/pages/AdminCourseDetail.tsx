@@ -4,7 +4,7 @@ import { copyToClipboard } from "../clipboard.js";
 import { buildEmbedLink } from "../embedLink.js";
 import { suggestTheme } from "../themeSuggestion.js";
 import type { Course, CourseStatus, Module, ThemeOverride } from "../types.js";
-import { createModule, deleteCourse, getCourse, importRiseModules, listModulesByCourse, patchCourse } from "../api.js";
+import { createModule, deleteCourse, getCourse, importRiseModule, listModulesByCourse, patchCourse } from "../api.js";
 import { ThemeOverrideFields } from "../components/ThemeOverrideFields.js";
 import { RichTextView } from "../components/RichTextView.js";
 
@@ -33,7 +33,7 @@ export function AdminCourseDetail() {
   const [riseModuleStatus, setRiseModuleStatus] = useState<"idle" | "importing" | "error">("idle");
   const [riseModuleError, setRiseModuleError] = useState<string | null>(null);
   const [riseModuleResult, setRiseModuleResult] = useState<{
-    moduleCount: number;
+    title: string;
     skipped: { type: string; family?: string; variant?: string }[];
   } | null>(null);
 
@@ -81,10 +81,10 @@ export function AdminCourseDetail() {
     setRiseModuleError(null);
     setRiseModuleResult(null);
     try {
-      const result = await importRiseModules(courseId, riseModuleFile);
-      setRiseModuleResult({ moduleCount: result.moduleCount, skipped: result.skipped });
+      const result = await importRiseModule(courseId, riseModuleFile);
+      setRiseModuleResult({ title: result.module.seed.title, skipped: result.skipped });
       setRiseModuleStatus("idle");
-      setModules((prev) => [...prev, ...result.modules]);
+      setModules((prev) => [...prev, result.module]);
     } catch (err) {
       setRiseModuleError((err as Error).message);
       setRiseModuleStatus("error");
@@ -218,8 +218,8 @@ export function AdminCourseDetail() {
         <form className="course-form" onSubmit={handleRiseModuleImport}>
           <h3>Import a module from Rise 360</h3>
           <p className="library-section-hint">
-            Upload a Rise 360 .zip export - it's decompiled into one or more modules (one per top-level lesson in the
-            export) and added to this course, without creating a new course.
+            Upload a Rise 360 .zip export - the whole export becomes a single module on this course (its lessons kept
+            in the same order), without creating a new course.
           </p>
           <label className="field">
             Rise 360 export (.zip)
@@ -231,14 +231,12 @@ export function AdminCourseDetail() {
             />
           </label>
           <button type="submit" disabled={!riseModuleFile || riseModuleStatus === "importing"}>
-            {riseModuleStatus === "importing" ? "Importing..." : "Import module(s)"}
+            {riseModuleStatus === "importing" ? "Importing..." : "Import module"}
           </button>
           {riseModuleStatus === "error" && riseModuleError && <p className="import-error">{riseModuleError}</p>}
           {riseModuleResult && (
             <div className="save-status save-status-ok">
-              <p>
-                Imported {riseModuleResult.moduleCount} module{riseModuleResult.moduleCount === 1 ? "" : "s"}.
-              </p>
+              <p>Imported &ldquo;{riseModuleResult.title}&rdquo; as a new module.</p>
               {riseModuleResult.skipped.length > 0 && (
                 <p>
                   {riseModuleResult.skipped.length} block{riseModuleResult.skipped.length === 1 ? "" : "s"} couldn&apos;t be

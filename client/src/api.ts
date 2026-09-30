@@ -194,14 +194,14 @@ export async function importRiseCourse(
   return res.json();
 }
 
-// Same Rise 360 conversion as importRiseCourse, but adds the resulting
-// module(s) to an existing course instead of creating a new one - a single
-// Rise export can contain multiple top-level lessons, each becoming its own
-// module.
-export async function importRiseModules(
+// Same Rise 360 conversion as importRiseCourse, but adds the result to an
+// existing course as a single module instead of creating a new course - the
+// whole Rise export (which may have several top-level lessons internally)
+// collapses into one module, in the same lesson order, on the target course.
+export async function importRiseModule(
   courseId: string,
   file: File
-): Promise<{ modules: Module[]; moduleCount: number; skipped: { type: string; family?: string; variant?: string }[] }> {
+): Promise<{ module: Module; skipped: { type: string; family?: string; variant?: string }[] }> {
   const formData = new FormData();
   formData.append("file", file);
   const res = await fetch(`${API_BASE_URL}/api/courses/${courseId}/import/rise`, {

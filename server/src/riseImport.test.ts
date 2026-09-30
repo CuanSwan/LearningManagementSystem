@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { convertRiseCourse, RiseImportError } from "./riseImport.js";
+import { convertRiseCourse, mergeConvertedModules, RiseImportError } from "./riseImport.js";
 
 function riseCourse(lessons: unknown[]) {
   return { course: { title: "Test Course", description: "<p>A course.</p>", lessons } };
@@ -600,5 +600,48 @@ describe("convertRiseCourse", () => {
     );
     expect(result.modules[0].lessons).toHaveLength(0);
     expect(result.skipped).toEqual([{ type: "video", family: "video", variant: undefined }]);
+  });
+});
+
+describe("mergeConvertedModules", () => {
+  it("collapses every top-level Rise lesson's lessons into one module, renumbered with no gaps", () => {
+    const converted = convertRiseCourse(
+      riseCourse([
+        {
+          id: "l1",
+          title: "First Rise lesson",
+          items: [
+            { id: "b1", type: "text", family: "text", items: [{ heading: "A", paragraph: "<p>One</p>" }] },
+            { id: "b2", type: "divider", family: "continue", variant: "continue" },
+            { id: "b3", type: "text", family: "text", items: [{ heading: "B", paragraph: "<p>Two</p>" }] },
+          ],
+        },
+        {
+          id: "l2",
+          title: "Second Rise lesson",
+          items: [{ id: "b4", type: "text", family: "text", items: [{ heading: "C", paragraph: "<p>Three</p>" }] }],
+        },
+      ])
+    );
+
+    // Sanity check on the input shape this is merging: two separate
+    // modules, each independently numbering its own lessons from 1.
+    expect(converted.modules).toHaveLength(2);
+    expect(converted.modules[0].lessons.map((l) => l.order)).toEqual([1, 2]);
+    expect(converted.modules[1].lessons.map((l) => l.order)).toEqual([1]);
+
+    const merged = mergeConvertedModules(converted);
+
+    // One module, titled/described from the Rise course itself (not either
+    // sub-lesson), with every lesson from both sub-lessons present...
+    expect(merged.title).toBe(converted.title);
+    expect(merged.objective).toBe(converted.description);
+    expect(merged.lessons).toHaveLength(3);
+    // ...in their original relative order...
+    expect(merged.lessons.map((l) => l.lessonId)).toEqual(["rise-b1", "rise-b3", "rise-b4"]);
+    // ...renumbered contiguously across the merge, not restarting per
+    // original Rise lesson (which would otherwise produce two lessons both
+    // numbered "1" once they're siblings in the same module).
+    expect(merged.lessons.map((l) => l.order)).toEqual([1, 2, 3]);
   });
 });
