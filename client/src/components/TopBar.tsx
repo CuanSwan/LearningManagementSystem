@@ -56,6 +56,7 @@ export function TopBar() {
         <Link to="/learning-paths">Learning Paths</Link>
         <Link to="/courses">Courses</Link>
         {(user.role === "admin" || user.role === "super_admin") && <Link to="/admin">Admin</Link>}
+        {(user.role === "admin" || user.role === "super_admin") && <Link to="/admin/board">Board</Link>}
         {(user.role === "admin" || user.role === "super_admin") && <Link to="/admin/assignments">Assignments</Link>}
         {user.role === "super_admin" && <Link to="/admin/users">Users</Link>}
         <Link to="/account" className="top-bar-user">

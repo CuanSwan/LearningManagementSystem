@@ -1,6 +1,6 @@
 import { ColorSchemeSchema, LessonDisplayModeSchema } from "./displayPreference.js";
 import { sendBugReport, sendSupportMessage, sendVoucherEmail } from "./mailer.js";
-import { CourseStatusSchema, LessonSchema, ModuleSchema } from "./schemas.js";
+import { CourseStageSchema, CourseStatusSchema, LessonSchema, ModuleSchema } from "./schemas.js";
 import { ThemeOverrideSchema } from "./theme.js";
 import { PasswordSchema, UserRoleSchema, type UserRole } from "./userSchema.js";
 import cookieParser from "cookie-parser";
@@ -489,6 +489,7 @@ const CoursePatchSchema = z.object({
   category: z.string().optional(),
   theme: ThemeOverrideSchema.optional(),
   status: CourseStatusSchema.optional(),
+  stage: CourseStageSchema.optional(),
 });
 
 const CreateModuleInputSchema = z.object({

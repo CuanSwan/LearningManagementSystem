@@ -8,6 +8,7 @@ import { TopBar } from "./components/TopBar.js";
 import { DisplayPreferenceProvider, useDisplayPreference } from "./displayPreference.js";
 import { Account } from "./pages/Account.js";
 import { AdminAssignments } from "./pages/AdminAssignments.js";
+import { AdminBoard } from "./pages/AdminBoard.js";
 import { AdminCourseDetail } from "./pages/AdminCourseDetail.js";
 import { AdminCourseList } from "./pages/AdminCourseList.js";
 import { AdminModuleEditor } from "./pages/AdminModuleEditor.js";
@@ -78,6 +79,7 @@ export function App() {
 
             <Route element={<RequireRole roles={["admin", "super_admin"]} />}>
               <Route path="/admin" element={<AdminCourseList />} />
+              <Route path="/admin/board" element={<AdminBoard />} />
               <Route path="/admin/courses/:courseId" element={<AdminCourseDetail />} />
               <Route path="/admin/modules/new" element={<AdminNewModule />} />
               <Route path="/admin/modules/:moduleId" element={<AdminModuleEditor />} />

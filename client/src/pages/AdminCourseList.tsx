@@ -61,7 +61,8 @@ export function AdminCourseList() {
           <p>Create and manage courses.</p>
         </div>
         <div>
-          <Link to="/admin/learning-paths">Learning paths</Link> &middot; <Link to="/">View student site</Link>
+          <Link to="/admin/board">Board</Link> &middot; <Link to="/admin/learning-paths">Learning paths</Link> &middot;{" "}
+          <Link to="/">View student site</Link>
         </div>
       </div>
 

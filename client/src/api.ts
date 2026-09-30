@@ -160,6 +160,7 @@ export function patchCourse(
     category?: string;
     theme?: Partial<Course["theme"]>;
     status?: Course["status"];
+    stage?: Course["stage"];
   }
 ): Promise<Course> {
   return request(`/api/courses/${courseId}`, { method: "PATCH", body: JSON.stringify(patch) });

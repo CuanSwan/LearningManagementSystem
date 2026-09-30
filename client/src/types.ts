@@ -222,6 +222,7 @@ export interface ThemeValues {
 export type ThemeOverride = Partial<ThemeValues>;
 
 export type CourseStatus = "draft" | "published";
+export type CourseStage = "planned" | "in_progress" | "in_review" | "ready";
 
 export interface Course {
   courseId: string;
@@ -230,6 +231,7 @@ export interface Course {
   category?: string;
   theme: ThemeOverride;
   status: CourseStatus;
+  stage: CourseStage;
 }
 
 export interface LearningPath {

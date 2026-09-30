@@ -14,6 +14,15 @@ export type ModuleStatus = z.infer<typeof ModuleStatusSchema>;
 export const CourseStatusSchema = z.enum(["draft", "published"]);
 export type CourseStatus = z.infer<typeof CourseStatusSchema>;
 
+// Where a course sits in the production pipeline before it's published -
+// the board (see /admin/board) groups courses by this while status stays
+// "draft", then shows it under Published once status flips regardless of
+// stage. Kept separate from status rather than folded into a single bigger
+// enum: status is the access-control gate (userHasCourseAccess), stage is
+// just planning metadata with no access implications of its own.
+export const CourseStageSchema = z.enum(["planned", "in_progress", "in_review", "ready"]);
+export type CourseStage = z.infer<typeof CourseStageSchema>;
+
 // Every schema below that's persisted (module, course, learning path) can
 // have any of its optional fields read back from Mongo as a literal `null`
 // instead of genuinely absent - the driver used to silently turn an
@@ -358,6 +367,7 @@ export const CourseSchema = z.object({
   // every course-creation call site to say so explicitly, the same way
   // `theme` above defaults to no overrides.
   status: CourseStatusSchema.default("draft"),
+  stage: CourseStageSchema.default("planned"),
 });
 
 export type Course = z.infer<typeof CourseSchema>;

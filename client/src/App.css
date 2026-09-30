@@ -762,6 +762,104 @@ a.course-side-menu-lesson:hover {
   border: 1px solid var(--border-medium);
 }
 
+/* --- Admin board: a GitHub-projects-style kanban of every course's
+   production stage, columns scrolling horizontally on narrow screens
+   rather than wrapping - a column staying a coherent vertical stack of
+   cards matters more here than avoiding a scrollbar. --- */
+
+.board-page {
+  max-width: none;
+}
+
+.board {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+}
+
+.board-column {
+  flex: 1 0 240px;
+  min-width: 240px;
+  max-width: 320px;
+  background: var(--surface-sunken);
+  border: 1px solid var(--border-default);
+  border-radius: 10px;
+  padding: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.board-column.is-over {
+  border-color: var(--theme-primary, #3e6259);
+  background: var(--surface-card);
+}
+
+.board-column-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.board-column-header h2 {
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.board-column-count {
+  font-family: "Fira Code", monospace;
+  font-size: 0.78rem;
+  color: var(--text-tertiary);
+}
+
+.board-column-hint {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+}
+
+.board-column-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-height: 3rem;
+}
+
+.board-column-empty {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-tertiary);
+  font-style: italic;
+}
+
+.board-card {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--surface-card);
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  padding: 0.6rem 0.75rem;
+  cursor: grab;
+}
+
+.board-card-swatch {
+  display: inline-block;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.board-card-category {
+  margin-left: auto;
+  font-size: 0.72rem;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+
 .course-form {
   border: 1px solid var(--border-default);
   border-radius: 6px;

@@ -33,4 +33,18 @@ describe("CourseSchema", () => {
   it("rejects an unknown status", () => {
     expect(() => parseCourse({ courseId: "c1", title: "X", status: "archived" })).toThrow();
   });
+
+  it("defaults stage to planned - a freshly created course hasn't started yet", () => {
+    const course = parseCourse({ courseId: "c1", title: "Sales Fundamentals" });
+    expect(course.stage).toBe("planned");
+  });
+
+  it("accepts an explicit stage", () => {
+    const course = parseCourse({ courseId: "c1", title: "Sales Fundamentals", stage: "in_review" });
+    expect(course.stage).toBe("in_review");
+  });
+
+  it("rejects an unknown stage", () => {
+    expect(() => parseCourse({ courseId: "c1", title: "X", stage: "blocked" })).toThrow();
+  });
 });
