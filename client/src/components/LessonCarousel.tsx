@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Lesson } from "../types.js";
+import { toTitleCase } from "../textCase.js";
 import { StudentLessonBlock } from "./StudentLessonBlock.js";
 
 export function LessonCarousel({
@@ -50,7 +51,7 @@ export function LessonCarousel({
             type="button"
             role="tab"
             aria-selected={i === index}
-            aria-label={`Lesson ${i + 1}: ${l.title}${completedIds.has(l.lessonId) ? " (completed)" : ""}`}
+            aria-label={`Lesson ${i + 1}: ${toTitleCase(l.title)}${completedIds.has(l.lessonId) ? " (completed)" : ""}`}
             className={`carousel-dot${i === index ? " active" : ""}${
               completedIds.has(l.lessonId) ? " is-complete" : ""
             }`}

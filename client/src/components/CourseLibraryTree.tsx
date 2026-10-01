@@ -4,6 +4,7 @@ import type { Course, Lesson, Module } from "../types.js";
 import { listAllModules, listCourses } from "../api.js";
 import { LIBRARY_LESSON_MIME } from "../dnd.js";
 import { describeLesson, lessonTypeLabel } from "../lessonTemplates.js";
+import { toTitleCase } from "../textCase.js";
 
 const UNCATEGORIZED = "Uncategorized";
 
@@ -125,7 +126,7 @@ function LibraryLessonItem({ lesson }: { lesson: Lesson }) {
       draggable
       onDragStart={(e) => e.dataTransfer.setData(LIBRARY_LESSON_MIME, JSON.stringify(lesson))}
     >
-      <span className="library-item-name">{lesson.title}</span>
+      <span className="library-item-name">{toTitleCase(lesson.title)}</span>
       <span className="library-item-type">{lessonTypeLabel(lesson.type)}</span>
       <span className="library-item-preview">{describeLesson(lesson)}</span>
     </div>

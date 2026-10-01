@@ -11,6 +11,7 @@ import { RichTextView } from "../components/RichTextView.js";
 import { isModuleComplete, isModuleLocked } from "../courseProgress.js";
 import { daysRemainingLabel } from "../membership.js";
 import { Theme, themeStyle } from "../theme.js";
+import { toTitleCase } from "../textCase.js";
 
 // Guards against lessons saved before `title` was required - older records
 // can still persist without one, and this renders a placeholder instead of
@@ -159,7 +160,9 @@ export function StudentCourse() {
                             <span className="timeline-step-bullet" aria-hidden="true">
                               {isComplete ? "✓" : "•"}
                             </span>
-                            <span className="timeline-step-preview">{truncate(lesson.title, 70)}</span>
+                            <span className="timeline-step-preview">
+                              {truncate(lesson.title && toTitleCase(lesson.title), 70)}
+                            </span>
                             <span className="timeline-step-number">{lessonIndex + 1}</span>
                           </li>
                         );

@@ -11,6 +11,7 @@ import { useAuth } from "../auth.js";
 import { isModuleLocked } from "../courseProgress.js";
 import { useDisplayPreference } from "../displayPreference.js";
 import { Theme, themeStyle } from "../theme.js";
+import { toTitleCase } from "../textCase.js";
 
 // Guards against lessons saved before `title` was required - older records
 // can still persist without one, and this renders a placeholder instead of
@@ -39,7 +40,7 @@ export function StudentModule() {
   const { mode } = useDisplayPreference();
 
   const handleCurrentLessonChange = useCallback((lesson: Lesson) => {
-    setCurrentLessonPreview(truncate(lesson.title, 40));
+    setCurrentLessonPreview(truncate(lesson.title && toTitleCase(lesson.title), 40));
   }, []);
 
   useEffect(() => {

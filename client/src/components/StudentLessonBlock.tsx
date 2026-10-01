@@ -1,4 +1,5 @@
 import type { Lesson, LessonType } from "../types.js";
+import { toTitleCase } from "../textCase.js";
 import { LessonRenderer } from "./LessonRenderer.js";
 
 // Each of these reads as a self-contained visual (its own per-item titles/
@@ -32,7 +33,7 @@ export function StudentLessonBlock({
       className={`student-lesson student-lesson-${lesson.type}${isComplete ? " is-complete" : ""}${isDynamicComponent ? " is-floating" : ""}`}
     >
       <div className="student-lesson-header">
-        <h2 className="student-lesson-title">{lesson.title}</h2>
+        <h2 className="student-lesson-title">{toTitleCase(lesson.title)}</h2>
         {isComplete && <span className="student-lesson-complete-badge">✓ Completed</span>}
       </div>
       <LessonRenderer lesson={lesson} isComplete={isComplete} onComplete={onComplete} />

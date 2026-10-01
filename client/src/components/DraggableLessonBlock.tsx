@@ -1,6 +1,7 @@
 import type { Lesson, LessonType, WordingStyle } from "../types.js";
 import { EXISTING_LESSON_MIME, LIBRARY_LESSON_MIME, NEW_LESSON_MIME, SAVED_LESSON_MIME } from "../dnd.js";
 import { lessonTypeLabel } from "../lessonTemplates.js";
+import { toTitleCase } from "../textCase.js";
 import { LessonEditorForm } from "./LessonEditorForm.js";
 import { LessonRenderer } from "./LessonRenderer.js";
 
@@ -53,7 +54,7 @@ export function DraggableLessonBlock({
     >
       <div className="admin-lesson-toolbar">
         <span className="admin-lesson-toolbar-info">
-          <span className="admin-lesson-title">{lesson.title}</span>
+          <span className="admin-lesson-title">{toTitleCase(lesson.title)}</span>
           <span className="admin-lesson-type-badge">{lessonTypeLabel(lesson.type)}</span>
           <span aria-hidden="true">
             {lesson.type === "examBreakdown"
