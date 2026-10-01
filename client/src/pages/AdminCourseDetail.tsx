@@ -4,7 +4,15 @@ import { copyToClipboard } from "../clipboard.js";
 import { buildEmbedLink } from "../embedLink.js";
 import { suggestTheme } from "../themeSuggestion.js";
 import type { Course, CourseStatus, Module, ThemeOverride } from "../types.js";
-import { createModule, deleteCourse, getCourse, importRiseModule, listModulesByCourse, patchCourse } from "../api.js";
+import {
+  createModule,
+  deleteCourse,
+  getCourse,
+  importRiseModule,
+  listModulesByCourse,
+  patchCourse,
+  reorderModules,
+} from "../api.js";
 import { ThemeOverrideFields } from "../components/ThemeOverrideFields.js";
 import { RichTextView } from "../components/RichTextView.js";
 
@@ -92,6 +100,20 @@ export function AdminCourseDetail() {
       setRiseModuleError((err as Error).message);
       setRiseModuleStatus("error");
     }
+  }
+
+  async function handleMoveModule(index: number, direction: -1 | 1) {
+    if (!courseId) return;
+    const target = index + direction;
+    if (target < 0 || target >= modules.length) return;
+    const next = [...modules];
+    [next[index], next[target]] = [next[target], next[index]];
+    setModules(next);
+    const updated = await reorderModules(
+      courseId,
+      next.map((m) => m.moduleId)
+    );
+    setModules(updated);
   }
 
   async function handleCopyEmbedLink(moduleId: string) {
@@ -183,8 +205,14 @@ export function AdminCourseDetail() {
       <section>
         <h2>Modules</h2>
         <ul className="module-list">
-          {modules.map((m) => (
+          {modules.map((m, index) => (
             <li key={m.moduleId}>
+              <button type="button" onClick={() => handleMoveModule(index, -1)} disabled={index === 0}>
+                &uarr;
+              </button>{" "}
+              <button type="button" onClick={() => handleMoveModule(index, 1)} disabled={index === modules.length - 1}>
+                &darr;
+              </button>{" "}
               <Link to={`/admin/modules/${m.moduleId}`}>{m.seed.title}</Link>
               <span className="module-status"> ({m.status})</span>
               <button

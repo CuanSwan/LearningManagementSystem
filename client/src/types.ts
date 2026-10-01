@@ -230,6 +230,8 @@ export interface Module {
   status: ModuleStatus;
   seed: ModuleSeed;
   lessons: Lesson[];
+  // Where this module sits among its course's other modules - lower first.
+  order: number;
 }
 
 export interface ThemeValues {

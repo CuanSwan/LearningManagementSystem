@@ -7,10 +7,12 @@ import type { Database } from "./db/index.js";
 import { parseCourse, parseLearningPath, parseModule, type User } from "./schemas.js";
 import {
   backfillMissingLessonTitles,
+  backfillModuleOrder,
   backfillOrientationVideos,
   createCourse,
   createLearningPath,
   createModule,
+  deleteModule,
   getCourse,
   getLearningPath,
   getModule,
@@ -18,6 +20,7 @@ import {
   listModulesByCourse,
   patchCourse,
   patchLearningPath,
+  reorderModules,
   saveModule,
   seedCourse,
   seedLearningPath,
@@ -205,6 +208,71 @@ describe("backfillOrientationVideos", () => {
 
     const unchanged = await getModule(module.moduleId);
     expect((unchanged!.lessons[0] as { content: { videoUrl: string } }).content.videoUrl).toBe("https://vimeo.com/123");
+  });
+});
+
+describe("module order", () => {
+  it("createModule appends new modules at the end of the course's current order", async () => {
+    // createCourse's own mandatory orientation module would otherwise sit
+    // first in the list - removed so this test only has to reason about
+    // the modules it creates itself.
+    await createCourse({ courseId: "c1", title: "Order Check" });
+    for (const m of await listModulesByCourse("c1")) await deleteModule(m.moduleId);
+
+    const m1 = await createModule({ courseId: "c1", title: "Module One", objective: "x" });
+    const m2 = await createModule({ courseId: "c1", title: "Module Two", objective: "x" });
+    expect(m2.order).toBe(m1.order + 1);
+    const list = await listModulesByCourse("c1");
+    expect(list.map((m) => m.moduleId)).toEqual([m1.moduleId, m2.moduleId]);
+  });
+
+  it("reorderModules moves a module and listModulesByCourse reflects the new order", async () => {
+    await createCourse({ courseId: "c1", title: "Order Check" });
+    for (const m of await listModulesByCourse("c1")) await deleteModule(m.moduleId);
+
+    const m1 = await createModule({ courseId: "c1", title: "Module One", objective: "x" });
+    const m2 = await createModule({ courseId: "c1", title: "Module Two", objective: "x" });
+    const m3 = await createModule({ courseId: "c1", title: "Module Three", objective: "x" });
+
+    await reorderModules("c1", [m3.moduleId, m1.moduleId, m2.moduleId]);
+
+    const list = await listModulesByCourse("c1");
+    expect(list.map((m) => m.moduleId)).toEqual([m3.moduleId, m1.moduleId, m2.moduleId]);
+  });
+
+  it("backfillModuleOrder assigns each module in an unmigrated course its current position", async () => {
+    // Simulates modules saved before `order` existed - seedModule writes
+    // them as-is (no schema validation), the same way legacy data on disk
+    // would have been.
+    await createCourse({ courseId: "c1", title: "Backfill Order Check" });
+    const existingModules = await listModulesByCourse("c1");
+    for (const m of existingModules) await deleteModule(m.moduleId);
+
+    const staleA = { moduleId: "m-a", courseId: "c1", status: "draft", seed: { title: "A", objective: "x" }, lessons: [] } as unknown as Module;
+    const staleB = { moduleId: "m-b", courseId: "c1", status: "draft", seed: { title: "B", objective: "x" }, lessons: [] } as unknown as Module;
+    await seedModule(staleA);
+    await seedModule(staleB);
+
+    await backfillModuleOrder();
+
+    const fixedA = await getModule("m-a");
+    const fixedB = await getModule("m-b");
+    expect(fixedA?.order).toBe(0);
+    expect(fixedB?.order).toBe(1);
+  });
+
+  it("backfillModuleOrder leaves an already-reordered course alone", async () => {
+    await createCourse({ courseId: "c1", title: "Order Check" });
+    for (const m of await listModulesByCourse("c1")) await deleteModule(m.moduleId);
+
+    const m1 = await createModule({ courseId: "c1", title: "Module One", objective: "x" });
+    const m2 = await createModule({ courseId: "c1", title: "Module Two", objective: "x" });
+    await reorderModules("c1", [m2.moduleId, m1.moduleId]);
+
+    await backfillModuleOrder();
+
+    const list = await listModulesByCourse("c1");
+    expect(list.map((m) => m.moduleId)).toEqual([m2.moduleId, m1.moduleId]);
   });
 });
 

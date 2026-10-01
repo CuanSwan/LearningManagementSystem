@@ -528,6 +528,11 @@ export const ModuleSchema = z.object({
   status: ModuleStatusSchema,
   seed: ModuleSeedSchema,
   lessons: z.array(LessonSchema),
+  // Where this module sits among its course's other modules - lower first.
+  // Defaulted (not required) so modules saved before this field existed
+  // still parse; backfillModuleOrder assigns each of those its current
+  // position once at startup (see store.ts).
+  order: z.number().int().nonnegative().default(0),
 });
 
 export type Module = z.infer<typeof ModuleSchema>;
@@ -660,6 +665,10 @@ export const CreateModuleInputSchema = z.object({
   // empty unassigned module is clutter, not a reusable component, so
   // creation is refused rather than persisting one.
   lessons: z.array(LessonSchema).optional(),
+});
+
+export const ReorderModulesSchema = z.object({
+  moduleIds: z.array(z.string().min(1)).min(1),
 });
 
 export const CreateLearningPathInputSchema = z.object({

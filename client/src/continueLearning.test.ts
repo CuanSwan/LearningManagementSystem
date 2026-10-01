@@ -43,6 +43,7 @@ function module(moduleId: string, courseId: string, status: Module["status"], le
     status,
     seed: { title: moduleId, objective: "" },
     lessons: lessonIds.map(lesson),
+    order: 0,
   };
 }
 

@@ -13,6 +13,7 @@ import {
   LoginSchema,
   ModuleSchema,
   PromptSimulationChatRequestSchema,
+  ReorderModulesSchema,
   RegisterSchema,
   SetColorSchemeSchema,
   SetDisplayPreferenceSchema,
@@ -56,6 +57,7 @@ import {
   createLearningPath,
   createModule,
   backfillMissingLessonTitles,
+  backfillModuleOrder,
   backfillOrientationVideos,
   deleteCourse,
   deleteModule,
@@ -68,6 +70,7 @@ import {
   listLearningPaths,
   listModulesByCourse,
   patchCourse,
+  reorderModules,
   patchLearningPath,
   saveModule,
   unassignModule,
@@ -634,6 +637,15 @@ app.get("/api/courses/:courseId/modules", requireAuth, async (req, res) => {
   res.json(await listModulesByCourse(req.params.courseId));
 });
 
+app.patch("/api/courses/:courseId/modules/reorder", requireRole("admin", "super_admin"), async (req, res) => {
+  const parsed = ReorderModulesSchema.safeParse(req.body);
+  if (!parsed.success) {
+    sendValidationError(res, parsed.error);
+    return;
+  }
+  res.json(await reorderModules(req.params.courseId, parsed.data.moduleIds));
+});
+
 app.get("/api/modules", requireRole("admin", "super_admin"), async (_req, res) => {
   res.json(await listAllModules());
 });
@@ -865,6 +877,7 @@ async function main() {
   );
   await backfillMissingLessonTitles(knownLessonTitles);
   await backfillOrientationVideos();
+  await backfillModuleOrder();
 
   app.listen(port, () => {
     console.log(`LMS API listening on http://localhost:${port}`);

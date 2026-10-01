@@ -268,6 +268,10 @@ export function saveModule(moduleId: string, module: Module): Promise<Module> {
   return request(`/api/modules/${moduleId}`, { method: "PUT", body: JSON.stringify(module) });
 }
 
+export function reorderModules(courseId: string, moduleIds: string[]): Promise<Module[]> {
+  return request(`/api/courses/${courseId}/modules/reorder`, { method: "PATCH", body: JSON.stringify({ moduleIds }) });
+}
+
 // Removes a module from its course, turning it into a reusable library entry.
 // A module with no lessons yet is deleted outright instead (returns null) -
 // see server/src/store.ts's unassignModule for why.

@@ -17,6 +17,7 @@ function moduleWith(moduleId: string, lessonIds: string[]): Module {
       type: "text",
       content: { body: "" },
     })),
+    order: 0,
   };
 }
 

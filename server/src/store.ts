@@ -106,8 +106,27 @@ export async function patchCourse(
   return merged;
 }
 
-export function listModulesByCourse(courseId: string): Promise<Module[]> {
-  return modules.list({ courseId });
+export async function listModulesByCourse(courseId: string): Promise<Module[]> {
+  const list = await modules.list({ courseId });
+  return [...list].sort((a, b) => a.order - b.order);
+}
+
+// Reassigns every module in this course to the order it was handed in -
+// an admin dragging/clicking a module up or down calls this with the
+// resulting full sequence, the same "send the whole new order" shape
+// patchLearningPath's courseIds already uses for its own up/down arrows.
+// Any id not actually in this course is ignored rather than erroring.
+export async function reorderModules(courseId: string, moduleIds: string[]): Promise<Module[]> {
+  const existing = await modules.list({ courseId });
+  const byId = new Map(existing.map((m) => [m.moduleId, m]));
+  await Promise.all(
+    moduleIds.map((moduleId, index) => {
+      const existingModule = byId.get(moduleId);
+      if (!existingModule || existingModule.order === index) return undefined;
+      return modules.set(moduleId, { ...existingModule, order: index });
+    })
+  );
+  return listModulesByCourse(courseId);
 }
 
 // Deletes a course. Its modules are never silently destroyed with it - each
@@ -178,6 +197,34 @@ export async function backfillOrientationVideos(): Promise<void> {
   }
 }
 
+// `order` was added to the module schema after courses already had several
+// modules each - every one of those defaults to order 0 on parse, which
+// would otherwise make them all sort first and tie with each other. Runs
+// once at startup: for any course whose modules all currently share one
+// order value (true for an unmigrated course, and harmlessly true again for
+// a single-module course), assigns each its current position - the same
+// insertion order they've always displayed in - so nothing visibly
+// reshuffles the first time this runs. A course an admin has already
+// reordered has distinct values per module and is left alone.
+export async function backfillModuleOrder(): Promise<void> {
+  const allModules = await modules.list();
+  const byCourse = new Map<string, Module[]>();
+  for (const module of allModules) {
+    if (!module.courseId) continue;
+    const list = byCourse.get(module.courseId) ?? [];
+    list.push(module);
+    byCourse.set(module.courseId, list);
+  }
+  for (const courseModules of byCourse.values()) {
+    if (!courseModules.every((m) => m.order === courseModules[0].order)) continue;
+    await Promise.all(
+      courseModules.map((module, index) =>
+        module.order === index ? undefined : modules.set(module.moduleId, parseModule({ ...module, order: index }))
+      )
+    );
+  }
+}
+
 export async function getModule(moduleId: string): Promise<Module | undefined> {
   return (await modules.get(moduleId)) ?? undefined;
 }
@@ -189,6 +236,10 @@ export async function createModule(input: {
   objective: string;
   lessons?: unknown[];
 }): Promise<Module> {
+  // Appends at the end of the course's current module order - a module
+  // picked up from the library (no courseId yet) doesn't have a course to
+  // order within, so it just gets 0.
+  const order = input.courseId ? (await modules.list({ courseId: input.courseId })).length : 0;
   const module = parseModule({
     moduleId: crypto.randomUUID(),
     courseId: input.courseId,
@@ -196,6 +247,7 @@ export async function createModule(input: {
     status: "draft",
     seed: { title: input.title, objective: input.objective },
     lessons: input.lessons ?? [],
+    order,
   });
   await modules.set(module.moduleId, module);
   return module;
