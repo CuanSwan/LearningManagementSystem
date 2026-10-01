@@ -6,7 +6,6 @@ import { BackButton } from "../components/BackButton.js";
 import { Breadcrumb } from "../components/Breadcrumb.js";
 import { CourseSideMenu } from "../components/CourseSideMenu.js";
 import { LessonCarousel } from "../components/LessonCarousel.js";
-import { ModuleCompleteModal } from "../components/ModuleCompleteModal.js";
 import { StudentLessonBlock } from "../components/StudentLessonBlock.js";
 import { useAuth } from "../auth.js";
 import { isModuleLocked } from "../courseProgress.js";
@@ -36,7 +35,6 @@ export function StudentModule() {
   const [courseModules, setCourseModules] = useState<Module[]>([]);
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
   const [currentLessonPreview, setCurrentLessonPreview] = useState<string | null>(null);
-  const [showCompleteModal, setShowCompleteModal] = useState(false);
   const [accessError, setAccessError] = useState<string | null>(null);
   const { mode } = useDisplayPreference();
 
@@ -69,15 +67,8 @@ export function StudentModule() {
 
   async function markComplete(lessonId: string) {
     if (!foundModule || !courseId || !moduleId) return;
-    const lessonIds = foundModule.lessons.map((l) => l.lessonId);
-    const wasComplete = lessonIds.length > 0 && lessonIds.every((id) => completedIds.has(id));
-
     const result = await setLessonProgress(lessonId, true, { courseId, moduleId });
-    const nextCompleted = new Set(result.completedLessonIds);
-    setCompletedIds(nextCompleted);
-
-    const nowComplete = lessonIds.length > 0 && lessonIds.every((id) => nextCompleted.has(id));
-    if (nowComplete && !wasComplete) setShowCompleteModal(true);
+    setCompletedIds(new Set(result.completedLessonIds));
   }
 
   if (!course || !foundModule) return <p>Loading...</p>;
@@ -88,11 +79,24 @@ export function StudentModule() {
   const nextModule = moduleIndex >= 0 ? (courseModules[moduleIndex + 1] ?? null) : null;
   // Same rule CourseSideMenu/StudentCourse already unlock modules by - always
   // open for an admin/super_admin, gated on this module's completion for a
-  // student. Lets the carousel's last-lesson Next button carry a
-  // student straight into the next module the moment they've earned it,
-  // instead of only offering that via the completion modal below.
+  // student (which this module being `moduleComplete` already implies).
   const nextModuleReachable =
     nextModule !== null && !isModuleLocked(courseModules, moduleIndex + 1, completedIds, user?.role ?? "student");
+  const moduleComplete = orderedLessons.length > 0 && completedCount === orderedLessons.length;
+  // Drives the inline "keep going" button shown once every lesson in this
+  // module is done - into the next module if one's reachable, or back to
+  // the course overview if this was the last one. No popup: it just appears
+  // where the student already is, at the end of the carousel or the list.
+  const continueAction = !moduleComplete
+    ? undefined
+    : nextModule && nextModuleReachable
+      ? {
+          label: `Next: ${nextModule.seed.title}`,
+          onClick: () => navigate(`/courses/${courseId}/modules/${nextModule.moduleId}`),
+        }
+      : !nextModule
+        ? { label: "Back to course overview", onClick: () => navigate(`/courses/${courseId}`) }
+        : undefined;
   // Accessible mode reuses the carousel's one-lesson-at-a-time layout; only the
   // font/sizing changes, via the accessible-mode class applied below.
   const usesCarousel = mode === "carousel" || mode === "accessible";
@@ -127,10 +131,7 @@ export function StudentModule() {
           initialLessonId={activeLessonId}
           onComplete={markComplete}
           onCurrentLessonChange={handleCurrentLessonChange}
-          nextModuleTitle={nextModule?.seed.title}
-          onNextModule={
-            nextModuleReachable && nextModule ? () => navigate(`/courses/${courseId}/modules/${nextModule.moduleId}`) : undefined
-          }
+          continueAction={continueAction}
         />
       ) : (
         <>
@@ -157,16 +158,15 @@ export function StudentModule() {
               </div>
             ))}
           </div>
-        </>
-      )}
 
-      {showCompleteModal && courseId && (
-        <ModuleCompleteModal
-          moduleTitle={foundModule.seed.title}
-          nextModule={nextModule}
-          courseId={courseId}
-          onClose={() => setShowCompleteModal(false)}
-        />
+          {continueAction && (
+            <div className="module-complete-cta">
+              <button type="button" onClick={continueAction.onClick}>
+                {continueAction.label} &rarr;
+              </button>
+            </div>
+          )}
+        </>
       )}
       </main>
     </>

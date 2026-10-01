@@ -52,4 +52,14 @@ describe("setLastCompleted and setLessonCompletion", () => {
     await setLastCompleted("u1", "c2", "m2");
     expect(await getCompletedLessons("u1")).toEqual(["l1", "l2"]);
   });
+
+  it("doesn't lose a completion when two lessons complete at the same instant", async () => {
+    // Reproduces several auto-completing lessons (e.g. two text lessons)
+    // mounting together in the vertical list layout and firing their
+    // onComplete within the same tick - each is its own request, racing
+    // against the other's unserialized get-then-set.
+    await Promise.all([setLessonCompletion("u1", "l1", true), setLessonCompletion("u1", "l2", true)]);
+    expect(await getCompletedLessons("u1")).toEqual(expect.arrayContaining(["l1", "l2"]));
+    expect(await getCompletedLessons("u1")).toHaveLength(2);
+  });
 });

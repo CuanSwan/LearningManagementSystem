@@ -8,20 +8,19 @@ export function LessonCarousel({
   initialLessonId,
   onComplete,
   onCurrentLessonChange,
-  nextModuleTitle,
-  onNextModule,
+  continueAction,
 }: {
   lessons: Lesson[];
   completedIds: Set<string>;
   initialLessonId?: string;
   onComplete: (lessonId: string) => void;
   onCurrentLessonChange?: (lesson: Lesson) => void;
-  // Absent when there's no next module, or it's locked for this user - the
-  // Next button stays disabled at the last lesson the same way it always
-  // has. Provided, it turns that same button into a way to keep moving
-  // forward into the next module instead of dead-ending.
-  nextModuleTitle?: string;
-  onNextModule?: () => void;
+  // Absent until this module is actually complete - the Next button stays
+  // disabled at the last lesson the same way it always has. Provided, it
+  // turns that same button into a way to keep moving forward: into the next
+  // module if one is reachable, or back to the course overview if this was
+  // the last one.
+  continueAction?: { label: string; onClick: () => void };
 }) {
   const [index, setIndex] = useState(() => {
     const i = lessons.findIndex((l) => l.lessonId === initialLessonId);
@@ -67,12 +66,12 @@ export function LessonCarousel({
         <button
           type="button"
           onClick={() => {
-            if (isLastLesson && onNextModule) onNextModule();
+            if (isLastLesson && continueAction) continueAction.onClick();
             else setIndex((i) => Math.min(lessons.length - 1, i + 1));
           }}
-          disabled={isLastLesson && !onNextModule}
+          disabled={isLastLesson && !continueAction}
         >
-          {isLastLesson && onNextModule ? `Next: ${nextModuleTitle ?? "next module"} →` : "Next →"}
+          {isLastLesson && continueAction ? `${continueAction.label} →` : "Next →"}
         </button>
       </div>
     </div>
