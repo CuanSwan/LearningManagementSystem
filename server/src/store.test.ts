@@ -7,6 +7,7 @@ import type { Database } from "./db/index.js";
 import { parseCourse, parseLearningPath, parseModule, type User } from "./schemas.js";
 import {
   backfillMissingLessonTitles,
+  backfillOrientationVideos,
   createCourse,
   createLearningPath,
   createModule,
@@ -160,6 +161,50 @@ describe("backfillMissingLessonTitles", () => {
     await backfillMissingLessonTitles();
     const modules = await listModulesByCourse("c1");
     expect(modules).toHaveLength(1);
+  });
+});
+
+describe("backfillOrientationVideos", () => {
+  it("points an existing course's Orientation Video lesson at the shared Vimeo link", async () => {
+    const course = await createCourse({ courseId: "c1", title: "Backfill Check" });
+    const [module] = await listModulesByCourse(course.courseId);
+    const orientationVideo = module.lessons.find((l) => l.title === "Orientation Video");
+    await saveModule(module.moduleId, {
+      ...module,
+      lessons: module.lessons.map((l) =>
+        l.lessonId === orientationVideo!.lessonId ? { ...l, content: { ...l.content, videoUrl: "https://vimeo.com/999" } } : l
+      ),
+    });
+
+    await backfillOrientationVideos();
+
+    const fixed = await getModule(module.moduleId);
+    const fixedVideo = fixed!.lessons.find((l) => l.title === "Orientation Video");
+    expect((fixedVideo as { content: { videoUrl: string } }).content.videoUrl).toBe("https://vimeo.com/1231936640");
+  });
+
+  it("leaves a non-orientation video lesson alone", async () => {
+    const module = await createModule({
+      title: "Regular Module",
+      objective: "Objective",
+      lessons: [
+        {
+          lessonId: "v1",
+          schemaVersion: 1,
+          source: "human",
+          wordingStyle: "official",
+          order: 1,
+          title: "A Different Video",
+          type: "video",
+          content: { videoUrl: "https://vimeo.com/123" },
+        },
+      ],
+    });
+
+    await backfillOrientationVideos();
+
+    const unchanged = await getModule(module.moduleId);
+    expect((unchanged!.lessons[0] as { content: { videoUrl: string } }).content.videoUrl).toBe("https://vimeo.com/123");
   });
 });
 

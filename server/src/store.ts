@@ -41,6 +41,10 @@ export async function getCourse(courseId: string): Promise<Course | undefined> {
 const ORIENTATION_MODULE_TITLE = "Course Orientation";
 const ORIENTATION_MODULE_OBJECTIVE =
   "Review the exam breakdown, then watch the orientation video and the study plan and additional resources before starting the course.";
+// Every course's orientation video points at the same Vimeo link on purpose -
+// replacing the file on Vimeo (same URL/ID) updates it everywhere at once,
+// with nothing to re-sync on this end.
+const ORIENTATION_VIDEO_URL = "https://vimeo.com/1231936640";
 
 function orientationLesson(order: number, title: string, type: "video", content: { videoUrl: string }): unknown;
 function orientationLesson(order: number, title: string, type: "text", content: { body: string }): unknown;
@@ -76,7 +80,7 @@ async function createOrientationModule(courseId: string): Promise<void> {
         questionCount: 20,
         openBook: false,
       }),
-      orientationLesson(2, "Orientation Video", "video", { videoUrl: "" }),
+      orientationLesson(2, "Orientation Video", "video", { videoUrl: ORIENTATION_VIDEO_URL }),
       orientationLesson(3, "Study Plan", "text", { body: "<h2>Study Plan</h2>" }),
       orientationLesson(4, "Additional Resources", "text", { body: "<h2>Additional Resources</h2>" }),
     ],
@@ -152,6 +156,25 @@ export async function backfillMissingLessonTitles(knownTitlesByLessonId: Map<str
       ),
     });
     await modules.set(module.moduleId, fixed);
+  }
+}
+
+// Points every course's existing "Orientation Video" lesson at the same
+// shared Vimeo link new courses now start with (see ORIENTATION_VIDEO_URL) -
+// run once at startup so a course created before that link existed isn't
+// left pointing at a blank or stale URL. Matches on title + type, the same
+// pair createOrientationModule itself writes, so it only ever touches that
+// specific lesson - never an admin's own "video" lesson elsewhere.
+export async function backfillOrientationVideos(): Promise<void> {
+  const allModules = await modules.list();
+  for (const module of allModules) {
+    const lessons = module.lessons.map((lesson) =>
+      lesson.title === "Orientation Video" && lesson.type === "video" && lesson.content.videoUrl !== ORIENTATION_VIDEO_URL
+        ? { ...lesson, content: { ...lesson.content, videoUrl: ORIENTATION_VIDEO_URL } }
+        : lesson
+    );
+    if (lessons.every((lesson, i) => lesson === module.lessons[i])) continue;
+    await modules.set(module.moduleId, parseModule({ ...module, lessons }));
   }
 }
 

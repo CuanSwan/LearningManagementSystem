@@ -54,6 +54,7 @@ import {
   createLearningPath,
   createModule,
   backfillMissingLessonTitles,
+  backfillOrientationVideos,
   deleteCourse,
   deleteModule,
   getCourse,
@@ -842,6 +843,7 @@ async function main() {
     [...sampleModules, ...aiEngineeringModules].flatMap((m) => m.lessons.map((l) => [l.lessonId, l.title] as const))
   );
   await backfillMissingLessonTitles(knownLessonTitles);
+  await backfillOrientationVideos();
 
   app.listen(port, () => {
     console.log(`LMS API listening on http://localhost:${port}`);
