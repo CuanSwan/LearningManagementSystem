@@ -23,6 +23,7 @@ export const LESSON_TYPES: LessonType[] = [
   "treeScrub",
   "html",
   "embed",
+  "promptSimulation",
 ];
 
 const LESSON_TYPE_LABELS: Record<LessonType, string> = {
@@ -43,6 +44,7 @@ const LESSON_TYPE_LABELS: Record<LessonType, string> = {
   html: "Custom HTML",
   embed: "Embed (iframe)",
   examBreakdown: "Exam Breakdown",
+  promptSimulation: "Prompt Engineering Simulation",
 };
 
 export function lessonTypeLabel(type: LessonType): string {
@@ -95,6 +97,8 @@ export function describeLesson(lesson: Lesson): string {
       const { questionCount, timeLimitMinutes, passMarkPercent, openBook } = lesson.content;
       return `${questionCount} questions, ${timeLimitMinutes} min, ${passMarkPercent}% to pass, ${openBook ? "open book" : "closed book"}`;
     }
+    case "promptSimulation":
+      return lesson.content.botName || "(empty)";
   }
 }
 
@@ -238,6 +242,32 @@ export function createPreviewLesson(type: LessonType): Lesson {
       return { ...base, type, content: { url: "about:blank" } };
     case "examBreakdown":
       return { ...base, type, content: { passMarkPercent: 70, timeLimitMinutes: 45, questionCount: 25, openBook: false } };
+    case "promptSimulation":
+      return {
+        ...base,
+        type,
+        content: {
+          botName: "Support Bot — Acme Outfitters",
+          botAvatar: "🤖",
+          lede: "<p>Acme Outfitters hired you to improve their AI support bot. Edit its instructions on the left, then chat with it on the right as a customer.</p>",
+          presets: [
+            { label: "1 · Baseline", note: "Almost no instructions", systemPrompt: "You are a helpful assistant." },
+            {
+              label: "2 · Role, tone & boundaries",
+              note: "Who it is, how it should sound",
+              systemPrompt:
+                "You are Acme Outfitters' customer support assistant. Be warm and concise, and only answer questions about orders, shipping and sizing. Say so honestly if you're unsure of something rather than guessing.",
+            },
+            {
+              label: "3 · Real policy knowledge",
+              note: "Facts it can't invent on its own",
+              systemPrompt:
+                "You are Acme Outfitters' customer support assistant. Be warm and concise, and only answer questions about orders, shipping and sizing.\n\nPolicy:\n- Returns: within 30 days with a receipt for a full refund; store credit without one.\n- Shipping: standard 3-5 business days, express 1-2 business days.\n- Sizing: jackets run true to size; jeans run small, size up.",
+            },
+          ],
+          quickReplies: ["Can I return this without a receipt?", "How long does shipping take?"],
+        },
+      };
   }
 }
 
@@ -305,6 +335,12 @@ export function createBlankLesson(type: LessonType, order: number): Lesson {
         ...base,
         type,
         content: { passMarkPercent: 50, timeLimitMinutes: 60, questionCount: 20, openBook: false },
+      };
+    case "promptSimulation":
+      return {
+        ...base,
+        type,
+        content: { botName: "", botAvatar: "", lede: "", presets: [{ label: "", note: "", systemPrompt: "" }], quickReplies: [] },
       };
   }
 }

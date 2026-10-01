@@ -174,6 +174,23 @@ export interface ExamBreakdownLesson extends LessonBase {
   content: { passMarkPercent: number; timeLimitMinutes: number; questionCount: number; openBook: boolean };
 }
 
+export interface PromptSimulationPreset {
+  label: string;
+  note?: string;
+  systemPrompt: string;
+}
+
+export interface PromptSimulationLesson extends LessonBase {
+  type: "promptSimulation";
+  content: {
+    botName: string;
+    botAvatar?: string;
+    lede: string;
+    presets: PromptSimulationPreset[];
+    quickReplies: string[];
+  };
+}
+
 export type Lesson =
   | TextLesson
   | VideoLesson
@@ -191,7 +208,8 @@ export type Lesson =
   | TreeScrubLesson
   | CustomHtmlLesson
   | EmbedLesson
-  | ExamBreakdownLesson;
+  | ExamBreakdownLesson
+  | PromptSimulationLesson;
 export type LessonType = Lesson["type"];
 
 export interface ModuleSeed {

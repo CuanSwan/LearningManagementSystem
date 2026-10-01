@@ -343,6 +343,25 @@ const ExamBreakdownContentSchema = z.object({
   openBook: z.boolean(),
 });
 
+// A live chat against a system prompt the student can edit - each preset is
+// a different system prompt they can load to see how it changes the bot's
+// behavior. The length caps aren't just content hygiene here: systemPrompt
+// becomes the literal `system` field on a real Anthropic API call per
+// message sent, so an unbounded prompt is an unbounded per-message cost.
+const PromptSimulationPresetSchema = z.object({
+  label: z.string().max(80),
+  note: z.string().max(160).optional(),
+  systemPrompt: z.string().max(4000),
+});
+
+const PromptSimulationContentSchema = z.object({
+  botName: z.string().max(80),
+  botAvatar: z.string().max(8).optional(),
+  lede: z.string().transform((html) => sanitizeHtml(html)),
+  presets: z.array(PromptSimulationPresetSchema).min(1).max(8),
+  quickReplies: z.array(z.string().max(200)).max(6).default([]),
+});
+
 const LessonBaseSchema = z.object({
   lessonId: z.string(),
   schemaVersion: z.number().int().positive(),
@@ -442,6 +461,11 @@ export const ExamBreakdownLessonSchema = LessonBaseSchema.extend({
   content: ExamBreakdownContentSchema,
 });
 
+export const PromptSimulationLessonSchema = LessonBaseSchema.extend({
+  type: z.literal("promptSimulation"),
+  content: PromptSimulationContentSchema,
+});
+
 export const LessonSchema = z.discriminatedUnion("type", [
   TextLessonSchema,
   VideoLessonSchema,
@@ -460,6 +484,7 @@ export const LessonSchema = z.discriminatedUnion("type", [
   CustomHtmlLessonSchema,
   EmbedLessonSchema,
   ExamBreakdownLessonSchema,
+  PromptSimulationLessonSchema,
 ]);
 
 export type Lesson = z.infer<typeof LessonSchema>;
@@ -480,6 +505,7 @@ export type TreeScrubLesson = z.infer<typeof TreeScrubLessonSchema>;
 export type CustomHtmlLesson = z.infer<typeof CustomHtmlLessonSchema>;
 export type EmbedLesson = z.infer<typeof EmbedLessonSchema>;
 export type ExamBreakdownLesson = z.infer<typeof ExamBreakdownLessonSchema>;
+export type PromptSimulationLesson = z.infer<typeof PromptSimulationLessonSchema>;
 export type LessonType = Lesson["type"];
 
 export const ModuleSeedSchema = z.object({
@@ -668,4 +694,20 @@ export const BugReportSchema = z.object({
   description: z.string().trim().min(1).max(5000),
   stepsToReproduce: z.string().trim().max(5000).optional(),
   pageUrl: z.string().trim().max(2000).optional(),
+});
+
+// The caps here bound real per-message API cost the same way
+// PromptSimulationPresetSchema's do - systemPrompt and every turn's content
+// go straight into a live Anthropic request.
+export const PromptSimulationChatRequestSchema = z.object({
+  systemPrompt: z.string().min(1).max(4000),
+  turns: z
+    .array(
+      z.object({
+        role: z.enum(["user", "assistant"]),
+        content: z.string().min(1).max(2000),
+      })
+    )
+    .min(1)
+    .max(30),
 });

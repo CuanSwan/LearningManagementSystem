@@ -227,11 +227,25 @@ const validModule = {
       order: 11,
       content: { passMarkPercent: 70, timeLimitMinutes: 90, questionCount: 40, openBook: false },
     },
+    {
+      lessonId: "l18",
+      type: "promptSimulation",
+      schemaVersion: 1,
+      source: "human",
+      wordingStyle: "official",
+      order: 18,
+      content: {
+        botName: "Negotiation Coach",
+        lede: "Practice talking a counterpart down from their opening offer.",
+        presets: [{ label: "Baseline", systemPrompt: "You are a tough negotiation counterpart." }],
+        quickReplies: ["What's your best offer?"],
+      },
+    },
   ],
 };
 
 describe("ModuleSchema", () => {
-  it("accepts a module with all seventeen lesson types", () => {
+  it("accepts a module with all eighteen lesson types", () => {
     expect(() => parseModule(validModule)).not.toThrow();
   });
 
@@ -406,6 +420,54 @@ describe("ModuleSchema", () => {
           wordingStyle: "official",
           order: 1,
           content: { stages: [{ title: "Only stage", body: "Not enough to step between." }] },
+        },
+      ],
+    };
+    const result = ModuleSchema.safeParse(invalid);
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a prompt simulation lesson with more than 8 presets", () => {
+    const invalid = {
+      ...validModule,
+      lessons: [
+        {
+          lessonId: "l18",
+          type: "promptSimulation",
+          schemaVersion: 1,
+          source: "human",
+          wordingStyle: "official",
+          order: 1,
+          content: {
+            botName: "Bot",
+            lede: "Lede",
+            presets: Array.from({ length: 9 }, (_, i) => ({ label: `Preset ${i}`, systemPrompt: "You are a bot." })),
+            quickReplies: [],
+          },
+        },
+      ],
+    };
+    const result = ModuleSchema.safeParse(invalid);
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a prompt simulation lesson with more than 6 quick replies", () => {
+    const invalid = {
+      ...validModule,
+      lessons: [
+        {
+          lessonId: "l18",
+          type: "promptSimulation",
+          schemaVersion: 1,
+          source: "human",
+          wordingStyle: "official",
+          order: 1,
+          content: {
+            botName: "Bot",
+            lede: "Lede",
+            presets: [{ label: "Baseline", systemPrompt: "You are a bot." }],
+            quickReplies: Array.from({ length: 7 }, (_, i) => `Question ${i}`),
+          },
         },
       ],
     };

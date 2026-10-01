@@ -1,4 +1,5 @@
 import { sendBugReport, sendSupportMessage, sendVoucherEmail } from "./mailer.js";
+import { runPromptSimulationChat } from "./promptSimulationChat.js";
 import {
   BugReportSchema,
   ChangePasswordSchema,
@@ -11,6 +12,7 @@ import {
   LearningPathPatchSchema,
   LoginSchema,
   ModuleSchema,
+  PromptSimulationChatRequestSchema,
   RegisterSchema,
   SetColorSchemeSchema,
   SetDisplayPreferenceSchema,
@@ -814,6 +816,25 @@ app.post("/api/support/bug-report", requireAuth, async (req, res) => {
     pageUrl: parsed.data.pageUrl || undefined,
   });
   res.json({ sent });
+});
+
+// --- Prompt engineering simulation chat ---
+
+// One turn of a live chat, running the student's own edited system prompt
+// against a real Anthropic request - the whole point of the lesson is
+// letting them see how changing it changes the bot's behavior.
+app.post("/api/simulations/chat", requireAuth, async (req, res) => {
+  const parsed = PromptSimulationChatRequestSchema.safeParse(req.body);
+  if (!parsed.success) {
+    sendValidationError(res, parsed.error);
+    return;
+  }
+  const reply = await runPromptSimulationChat(parsed.data.systemPrompt, parsed.data.turns);
+  if (reply === null) {
+    res.status(502).json({ error: "Could not reach the AI model - try again." });
+    return;
+  }
+  res.json({ reply });
 });
 
 // Catches anything a route handler didn't already turn into its own

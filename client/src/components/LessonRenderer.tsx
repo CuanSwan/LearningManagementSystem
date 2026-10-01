@@ -12,6 +12,7 @@ import { MatchingLesson } from "./MatchingLesson.js";
 import { PipelineLesson } from "./PipelineLesson.js";
 import { PracticalLesson } from "./PracticalLesson.js";
 import { PresentationDialLesson } from "./PresentationDialLesson.js";
+import { PromptSimulationLesson } from "./PromptSimulationLesson.js";
 import { QuizLesson } from "./QuizLesson.js";
 import { TextLesson } from "./TextLesson.js";
 import { TreeScrubLesson } from "./TreeScrubLesson.js";
@@ -53,6 +54,8 @@ function renderContent(lesson: Lesson, isComplete: boolean, onComplete: () => vo
       return <EmbedLesson content={lesson.content} isComplete={isComplete} onComplete={onComplete} />;
     case "examBreakdown":
       return <ExamBreakdownLesson content={lesson.content} isComplete={isComplete} onComplete={onComplete} />;
+    case "promptSimulation":
+      return <PromptSimulationLesson content={lesson.content} isComplete={isComplete} onComplete={onComplete} />;
   }
 }
 

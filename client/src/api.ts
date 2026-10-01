@@ -340,3 +340,10 @@ export function setPreferences(lessonDisplayMode: LessonDisplayMode): Promise<{ 
 export function setColorScheme(colorScheme: ColorScheme): Promise<{ colorScheme: ColorScheme }> {
   return request("/api/preferences/color-scheme", { method: "PUT", body: JSON.stringify({ colorScheme }) });
 }
+
+export function runPromptSimulationChat(
+  systemPrompt: string,
+  turns: { role: "user" | "assistant"; content: string }[]
+): Promise<{ reply: string }> {
+  return request("/api/simulations/chat", { method: "POST", body: JSON.stringify({ systemPrompt, turns }) });
+}

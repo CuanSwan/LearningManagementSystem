@@ -14,6 +14,7 @@ import type {
   PipelineLesson,
   PracticalLesson,
   PresentationDialLesson,
+  PromptSimulationLesson,
   QuizLesson,
   TreeScrubLesson,
 } from "../types.js";
@@ -788,6 +789,121 @@ function ExamBreakdownEditor({
   );
 }
 
+const PROMPT_SIMULATION_MAX_PRESETS = 8;
+const PROMPT_SIMULATION_MAX_QUICK_REPLIES = 6;
+
+function PromptSimulationEditor({
+  content,
+  onChange,
+}: {
+  content: PromptSimulationLesson["content"];
+  onChange: (content: PromptSimulationLesson["content"]) => void;
+}) {
+  function updatePreset(i: number, patch: Partial<PromptSimulationLesson["content"]["presets"][number]>) {
+    onChange({ ...content, presets: content.presets.map((p, idx) => (idx === i ? { ...p, ...patch } : p)) });
+  }
+
+  function addPreset() {
+    if (content.presets.length >= PROMPT_SIMULATION_MAX_PRESETS) return;
+    onChange({ ...content, presets: [...content.presets, { label: "", note: "", systemPrompt: "" }] });
+  }
+
+  function removePreset(i: number) {
+    if (content.presets.length <= 1) return;
+    onChange({ ...content, presets: content.presets.filter((_, idx) => idx !== i) });
+  }
+
+  function updateQuickReply(i: number, value: string) {
+    onChange({ ...content, quickReplies: content.quickReplies.map((q, idx) => (idx === i ? value : q)) });
+  }
+
+  function addQuickReply() {
+    if (content.quickReplies.length >= PROMPT_SIMULATION_MAX_QUICK_REPLIES) return;
+    onChange({ ...content, quickReplies: [...content.quickReplies, ""] });
+  }
+
+  function removeQuickReply(i: number) {
+    onChange({ ...content, quickReplies: content.quickReplies.filter((_, idx) => idx !== i) });
+  }
+
+  return (
+    <div className="field-group">
+      <span className="field-hint">
+        Runs a live chat against a real AI model, using whichever system prompt the student currently has loaded -
+        each message sent costs real money.
+      </span>
+      <label className="field">
+        Bot name
+        <input value={content.botName} onChange={(e) => onChange({ ...content, botName: e.target.value })} />
+      </label>
+      <label className="field">
+        Bot avatar (emoji, optional)
+        <input
+          value={content.botAvatar ?? ""}
+          onChange={(e) => onChange({ ...content, botAvatar: e.target.value })}
+          maxLength={8}
+        />
+      </label>
+      <div className="field">
+        Intro text
+        <Suspense fallback={<p className="field-hint">Loading editor...</p>}>
+          <RichTextEditor value={content.lede} onChange={(lede) => onChange({ ...content, lede })} />
+        </Suspense>
+      </div>
+
+      <span className="field-hint">
+        Presets ({content.presets.length}/{PROMPT_SIMULATION_MAX_PRESETS}) - each is a different system prompt the
+        student can load with one click, to compare how it changes the bot's behavior.
+      </span>
+      {content.presets.map((preset, i) => (
+        <fieldset key={i} className="editor-question">
+          <label className="field">
+            Label
+            <input value={preset.label} onChange={(e) => updatePreset(i, { label: e.target.value })} />
+          </label>
+          <label className="field">
+            Note (optional)
+            <input value={preset.note ?? ""} onChange={(e) => updatePreset(i, { note: e.target.value })} />
+          </label>
+          <label className="field">
+            System prompt
+            <textarea
+              rows={6}
+              spellCheck={false}
+              value={preset.systemPrompt}
+              onChange={(e) => updatePreset(i, { systemPrompt: e.target.value })}
+            />
+          </label>
+          <div className="editor-row-actions">
+            <button type="button" onClick={() => removePreset(i)} disabled={content.presets.length <= 1}>
+              Remove preset
+            </button>
+          </div>
+        </fieldset>
+      ))}
+      <button type="button" onClick={addPreset} disabled={content.presets.length >= PROMPT_SIMULATION_MAX_PRESETS}>
+        Add preset
+      </button>
+
+      <span className="field-hint">
+        Quick-reply chips ({content.quickReplies.length}/{PROMPT_SIMULATION_MAX_QUICK_REPLIES}) - suggested customer
+        questions shown above the message box.
+      </span>
+      {content.quickReplies.map((reply, i) => (
+        <div key={i} className="editor-row-actions">
+          <input value={reply} onChange={(e) => updateQuickReply(i, e.target.value)} />
+          <button type="button" onClick={() => removeQuickReply(i)}>
+            Remove
+          </button>
+        </div>
+      ))}
+      <button type="button" onClick={addQuickReply} disabled={content.quickReplies.length >= PROMPT_SIMULATION_MAX_QUICK_REPLIES}>
+        Add quick reply
+      </button>
+    </div>
+  );
+}
+
 export function LessonEditorForm({
   lesson,
   onChange,
@@ -884,5 +1000,7 @@ export function LessonEditorForm({
       );
     case "examBreakdown":
       return <ExamBreakdownEditor content={lesson.content} onChange={onChange} />;
+    case "promptSimulation":
+      return <PromptSimulationEditor content={lesson.content} onChange={onChange} />;
   }
 }
