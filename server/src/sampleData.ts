@@ -58,7 +58,7 @@ const cyberSecurityAwareness = parseCourse({
   status: "published",
 });
 
-const sampleModules: Module[] = [
+export const sampleModules: Module[] = [
   parseModule({
     moduleId: "temp-pm-lifecycle-basics",
     courseId: projectManagementFundamentals.courseId,

@@ -13,7 +13,11 @@ import { isModuleLocked } from "../courseProgress.js";
 import { useDisplayPreference } from "../displayPreference.js";
 import { Theme, themeStyle } from "../theme.js";
 
-function truncate(text: string, maxLength: number): string {
+// Guards against lessons saved before `title` was required - older records
+// can still persist without one, and this renders a placeholder instead of
+// crashing on `text.length`.
+function truncate(text: string | undefined, maxLength: number): string {
+  if (!text) return "Untitled lesson";
   return text.length > maxLength ? `${text.slice(0, maxLength).trimEnd()}...` : text;
 }
 

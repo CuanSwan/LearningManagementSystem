@@ -6,8 +6,10 @@ import { createFileStore } from "./db/fileStore.js";
 import type { Database } from "./db/index.js";
 import { parseCourse, parseLearningPath, parseModule, type User } from "./schemas.js";
 import {
+  backfillMissingLessonTitles,
   createCourse,
   createLearningPath,
+  createModule,
   getCourse,
   getLearningPath,
   getModule,
@@ -21,6 +23,7 @@ import {
   seedModule,
   userHasCourseAccess,
 } from "./store.js";
+import type { Module } from "./schemas.js";
 
 function studentWith(assignments: Partial<Pick<User, "assignedLearningPathIds" | "assignedCourseIds">>): User {
   return {
@@ -109,6 +112,54 @@ describe("seedModule", () => {
     await seedModule(seed);
 
     expect((await getModule("m1"))?.status).toBe("draft");
+  });
+});
+
+describe("backfillMissingLessonTitles", () => {
+  it("recovers a lesson's title from the lookup map, falling back to a generic one otherwise", async () => {
+    // Simulates a record written before `title` was required - seedModule
+    // writes it as-is (no schema validation) the same way legacy data on
+    // disk would have been.
+    const staleModule = {
+      moduleId: "m-stale",
+      courseId: "c1",
+      status: "published",
+      seed: { title: "Stale Module", objective: "Objective" },
+      lessons: [
+        {
+          lessonId: "known-lesson",
+          schemaVersion: 1,
+          source: "human",
+          wordingStyle: "official",
+          order: 1,
+          type: "text",
+          content: { body: "x" },
+        },
+        {
+          lessonId: "unknown-lesson",
+          schemaVersion: 1,
+          source: "human",
+          wordingStyle: "official",
+          order: 2,
+          type: "text",
+          content: { body: "y" },
+        },
+      ],
+    } as unknown as Module;
+    await seedModule(staleModule);
+
+    await backfillMissingLessonTitles(new Map([["known-lesson", "Recovered Title"]]));
+
+    const fixed = await getModule("m-stale");
+    expect(fixed?.lessons.find((l) => l.lessonId === "known-lesson")?.title).toBe("Recovered Title");
+    expect(fixed?.lessons.find((l) => l.lessonId === "unknown-lesson")?.title).toBe("Untitled lesson");
+  });
+
+  it("leaves a module with no missing titles untouched", async () => {
+    await createModule({ courseId: "c1", title: "Fine Module", objective: "Objective" });
+    await backfillMissingLessonTitles();
+    const modules = await listModulesByCourse("c1");
+    expect(modules).toHaveLength(1);
   });
 });
 

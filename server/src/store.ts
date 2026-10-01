@@ -131,6 +131,30 @@ export function listAllModules(): Promise<Module[]> {
   return modules.list();
 }
 
+// `title` was added to the lesson schema after some modules were already
+// seeded or saved - seeding only ever writes a record once, so those older
+// lessons were never retroactively given one and still persist without it,
+// crashing any client code that assumes `lesson.title` is always a string
+// (e.g. truncate()). Runs once at startup and re-saves any module that has
+// a lesson missing a title. `knownTitlesByLessonId` lets the caller recover
+// the real title for a lesson whose current definition (sample/Rise seed
+// data) still has one - most of these are stale copies of content that's
+// since been given a title, not genuinely untitled - and only lessons with
+// no known source (e.g. an admin-created one) fall back to a placeholder.
+export async function backfillMissingLessonTitles(knownTitlesByLessonId: Map<string, string> = new Map()): Promise<void> {
+  const allModules = await modules.list();
+  for (const module of allModules) {
+    if (module.lessons.every((lesson) => lesson.title)) continue;
+    const fixed = parseModule({
+      ...module,
+      lessons: module.lessons.map((lesson) =>
+        lesson.title ? lesson : { ...lesson, title: knownTitlesByLessonId.get(lesson.lessonId) ?? "Untitled lesson" }
+      ),
+    });
+    await modules.set(module.moduleId, fixed);
+  }
+}
+
 export async function getModule(moduleId: string): Promise<Module | undefined> {
   return (await modules.get(moduleId)) ?? undefined;
 }

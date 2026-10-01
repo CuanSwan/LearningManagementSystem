@@ -5,7 +5,11 @@ import { getProgress, listModulesByCourse } from "../api.js";
 import { useAuth } from "../auth.js";
 import { isModuleComplete, isModuleLocked } from "../courseProgress.js";
 
-function truncate(text: string, maxLength: number): string {
+// Guards against lessons saved before `title` was required - older records
+// can still persist without one, and this renders a placeholder instead of
+// crashing on `text.length`.
+function truncate(text: string | undefined, maxLength: number): string {
+  if (!text) return "Untitled lesson";
   return text.length > maxLength ? `${text.slice(0, maxLength).trimEnd()}...` : text;
 }
 

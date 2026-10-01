@@ -46,12 +46,14 @@ import {
 import { getCompletedLessons, getLastCompleted, initProgressStore, setLastCompleted, setLessonCompletion } from "./progressStore.js";
 import { convertRiseCourse, mergeConvertedModules, RiseImportError } from "./riseImport.js";
 import { extractRiseRuntimeData, RiseZipError } from "./riseZip.js";
-import { seedSampleData } from "./sampleData.js";
+import { sampleModules, seedSampleData } from "./sampleData.js";
+import { aiEngineeringModules } from "./riseImportedCourses.js";
 import { seedUsers } from "./seedUsers.js";
 import {
   createCourse,
   createLearningPath,
   createModule,
+  backfillMissingLessonTitles,
   deleteCourse,
   deleteModule,
   getCourse,
@@ -835,6 +837,11 @@ async function main() {
 
   await seedUsers();
   await seedSampleData();
+
+  const knownLessonTitles = new Map(
+    [...sampleModules, ...aiEngineeringModules].flatMap((m) => m.lessons.map((l) => [l.lessonId, l.title] as const))
+  );
+  await backfillMissingLessonTitles(knownLessonTitles);
 
   app.listen(port, () => {
     console.log(`LMS API listening on http://localhost:${port}`);
