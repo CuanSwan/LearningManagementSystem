@@ -8,6 +8,7 @@ import {
   createUser,
   findOrCreateEmbedUser,
   grantCourseAccess,
+  getUserByEmail,
   getUserById,
   initUserStore,
   listUsers,
@@ -147,6 +148,17 @@ describe("findOrCreateEmbedUser", () => {
     const first = await findOrCreateEmbedUser("Student@Example.com");
     const second = await findOrCreateEmbedUser("student@example.com");
     expect(second?.userId).toBe(first?.userId);
+  });
+});
+
+describe("getUserByEmail", () => {
+  it("finds a user case-insensitively", async () => {
+    const user = await createUser({ email: "a@b.com", name: "A", password: "Password1", role: "student" });
+    expect((await getUserByEmail("A@B.com"))?.userId).toBe(user.userId);
+  });
+
+  it("returns undefined for an email with no account", async () => {
+    expect(await getUserByEmail("nobody@example.com")).toBeUndefined();
   });
 });
 

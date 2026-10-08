@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth.js";
 
 export function Login() {
@@ -41,6 +41,9 @@ export function Login() {
         <button type="submit" disabled={submitting}>
           {submitting ? "Logging in..." : "Log in"}
         </button>
+        <p className="auth-switch">
+          <Link to="/forgot-password">Forgot your password?</Link>
+        </p>
       </form>
     </main>
   );

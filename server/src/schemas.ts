@@ -123,6 +123,24 @@ export const PublicVoucherSchema = VoucherSchema.pick({
 });
 export type PublicVoucher = z.infer<typeof PublicVoucherSchema>;
 
+// --- Password resets (self-service, logged-out "forgot password") ---
+
+// tokenId doubles as the unguessable secret embedded in the emailed reset
+// link, same pattern as Voucher's voucherId - no separate "token" field to
+// keep in sync with it.
+export const PasswordResetSchema = z.object({
+  tokenId: z.string(),
+  userId: z.string(),
+  email: z.string().email(),
+  issuedAt: z.number(),
+  expiresAt: z.number(),
+  // Set once the link is used - a used token is rejected the same as an
+  // expired one, so a reset email can't be replayed to change the password
+  // again later.
+  usedAt: z.number().optional(),
+});
+export type PasswordReset = z.infer<typeof PasswordResetSchema>;
+
 // --- Display preference (per-user) ---
 
 export const LessonDisplayModeSchema = z.enum(["vertical", "carousel", "accessible"]);
@@ -606,6 +624,15 @@ export const LoginSchema = z.object({
 
 export const ChangePasswordSchema = z.object({
   currentPassword: z.string(),
+  newPassword: PasswordSchema,
+});
+
+export const ForgotPasswordSchema = z.object({
+  email: z.string().email(),
+});
+
+export const ResetPasswordSchema = z.object({
+  token: z.string().min(1),
   newPassword: PasswordSchema,
 });
 

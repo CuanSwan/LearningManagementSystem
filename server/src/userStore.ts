@@ -138,6 +138,16 @@ export async function userExistsByEmail(email: string): Promise<boolean> {
   return matches.length > 0;
 }
 
+// For forgot-password: only ever used server-side to decide whether (and
+// who) to email a reset link to - never exposed directly to a client,
+// since that would turn "does this email have an account" into a public
+// enumeration oracle.
+export async function getUserByEmail(email: string): Promise<User | undefined> {
+  const matches = await users.list({ email: email.toLowerCase() });
+  const stored = matches[0];
+  return stored ? toPublicUser(stored) : undefined;
+}
+
 // Looks up or provisions the account an embed link logs into (see
 // server/src/index.ts's /api/embed). Returns undefined if that email
 // already belongs to a normal password account - an embed link must never

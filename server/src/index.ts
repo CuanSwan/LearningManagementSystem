@@ -1,4 +1,4 @@
-import { sendBugReport, sendSupportMessage, sendVoucherEmail } from "./mailer.js";
+import { sendBugReport, sendPasswordResetEmail, sendSupportMessage, sendVoucherEmail } from "./mailer.js";
 import { runPromptSimulationChat } from "./promptSimulationChat.js";
 import {
   BugReportSchema,
@@ -9,12 +9,14 @@ import {
   CreateModuleInputSchema,
   CreateVoucherInputSchema,
   EmbedQuerySchema,
+  ForgotPasswordSchema,
   LearningPathPatchSchema,
   LoginSchema,
   ModuleSchema,
   PromptSimulationChatRequestSchema,
   ReorderModulesSchema,
   RegisterSchema,
+  ResetPasswordSchema,
   SetColorSchemeSchema,
   SetDisplayPreferenceSchema,
   SetLessonProgressSchema,
@@ -39,6 +41,14 @@ import path from "node:path";
 import { z } from "zod";
 import { createSession, destroySession, getSessionUserId } from "./auth.js";
 import { connectDb } from "./db/index.js";
+import {
+  checkPasswordResetToken,
+  createPasswordReset,
+  getPasswordReset,
+  initPasswordResetStore,
+  markPasswordResetUsed,
+  PASSWORD_RESET_ERROR_MESSAGES,
+} from "./passwordResetStore.js";
 import {
   getColorScheme,
   getLessonDisplayMode,
@@ -80,6 +90,7 @@ import { isAllowedImageType, saveUploadedImage } from "./uploads.js";
 import {
   createUser,
   findOrCreateEmbedUser,
+  getUserByEmail,
   getUserById,
   grantCourseAccess,
   initUserStore,
@@ -295,6 +306,46 @@ app.put("/api/auth/me/password", requireAuth, async (req, res) => {
     return;
   }
   await updatePassword(req.user!.userId, parsed.data.newPassword);
+  res.status(204).end();
+});
+
+// Always responds the same way regardless of whether the email belongs to
+// an account - a public, unauthenticated endpoint that revealed which
+// emails are registered would be a user-enumeration oracle. An embed
+// account (see findOrCreateEmbedUser) is deliberately skipped: it has no
+// password a reset would be useful for.
+app.post("/api/auth/forgot-password", async (req, res) => {
+  const parsed = ForgotPasswordSchema.safeParse(req.body);
+  if (!parsed.success) {
+    sendValidationError(res, parsed.error);
+    return;
+  }
+  const user = await getUserByEmail(parsed.data.email);
+  if (user && user.authOrigin !== "embed") {
+    const reset = await createPasswordReset({ userId: user.userId, email: user.email });
+    await sendPasswordResetEmail({ to: user.email, name: user.name, tokenId: reset.tokenId });
+  }
+  res.status(204).end();
+});
+
+app.post("/api/auth/reset-password", async (req, res) => {
+  const parsed = ResetPasswordSchema.safeParse(req.body);
+  if (!parsed.success) {
+    sendValidationError(res, parsed.error);
+    return;
+  }
+  const reset = await getPasswordReset(parsed.data.token);
+  if (!reset) {
+    res.status(400).json({ error: "This reset link is invalid." });
+    return;
+  }
+  const problem = checkPasswordResetToken(reset);
+  if (problem) {
+    res.status(400).json({ error: PASSWORD_RESET_ERROR_MESSAGES[problem] });
+    return;
+  }
+  await updatePassword(reset.userId, parsed.data.newPassword);
+  await markPasswordResetUsed(reset.tokenId);
   res.status(204).end();
 });
 
@@ -867,7 +918,14 @@ app.use((err: unknown, req: Request, res: Response, _next: NextFunction) => {
 
 async function main() {
   const db = await connectDb();
-  await Promise.all([initStore(db), initUserStore(db), initVoucherStore(db), initProgressStore(db), initPreferencesStore(db)]);
+  await Promise.all([
+    initStore(db),
+    initUserStore(db),
+    initVoucherStore(db),
+    initPasswordResetStore(db),
+    initProgressStore(db),
+    initPreferencesStore(db),
+  ]);
 
   await seedUsers();
   await seedSampleData();
