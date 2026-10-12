@@ -26,6 +26,10 @@ export function voucherSignUpLink(voucherId: string): string {
   return `${publicAppUrl()}/register?voucher=${voucherId}`;
 }
 
+export function passwordResetLink(tokenId: string): string {
+  return `${publicAppUrl()}/reset-password?token=${tokenId}`;
+}
+
 const ROLE_LABELS: Record<UserRole, string> = {
   student: "student",
   admin: "admin",
@@ -76,6 +80,40 @@ export async function sendVoucherEmail(params: {
     return true;
   } catch (err) {
     console.error(`Failed to send voucher email to ${params.to}:`, err);
+    return false;
+  }
+}
+
+// Best-effort, same reasoning as sendVoucherEmail: the forgot-password route
+// never reveals whether the send succeeded (or whether the email even has
+// an account) to its caller, so there's no path where a thrown error here
+// would do anything useful - it only ever gets a chance to log a warning.
+export async function sendPasswordResetEmail(params: { to: string; name: string; tokenId: string }): Promise<boolean> {
+  const link = passwordResetLink(params.tokenId);
+  if (!resend) {
+    console.warn(`RESEND_API_KEY not set - not sending a password reset email to ${params.to}. Reset link: ${link}`);
+    return false;
+  }
+
+  try {
+    const result = await resend.emails.send({
+      from: mailFrom,
+      to: params.to,
+      subject: "Reset your LMS password",
+      html: `
+        <p>Hi ${escapeHtml(params.name)},</p>
+        <p>Use the link below to set a new password. It expires in one hour and can only be used once.</p>
+        <p><a href="${link}">${link}</a></p>
+        <p>If you didn't request this, you can safely ignore this email.</p>
+      `,
+    });
+    if (result.error) {
+      console.error(`Failed to send password reset email to ${params.to}:`, result.error);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error(`Failed to send password reset email to ${params.to}:`, err);
     return false;
   }
 }

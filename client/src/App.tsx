@@ -16,12 +16,14 @@ import { AdminLearningPathDetail } from "./pages/AdminLearningPathDetail.js";
 import { AdminLearningPathList } from "./pages/AdminLearningPathList.js";
 import { AdminUsers } from "./pages/AdminUsers.js";
 import { EmbedModule } from "./pages/EmbedModule.js";
+import { ForgotPassword } from "./pages/ForgotPassword.js";
 import { Home } from "./pages/Home.js";
 import { LearningPathDetail } from "./pages/LearningPathDetail.js";
 import { LearningPaths } from "./pages/LearningPaths.js";
 import { Login } from "./pages/Login.js";
 import { Register } from "./pages/Register.js";
 import { ReportBug } from "./pages/ReportBug.js";
+import { ResetPassword } from "./pages/ResetPassword.js";
 import { StudentCatalog } from "./pages/StudentCatalog.js";
 import { StudentCourse } from "./pages/StudentCourse.js";
 import { StudentModule } from "./pages/StudentModule.js";
@@ -57,6 +59,8 @@ export function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/embed/courses/:courseId/modules/:moduleId" element={<EmbedModule />} />
 
           <Route
