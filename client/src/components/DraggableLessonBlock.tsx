@@ -1,4 +1,5 @@
-import type { Lesson, LessonType, WordingStyle } from "../types.js";
+import { useState } from "react";
+import type { Lesson, LessonType, Module, WordingStyle } from "../types.js";
 import { EXISTING_LESSON_MIME, LIBRARY_LESSON_MIME, NEW_LESSON_MIME, SAVED_LESSON_MIME } from "../dnd.js";
 import { lessonTypeLabel } from "../lessonTemplates.js";
 import { toTitleCase } from "../textCase.js";
@@ -16,6 +17,8 @@ export function DraggableLessonBlock({
   onContentChange,
   onWordingStyleChange,
   onTitleChange,
+  otherModules,
+  onMoveLesson,
 }: {
   lesson: Lesson;
   isEditing: boolean;
@@ -27,7 +30,23 @@ export function DraggableLessonBlock({
   onContentChange: (lessonId: string, content: Lesson["content"]) => void;
   onWordingStyleChange: (lessonId: string, wordingStyle: WordingStyle) => void;
   onTitleChange: (lessonId: string, title: string) => void;
+  otherModules?: Module[];
+  onMoveLesson?: (lessonId: string, targetModuleId: string) => void;
 }) {
+  const [moveTarget, setMoveTarget] = useState("");
+  const [moving, setMoving] = useState(false);
+  const canMove = lesson.type !== "examBreakdown" && onMoveLesson && otherModules && otherModules.length > 0;
+
+  async function handleMoveClick() {
+    if (!moveTarget || !onMoveLesson) return;
+    setMoving(true);
+    try {
+      await onMoveLesson(lesson.lessonId, moveTarget);
+    } finally {
+      setMoving(false);
+      setMoveTarget("");
+    }
+  }
   return (
     <div
       className="admin-lesson-wrapper"
@@ -73,6 +92,34 @@ export function DraggableLessonBlock({
           )}
         </div>
       </div>
+      {canMove && (
+        // Its own row, left-aligned, rather than crowding the toolbar's
+        // right-aligned action buttons - those sit close enough to the
+        // viewport's right edge, at common window widths, to land under the
+        // floating admin tools panel (see .admin-tools-panel) and become
+        // unclickable there.
+        <div className="admin-lesson-move">
+          <label className="sr-only" htmlFor={`move-${lesson.lessonId}`}>
+            Move to module
+          </label>
+          <select
+            id={`move-${lesson.lessonId}`}
+            value={moveTarget}
+            onChange={(e) => setMoveTarget(e.target.value)}
+            disabled={moving}
+          >
+            <option value="">Move to module...</option>
+            {otherModules!.map((m) => (
+              <option key={m.moduleId} value={m.moduleId}>
+                {m.seed.title}
+              </option>
+            ))}
+          </select>
+          <button type="button" onClick={handleMoveClick} disabled={!moveTarget || moving}>
+            {moving ? "Moving..." : "Move"}
+          </button>
+        </div>
+      )}
       {isEditing ? (
         <div className="lesson-editor">
           <label className="field">

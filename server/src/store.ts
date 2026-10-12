@@ -286,6 +286,49 @@ export async function deleteModule(moduleId: string): Promise<boolean> {
   return modules.remove(moduleId);
 }
 
+export class MoveLessonError extends Error {}
+
+// Moves a single lesson from one module to another, appended at the end of
+// the target module's list - reordering it from there uses the module
+// editor's existing drag-to-reorder, same as any other lesson. This is an
+// immediate, atomic server-side operation rather than something staged in
+// either module's client-side draft: a lesson move touches two modules at
+// once, which the single-module "local draft + Save" editing model (see
+// useLessonListEditor.ts) has no way to represent or commit together.
+export async function moveLessonToModule(sourceModuleId: string, lessonId: string, targetModuleId: string): Promise<{ source: Module; target: Module }> {
+  if (sourceModuleId === targetModuleId) {
+    throw new MoveLessonError("That lesson is already in this module.");
+  }
+  const source = await modules.get(sourceModuleId);
+  if (!source) throw new MoveLessonError("Source module not found.");
+  const target = await modules.get(targetModuleId);
+  if (!target) throw new MoveLessonError("Target module not found.");
+
+  const lesson = source.lessons.find((l) => l.lessonId === lessonId);
+  if (!lesson) throw new MoveLessonError("That lesson isn't in the source module.");
+  // Exam breakdown is a permanent fixture of the module it was created in
+  // (see the module-creation comment above) - moving it elsewhere would
+  // leave its original module without one, so it's refused the same way
+  // removing or swapping it out already is in the client editor.
+  if (lesson.type === "examBreakdown") {
+    throw new MoveLessonError("The exam breakdown lesson can't be moved - it's a fixture of its own module.");
+  }
+
+  const updatedSource = parseModule({
+    ...source,
+    lessons: source.lessons.filter((l) => l.lessonId !== lessonId).map((l, i) => ({ ...l, order: i + 1 })),
+  });
+  const updatedTarget = parseModule({
+    ...target,
+    lessons: [...target.lessons, { ...lesson, order: target.lessons.length + 1 }],
+  });
+
+  // Safe to run concurrently - source and target are different documents,
+  // so there's nothing for these two writes to race on.
+  await Promise.all([modules.set(sourceModuleId, updatedSource), modules.set(targetModuleId, updatedTarget)]);
+  return { source: updatedSource, target: updatedTarget };
+}
+
 // Seeding only creates a record the first time it's ever seen - once a
 // course/module/path exists, an admin may have edited it, and a later
 // restart re-running this seed data must not clobber that edit back to the

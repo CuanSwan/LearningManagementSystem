@@ -18,6 +18,8 @@ import {
   getModule,
   initStore,
   listModulesByCourse,
+  moveLessonToModule,
+  MoveLessonError,
   patchCourse,
   patchLearningPath,
   reorderModules,
@@ -273,6 +275,79 @@ describe("module order", () => {
 
     const list = await listModulesByCourse("c1");
     expect(list.map((m) => m.moduleId)).toEqual([m2.moduleId, m1.moduleId]);
+  });
+});
+
+describe("moveLessonToModule", () => {
+  function textLesson(lessonId: string, order: number) {
+    return {
+      lessonId,
+      schemaVersion: 1,
+      source: "human" as const,
+      wordingStyle: "official" as const,
+      order,
+      title: "A lesson",
+      type: "text" as const,
+      content: { body: "x" },
+    };
+  }
+
+  it("moves a lesson from the source module to the end of the target module, renumbering both", async () => {
+    const source = await createModule({
+      courseId: "c1",
+      title: "Source",
+      objective: "x",
+      lessons: [textLesson("l1", 1), textLesson("l2", 2)],
+    });
+    const target = await createModule({ courseId: "c1", title: "Target", objective: "x", lessons: [textLesson("l3", 1)] });
+
+    const { source: updatedSource, target: updatedTarget } = await moveLessonToModule(source.moduleId, "l1", target.moduleId);
+
+    expect(updatedSource.lessons.map((l) => l.lessonId)).toEqual(["l2"]);
+    expect(updatedSource.lessons.map((l) => l.order)).toEqual([1]);
+    expect(updatedTarget.lessons.map((l) => l.lessonId)).toEqual(["l3", "l1"]);
+    expect(updatedTarget.lessons.map((l) => l.order)).toEqual([1, 2]);
+
+    // Persisted, not just returned.
+    expect((await getModule(source.moduleId))?.lessons.map((l) => l.lessonId)).toEqual(["l2"]);
+    expect((await getModule(target.moduleId))?.lessons.map((l) => l.lessonId)).toEqual(["l3", "l1"]);
+  });
+
+  it("refuses to move a lesson into its own module", async () => {
+    const source = await createModule({ courseId: "c1", title: "Source", objective: "x", lessons: [textLesson("l1", 1)] });
+    await expect(moveLessonToModule(source.moduleId, "l1", source.moduleId)).rejects.toThrow(MoveLessonError);
+  });
+
+  it("refuses when the source module doesn't exist", async () => {
+    const target = await createModule({ courseId: "c1", title: "Target", objective: "x" });
+    await expect(moveLessonToModule("no-such-module", "l1", target.moduleId)).rejects.toThrow(MoveLessonError);
+  });
+
+  it("refuses when the target module doesn't exist", async () => {
+    const source = await createModule({ courseId: "c1", title: "Source", objective: "x", lessons: [textLesson("l1", 1)] });
+    await expect(moveLessonToModule(source.moduleId, "l1", "no-such-module")).rejects.toThrow(MoveLessonError);
+  });
+
+  it("refuses when the lesson isn't in the source module", async () => {
+    const source = await createModule({ courseId: "c1", title: "Source", objective: "x", lessons: [textLesson("l1", 1)] });
+    const target = await createModule({ courseId: "c1", title: "Target", objective: "x" });
+    await expect(moveLessonToModule(source.moduleId, "no-such-lesson", target.moduleId)).rejects.toThrow(MoveLessonError);
+  });
+
+  it("refuses to move the exam breakdown lesson - it's a fixture of its own module", async () => {
+    const examBreakdown = {
+      lessonId: "exam",
+      schemaVersion: 1,
+      source: "human" as const,
+      wordingStyle: "official" as const,
+      order: 1,
+      title: "Exam Breakdown",
+      type: "examBreakdown" as const,
+      content: { passMarkPercent: 70, timeLimitMinutes: 60, questionCount: 50, openBook: false },
+    };
+    const source = await createModule({ courseId: "c1", title: "Orientation", objective: "x", lessons: [examBreakdown] });
+    const target = await createModule({ courseId: "c1", title: "Target", objective: "x" });
+    await expect(moveLessonToModule(source.moduleId, "exam", target.moduleId)).rejects.toThrow(MoveLessonError);
   });
 });
 
