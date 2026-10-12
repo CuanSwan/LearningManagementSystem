@@ -392,6 +392,66 @@ function convertLesson(riseLesson: RiseLesson, skipped: SkippedBlock[]): Convert
   };
 }
 
+// Rise's export has no real module/section boundary at all - course.lessons
+// is just a flat list of individual pages, each converted to its own
+// ConvertedModule by convertLesson above. Plenty of Rise courses are still
+// authored with a human module structure, just encoded as a number in each
+// page's own title ("Lesson 1.1 - ...", "Lesson 1.2 - ...", then a
+// "Module 1 quiz - ..." page, then "Lesson 2.1 - ..." starting the next
+// module) - this is Rise's own suggested lesson-naming convention, not
+// something specific to one course. When a page's title follows it,
+// consecutive pages sharing the same leading number are grouped into one
+// real Module instead of each page staying its own - turning a 15-page
+// export into the 2 modules it was actually authored as, for example.
+// Each page's own lessons (produced by convertLesson, preserving every
+// quiz/flashcard/accordion/matching block as its own interactive
+// lesson-component) are kept exactly as they are and just concatenated -
+// this only changes module boundaries, never lesson granularity.
+// A page whose title doesn't match the convention falls back to being its
+// own module, same as if no grouping had happened - a guess at the wrong
+// grouping would be worse than no grouping, so an unrecognized title (or a
+// whole course that doesn't use this convention) just gets today's
+// one-module-per-page result instead.
+const MODULE_NUMBER_PATTERN = /^(?:Lesson|Module)\s+(\d+)(?:\.\d+)?\b/i;
+// A module's own quiz page conventionally spells out what the module was
+// about ("Module 1 quiz - What is Business Analysis?") - when a group has
+// one of these, its text makes a far better module title than the generic
+// "Module 1" fallback, so it's used in place of that.
+const MODULE_QUIZ_TITLE_PATTERN = /^Module\s+\d+[^\p{L}\p{N}]+quiz\s*[-–—]\s*(.+)$/iu;
+
+function groupModulesByLeadingNumber(modules: ConvertedModule[]): ConvertedModule[] {
+  const groups: ConvertedModule[] = [];
+  let currentKey: string | null = null;
+
+  for (const module of modules) {
+    const numberMatch = module.title.match(MODULE_NUMBER_PATTERN);
+    const key = numberMatch?.[1] ?? null;
+    const quizMatch = module.title.match(MODULE_QUIZ_TITLE_PATTERN);
+    const niceTitle = quizMatch?.[1]?.trim();
+
+    if (key !== null && key === currentKey) {
+      const group = groups[groups.length - 1];
+      group.lessons.push(...module.lessons);
+      if (niceTitle) group.title = niceTitle;
+    } else {
+      groups.push({
+        title: niceTitle ?? (key !== null ? `Module ${key}` : module.title),
+        objective: module.objective,
+        lessons: [...module.lessons],
+      });
+      currentKey = key;
+    }
+  }
+
+  // Concatenating several pages' lessons means their individually-numbered
+  // `order` fields (each page's own 1..N, see convertLesson) now collide -
+  // renumber each group into one contiguous 1..N sequence.
+  return groups.map((group) => ({
+    ...group,
+    lessons: group.lessons.map((lesson, i) => ({ ...lesson, order: i + 1 })),
+  }));
+}
+
 export function convertRiseCourse(raw: unknown): ConvertedCourse {
   if (!raw || typeof raw !== "object" || !("course" in raw)) {
     throw new RiseImportError("This doesn't look like Rise course data - no 'course' field found.");
@@ -405,7 +465,8 @@ export function convertRiseCourse(raw: unknown): ConvertedCourse {
   }
 
   const skipped: SkippedBlock[] = [];
-  const modules = course.lessons.map((lesson) => convertLesson(lesson, skipped));
+  const perPageModules = course.lessons.map((lesson) => convertLesson(lesson, skipped));
+  const modules = groupModulesByLeadingNumber(perPageModules);
 
   return {
     title: course.title ?? "Imported course",

@@ -603,6 +603,92 @@ describe("convertRiseCourse", () => {
   });
 });
 
+describe("module grouping by title number", () => {
+  it("groups consecutive pages sharing a leading 'Lesson N.M' number into one module", () => {
+    const result = convertRiseCourse(
+      riseCourse([
+        {
+          id: "l1",
+          title: "Lesson 1.1 – Welcome",
+          items: [{ id: "b1", type: "text", family: "text", items: [{ paragraph: "<p>Hi</p>" }] }],
+        },
+        {
+          id: "l2",
+          title: "Lesson 1.2 – More",
+          items: [{ id: "b2", type: "text", family: "text", items: [{ paragraph: "<p>More</p>" }] }],
+        },
+        {
+          id: "l3",
+          title: "Lesson 2.1 – Next module",
+          items: [{ id: "b3", type: "text", family: "text", items: [{ paragraph: "<p>Next</p>" }] }],
+        },
+      ])
+    );
+
+    expect(result.modules).toHaveLength(2);
+    expect(result.modules[0].title).toBe("Module 1");
+    expect(result.modules[0].lessons.map((l) => l.lessonId)).toEqual(["rise-b1", "rise-b2"]);
+    expect(result.modules[0].lessons.map((l) => l.order)).toEqual([1, 2]);
+    expect(result.modules[1].title).toBe("Module 2");
+    expect(result.modules[1].lessons.map((l) => l.lessonId)).toEqual(["rise-b3"]);
+  });
+
+  it("keeps a quiz/flashcard/accordion block as its own interactive lesson inside the grouped module, not flattened", () => {
+    const result = convertRiseCourse(
+      riseCourse([
+        {
+          id: "l1",
+          title: "Lesson 1.1 – Text",
+          items: [{ id: "b1", type: "text", family: "text", items: [{ paragraph: "<p>Hi</p>" }] }],
+        },
+        {
+          id: "l2",
+          title: "Module 1 quiz – What is Business Analysis?",
+          items: [
+            {
+              id: "b2",
+              type: "knowledgeCheck",
+              items: [{ type: "MULTIPLE_CHOICE", title: "Q1?", answers: [{ title: "A", correct: true }, { title: "B" }] }],
+            },
+          ],
+        },
+      ])
+    );
+
+    expect(result.modules).toHaveLength(1);
+    // A quiz page's descriptive suffix makes a better module title than the
+    // generic "Module 1" fallback.
+    expect(result.modules[0].title).toBe("What is Business Analysis?");
+    expect(result.modules[0].lessons.map((l) => l.type)).toEqual(["text", "quiz"]);
+  });
+
+  it("falls back to one module per page when titles don't follow the Lesson/Module-number convention", () => {
+    const result = convertRiseCourse(
+      riseCourse([
+        { id: "l1", title: "Introduction", items: [{ id: "b1", type: "text", family: "text", items: [{ paragraph: "<p>A</p>" }] }] },
+        { id: "l2", title: "Getting Started", items: [{ id: "b2", type: "text", family: "text", items: [{ paragraph: "<p>B</p>" }] }] },
+      ])
+    );
+
+    expect(result.modules).toHaveLength(2);
+    expect(result.modules[0].title).toBe("Introduction");
+    expect(result.modules[1].title).toBe("Getting Started");
+  });
+
+  it("treats a page with no matching number as its own standalone module even between two grouped runs", () => {
+    const result = convertRiseCourse(
+      riseCourse([
+        { id: "l1", title: "Lesson 1.1 – A", items: [{ id: "b1", type: "text", family: "text", items: [{ paragraph: "<p>A</p>" }] }] },
+        { id: "l2", title: "Welcome Interlude", items: [{ id: "b2", type: "text", family: "text", items: [{ paragraph: "<p>B</p>" }] }] },
+        { id: "l3", title: "Lesson 2.1 – C", items: [{ id: "b3", type: "text", family: "text", items: [{ paragraph: "<p>C</p>" }] }] },
+      ])
+    );
+
+    expect(result.modules).toHaveLength(3);
+    expect(result.modules.map((m) => m.title)).toEqual(["Module 1", "Welcome Interlude", "Module 2"]);
+  });
+});
+
 describe("mergeConvertedModules", () => {
   it("collapses every top-level Rise lesson's lessons into one module, renumbered with no gaps", () => {
     const converted = convertRiseCourse(
