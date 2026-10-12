@@ -12,10 +12,12 @@ export function AdminToolsPanel({
   savedLessons,
   onDropRemove,
   onImportLesson,
+  onDropToClipboard,
 }: {
   savedLessons: Lesson[];
   onDropRemove: (lessonId: string) => void;
   onImportLesson: (lesson: Lesson) => void;
+  onDropToClipboard: (lessonId: string) => void;
 }) {
   const [collapsed, setCollapsed] = useState(false);
 
@@ -31,7 +33,7 @@ export function AdminToolsPanel({
       </button>
       {!collapsed && (
         <div className="admin-tools-panel-body">
-          <ComponentLibrary savedLessons={savedLessons} onDropRemove={onDropRemove} />
+          <ComponentLibrary savedLessons={savedLessons} onDropRemove={onDropRemove} onDropToClipboard={onDropToClipboard} />
           <LibrarySidebar onImportLesson={onImportLesson} />
         </div>
       )}

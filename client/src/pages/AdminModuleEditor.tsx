@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import type { Module, ModuleStatus } from "../types.js";
-import { getModule, listModulesByCourse, moveLessonToModule, saveModule, unassignModule } from "../api.js";
+import { getModule, saveModule, unassignModule } from "../api.js";
 import { AdminToolsPanel } from "../components/AdminToolsPanel.js";
 import { LessonList } from "../components/LessonList.js";
 import { useLessonListEditor } from "../useLessonListEditor.js";
@@ -17,12 +17,6 @@ export function AdminModuleEditor() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [status, setStatus] = useState<ModuleStatus>("draft");
   const [unassigning, setUnassigning] = useState(false);
-  // Other modules on the same course, for the "move lesson to another
-  // module" picker - a lesson can only move somewhere, so this stays empty
-  // (hiding the picker) for a standalone library module or a course with
-  // only one module.
-  const [otherModules, setOtherModules] = useState<Module[]>([]);
-  const [moveError, setMoveError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!moduleId) return;
@@ -31,11 +25,6 @@ export function AdminModuleEditor() {
         setModule(data);
         editor.reset(data.lessons);
         setStatus(data.status);
-        if (data.courseId) {
-          listModulesByCourse(data.courseId).then((siblings) =>
-            setOtherModules(siblings.filter((m) => m.moduleId !== moduleId))
-          );
-        }
       })
       .catch((err) => setError(err.message));
     // editor's identity is stable across renders (its setters don't change) -
@@ -43,43 +32,17 @@ export function AdminModuleEditor() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [moduleId]);
 
-  // Returns the freshly-saved module on success, or null on failure -
-  // handleMoveLesson below needs to know which, since moving a lesson
-  // without first saving pending edits would let the move's own refetch
-  // silently discard them.
-  async function handleSave(): Promise<Module | null> {
-    if (!foundModule) return null;
+  async function handleSave() {
+    if (!foundModule) return;
     setSaveStatus("saving");
     setSaveError(null);
     try {
       const saved = await saveModule(foundModule.moduleId, { ...foundModule, lessons: editor.lessons, status });
       setModule(saved);
       setSaveStatus("saved");
-      return saved;
     } catch (err) {
       setSaveError((err as Error).message);
       setSaveStatus("error");
-      return null;
-    }
-  }
-
-  // Moving a lesson is an immediate, atomic server action (see
-  // store.ts's moveLessonToModule) rather than something staged in this
-  // module's local draft like every other edit here - it touches two
-  // modules at once, which a single module's draft-plus-Save model can't
-  // represent. Saving first means it acts on (and this editor ends up
-  // reflecting) the admin's actual intended state, not a stale server copy
-  // with whatever's currently unsaved silently dropped.
-  async function handleMoveLesson(lessonId: string, targetModuleId: string) {
-    setMoveError(null);
-    const saved = await handleSave();
-    if (!saved) return;
-    try {
-      const { sourceModule } = await moveLessonToModule(saved.moduleId, lessonId, targetModuleId);
-      setModule(sourceModule);
-      editor.reset(sourceModule.lessons);
-    } catch (err) {
-      setMoveError((err as Error).message);
     }
   }
 
@@ -142,19 +105,20 @@ export function AdminModuleEditor() {
         </div>
       </div>
 
-      {moveError && <p className="save-status save-status-error">{moveError}</p>}
-
       <div className="workspace">
         <LessonList
           editor={editor}
           editingId={editingId}
           onToggleEdit={(id) => setEditingId((current) => (current === id ? null : id))}
-          otherModules={otherModules}
-          onMoveLesson={handleMoveLesson}
         />
       </div>
 
-      <AdminToolsPanel savedLessons={editor.savedLessons} onDropRemove={editor.remove} onImportLesson={editor.importLesson} />
+      <AdminToolsPanel
+        savedLessons={editor.savedLessons}
+        onDropRemove={editor.remove}
+        onImportLesson={editor.importLesson}
+        onDropToClipboard={editor.moveToClipboard}
+      />
     </main>
   );
 }

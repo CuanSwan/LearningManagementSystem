@@ -79,8 +79,6 @@ import {
   listCourses,
   listLearningPaths,
   listModulesByCourse,
-  moveLessonToModule,
-  MoveLessonError,
   patchCourse,
   reorderModules,
   patchLearningPath,
@@ -751,28 +749,6 @@ app.patch("/api/modules/:moduleId/unassign", requireRole("admin", "super_admin")
 app.delete("/api/modules/:moduleId", requireRole("admin", "super_admin"), async (req, res) => {
   await deleteModule(req.params.moduleId);
   res.status(204).end();
-});
-
-// Moves a single lesson to a different module, appended at the end of its
-// lesson list - reordering it from there is the same drag-to-reorder any
-// other lesson already uses. An immediate, atomic action rather than
-// something staged in either module's editor draft (see moveLessonToModule).
-app.post("/api/modules/:moduleId/lessons/:lessonId/move", requireRole("admin", "super_admin"), async (req, res) => {
-  const targetModuleId = typeof req.body.targetModuleId === "string" ? req.body.targetModuleId : undefined;
-  if (!targetModuleId) {
-    res.status(400).json({ error: "targetModuleId is required" });
-    return;
-  }
-  try {
-    const { source, target } = await moveLessonToModule(req.params.moduleId, req.params.lessonId, targetModuleId);
-    res.json({ sourceModule: source, targetModule: target });
-  } catch (err) {
-    if (err instanceof MoveLessonError) {
-      res.status(400).json({ error: err.message });
-      return;
-    }
-    throw err;
-  }
 });
 
 // --- Learning paths ---

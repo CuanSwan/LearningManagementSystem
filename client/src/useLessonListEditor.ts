@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { Lesson, LessonType, WordingStyle } from "./types.js";
 import { generateId } from "./id.js";
+import { addToLessonClipboard, removeFromLessonClipboard } from "./lessonClipboard.js";
 import { insertLesson, moveLesson } from "./lessonListOrdering.js";
 import { createBlankLesson } from "./lessonTemplates.js";
 
@@ -89,6 +90,38 @@ export function useLessonListEditor(initial: Lesson[] = []) {
     setSavedLessons((prev) => [...prev, lesson]);
   }
 
+  // Pulls a lesson out of this module and into the shared cross-module
+  // clipboard (see lessonClipboard.ts) - unlike remove/swap's local "saved
+  // lessons" staging, this one is for actually moving the lesson somewhere
+  // else: open another module's editor and drag it in from the clipboard
+  // there (insertFromClipboard/swapFromClipboard below). Exam breakdown is
+  // excluded for the same reason remove/swap already refuse it - it's a
+  // fixture of the module it was created in.
+  function moveToClipboard(lessonId: string) {
+    const lesson = lessons.find((l) => l.lessonId === lessonId);
+    if (!lesson || lesson.type === "examBreakdown") return;
+    setLessons((prev) => prev.filter((l) => l.lessonId !== lessonId).map((l, i) => ({ ...l, order: i + 1 })));
+    addToLessonClipboard(lesson);
+  }
+
+  // Drops a clipboard lesson into this module, keeping its own lessonId
+  // (unlike insertLibrary's copy, which mints a fresh one) - this is
+  // completing a move, not duplicating a reusable block, and the lesson may
+  // already have student progress recorded against its id elsewhere.
+  function insertFromClipboard(lesson: Lesson, beforeId: string | null) {
+    setLessons((prev) => insertLesson(prev, lesson, beforeId));
+    removeFromLessonClipboard(lesson.lessonId);
+  }
+
+  function swapFromClipboard(targetId: string, lesson: Lesson) {
+    const displaced = lessons.find((l) => l.lessonId === targetId);
+    if (!displaced || displaced.type === "examBreakdown") return;
+    const positioned = { ...lesson, order: displaced.order };
+    setLessons((prev) => prev.map((l) => (l.lessonId === targetId ? positioned : l)));
+    removeFromLessonClipboard(lesson.lessonId);
+    setSavedLessons((prev) => [...prev, displaced]);
+  }
+
   function updateContent(lessonId: string, content: Lesson["content"]) {
     setLessons((prev) =>
       // The editor form only ever produces a content shape matching the lesson's
@@ -118,6 +151,9 @@ export function useLessonListEditor(initial: Lesson[] = []) {
     insertSaved,
     insertLibrary,
     importLesson,
+    moveToClipboard,
+    insertFromClipboard,
+    swapFromClipboard,
     updateContent,
     updateWordingStyle,
     updateTitle,

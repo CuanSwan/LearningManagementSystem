@@ -294,20 +294,6 @@ export function saveModule(moduleId: string, module: Module): Promise<Module> {
   return request(`/api/modules/${moduleId}`, { method: "PUT", body: JSON.stringify(module) });
 }
 
-// Moves a lesson to a different module, appended at the end of its lesson
-// list - an immediate, atomic server action (see store.ts's
-// moveLessonToModule), not something staged in either module's local draft.
-export function moveLessonToModule(
-  sourceModuleId: string,
-  lessonId: string,
-  targetModuleId: string
-): Promise<{ sourceModule: Module; targetModule: Module }> {
-  return request(`/api/modules/${sourceModuleId}/lessons/${lessonId}/move`, {
-    method: "POST",
-    body: JSON.stringify({ targetModuleId }),
-  });
-}
-
 export function reorderModules(courseId: string, moduleIds: string[]): Promise<Module[]> {
   return request(`/api/courses/${courseId}/modules/reorder`, { method: "PATCH", body: JSON.stringify({ moduleIds }) });
 }

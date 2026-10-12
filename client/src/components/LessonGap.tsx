@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { EXISTING_LESSON_MIME, LIBRARY_LESSON_MIME, NEW_LESSON_MIME, SAVED_LESSON_MIME } from "../dnd.js";
+import { CLIPBOARD_LESSON_MIME, EXISTING_LESSON_MIME, LIBRARY_LESSON_MIME, NEW_LESSON_MIME, SAVED_LESSON_MIME } from "../dnd.js";
 import type { Lesson, LessonType } from "../types.js";
 
 // A drop target sitting between two lesson blocks (or before the first /
@@ -17,6 +17,7 @@ export function LessonGap({
   onInsertBlank,
   onInsertSaved,
   onInsertLibrary,
+  onInsertClipboard,
 }: {
   beforeId: string | null;
   // Shown (in place of the default slim, wordless strip) when this is the
@@ -27,6 +28,7 @@ export function LessonGap({
   onInsertBlank: (type: LessonType, beforeId: string | null) => void;
   onInsertSaved: (savedLessonId: string, beforeId: string | null) => void;
   onInsertLibrary: (lesson: Lesson, beforeId: string | null) => void;
+  onInsertClipboard: (lesson: Lesson, beforeId: string | null) => void;
 }) {
   const [isOver, setIsOver] = useState(false);
 
@@ -43,10 +45,12 @@ export function LessonGap({
         const newType = e.dataTransfer.getData(NEW_LESSON_MIME) as LessonType | "";
         const savedId = e.dataTransfer.getData(SAVED_LESSON_MIME);
         const libraryJson = e.dataTransfer.getData(LIBRARY_LESSON_MIME);
+        const clipboardJson = e.dataTransfer.getData(CLIPBOARD_LESSON_MIME);
         const draggedId = e.dataTransfer.getData(EXISTING_LESSON_MIME);
         if (newType) onInsertBlank(newType, beforeId);
         else if (savedId) onInsertSaved(savedId, beforeId);
         else if (libraryJson) onInsertLibrary(JSON.parse(libraryJson) as Lesson, beforeId);
+        else if (clipboardJson) onInsertClipboard(JSON.parse(clipboardJson) as Lesson, beforeId);
         else if (draggedId) onMove(draggedId, beforeId);
       }}
     >

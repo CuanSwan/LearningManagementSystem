@@ -602,21 +602,6 @@ a.course-side-menu-lesson:hover {
   flex-shrink: 0;
 }
 
-.admin-lesson-move {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  padding: 0.35rem 0.6rem;
-  background: var(--surface-muted);
-  border-bottom: 1px dashed var(--border-strong);
-  font-size: 0.78rem;
-}
-
-.admin-lesson-move select {
-  max-width: 11rem;
-}
-
 .lesson-editor {
   padding: 1rem;
 }

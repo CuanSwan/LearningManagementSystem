@@ -87,7 +87,12 @@ export function AdminNewModule() {
         />
       </div>
 
-      <AdminToolsPanel savedLessons={editor.savedLessons} onDropRemove={editor.remove} onImportLesson={editor.importLesson} />
+      <AdminToolsPanel
+        savedLessons={editor.savedLessons}
+        onDropRemove={editor.remove}
+        onImportLesson={editor.importLesson}
+        onDropToClipboard={editor.moveToClipboard}
+      />
     </main>
   );
 }
